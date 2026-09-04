@@ -1,72 +1,71 @@
 # Mandate — DESIGN.md
 
 Recorded from the built `apps/web` world, not from intentions. The committed
-direction: **the signed operating order** — railgun.org's public-web grammar
-(halftone dot-matrix art, hairline ruling, monumental grotesk at weight 400,
-marginal chapter numerals) joined to Mandate's own semantics (the mandate as a
-signed, revocable financial instrument; the 1inch Aqua track's electric blue).
+direction: **the signed operating order** — railgun.org's editorial grammar
+(hairline ruling, monumental grotesk at weight 400, marginal numerals) joined
+to Mandate's own semantics: the mandate as a crisp printed artifact,
+authorized in the 1inch Aqua track's electric blue.
+
+**Light only.** The paper IS the product; dark mode was cut (user decision,
+2026-09-05).
 
 ## World
 
-- **Ground:** ivory ledger in light (`#f6f5f0`), carbon stage in dark
-  (`#101013`). Content sits inside a max-1440 ledger frame ruled by 1px
-  hairlines; the hero adds full-height column ruling.
-- **Ink:** carbon `#1a1916` (light) / bone `#ecebe4` (dark). Secondary `#57544b`.
-- **Accent — one voice:** electric cobalt `#0000fe` (Aqua-track nod; lightened
-  to `#8a91ff` in dark). It means *authorization*: active stamps, PASS, the
-  primary action, the headline's terminal period.
+- **Ground:** ivory ledger `#f6f5f0`, raised paper `#fffefb`, recess `#edece5`.
+  Content sits inside a max-1440 ledger frame ruled by 1px hairlines; the hero
+  adds full-height column rules.
+- **Ink:** carbon `#1a1916`; secondary `#57544b`; tertiary `#8d8a7e`.
+- **Accent — one voice:** electric cobalt `#0000fe` (deep `#0000c6`, soft
+  `#e4e6ff`). It means *authorization*: active stamps, PASS, the primary
+  action, the headline's terminal period, the certificate seal.
 - **State colors (semantic, never decorative):** confirmed green `#17753c`,
   expiring ochre `#8a6100`, revoked vermilion `#c03427`, unknown violet
-  `#5e548e`. Each has a soft ground tint. Color never carries status alone —
-  every stamp pairs dot + uppercase mono label.
-- **Art accents:** lime `#7ea51d`–`#b9e34e` appears only inside halftone
-  artwork (chapters, invariants panel), never in UI state.
+  `#5e548e`, each with a soft tint. Color never carries status alone: stamps
+  pair a dot with an uppercase mono label.
+- **Brand:** the user-supplied wordmark (`public/mandate-logo.png`, trimmed)
+  is the only logo: carbon in the nav, ivory (`-ivory.png`) on the carbon
+  footer. The favicon crops the `m` onto a carbon rounded square.
 
 ## Type
 
 - **Onest** (400/500/600, self-hosted) — display at weight **400**, tracking
-  `-0.042em`, the railgun voice. Hero `clamp(3rem, 8.2vw, 6.5rem)`, section
-  heads `clamp(2.25rem, 4.6vw, 4rem)`, pinned statements
-  `clamp(1.875rem, 4.2vw, 3.75rem)`.
+  `-0.042em`. Hero `clamp(3rem,7vw,5.75rem)`, section heads
+  `clamp(2.25rem,4.6vw,4rem)`, pinned statements `clamp(1.875rem,4.2vw,3.75rem)`.
 - **Geist Mono** (400/500) — every hash, address, amount, field name, stamp
   label. `.mono-data` = 13px/1.5 tabular. `.ledger-label` = 11px uppercase,
   tracking `0.08em`.
-- Emphasis is weight or size of the same family; no serif, no mixed families.
+- Emphasis is weight or size of the same family. **No em dashes anywhere
+  visible** (user rule): colons, middots, and sentence breaks instead.
 
-## Signature motifs
+## Signature components
 
-1. **Halftone dot-matrix art** — `components/dot/halftone.tsx` samples vector
-   scenes (or the logo's alpha) on a grid and re-renders as dots with a radial
-   cascade entrance and pointer parallax. Scenes live in `dot/scenes.ts`:
-   the seal-sun over the settlement horizon (hero), the nameplate (identity),
-   the sealed document (mandate), the pull/swap/push loop (settlement), the
-   countersigned page (invariants), the giant dotted wordmark (footer).
-2. **The ruling engine** — 1px hairlines everywhere: page-edge column rules,
-   table rules, chapter rules under art, margin numerals between hairline
-   segments.
-3. **Printed marks** — square-ish state stamps (`Stamp`), detent nodes on the
-   flow trace, black pill section labels (Invariants), square tables.
-
-## Components
-
-`kit.tsx` (Stamp, ButtonLink/Button — primary accent / carbon / ghost, all
-with `:active` scale 0.97), `copy-value.tsx` (full value in title/aria, copy
-flash), `countdown.tsx` (mount-gated dd:hh:mm:ss), `reveal.tsx`
-(once-only, reduced-motion-aware), mandate surfaces in `components/mandate/*`
-(authority header, constraint ledger, aqua balances, simulation gate, flow
-trace, revocation console, receipt plate, strategy fields, fail-closed
-unknown route).
+1. **The Mandate certificate** (`components/art/certificate.tsx`) — the hero
+   centerpiece: ruled paper with tabular mono fields, a signature that draws
+   itself (SVG path, 1.15s), the cobalt rosette seal (14 scallops + 8-point
+   star) spring-stamped at −8°, barcode strip, "Treasury custody retained"
+   carbon bar. Pointer tilt (±3.5°), reduced-motion aware.
+2. **Ruling engine** — 1px hairlines: column rules, table rules, chapter
+   plate borders, margin numerals between hairline segments.
+3. **Lucide plates** — chapters are bordered cards with a 64px icon cell
+   (Fingerprint / FileSignature / settlement loop), staggered reveal, hover
+   lift. Settlement runs a traveling cobalt dot across PULL → SWAP → PUSH.
+4. **Printed marks** — square state stamps, detent flow-trace nodes, black
+   pill section labels, barcode ticks.
+5. **Radix primitives** (`ui/tooltip.tsx`, `mandate/revocation.tsx`) —
+   carbon-chip tooltips on the built-on marquee; the revocation confirm uses
+   the Radix dialog (focus trap, Escape, aria).
 
 ## Motion
 
-One authored moment per section; exponential ease-out (`--ease-out-expo`,
+One authored moment per surface; exponential ease-out (`--ease-out-expo`,
 `--ease-out-quart`); crossfades masked with 5px blur; scroll-driven (Motion
 `useScroll`), never time-jacked; UI transitions ≤300ms; transform/opacity +
-blur only; `prefers-reduced-motion` collapses pinning and entrances to static.
+blur only; the built-on strip is a 36s pausable marquee;
+`prefers-reduced-motion` collapses pinning and entrances to static.
 
 ## Honest-state rules
 
-`SAMPLE — synthetic demo state` labels all demo data; revocation flips the
-whole page (header, ledger rows, gate, trace); submitted ≠ confirmed;
-unknown fails closed on the unknown-hash route. Countdown replaced by
-"stopped by owner" when revoked.
+`SAMPLE: synthetic demo state, not live chain data` labels all demo data;
+revocation flips the whole page (header, ledger rows, gate, trace); submitted
+≠ confirmed; unknown fails closed on the unknown-hash route. Countdown is
+replaced by "stopped by owner: execution reverts" when revoked.
