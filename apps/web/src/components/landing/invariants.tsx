@@ -1,15 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
-import { Halftone } from "@/components/dot/halftone";
-import { sceneSignature } from "@/components/dot/scenes";
-import { useTheme } from "@/components/theme";
+import { Check } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
 
 const INVARIANTS = [
   {
     name: "ATOMIC_ROLLBACK",
-    text: "A failed route, short output, or blocked push reverts the entire transaction — no partial settlement.",
+    text: "A failed route, short output, or blocked push reverts the entire transaction. No partial settlement.",
   },
   {
     name: "NO_RESIDUE",
@@ -21,7 +18,7 @@ const INVARIANTS = [
   },
   {
     name: "IDENTITY_IS_LIVE",
-    text: "Registry, expiry, owner, and resolver are re-read at execution — cached answers cannot authorize.",
+    text: "Registry, expiry, owner, and resolver are re-read at execution. Cached answers cannot authorize.",
   },
   {
     name: "FAIL_CLOSED",
@@ -30,43 +27,42 @@ const INVARIANTS = [
 ] as const;
 
 export function Invariants() {
-  const { theme } = useTheme();
-  const palette = useMemo(
-    () => (theme === "dark" ? { base: "#2a2a34", accent: "#b9e34e", baseAlpha: 0.5 } : { base: "#1a1916", accent: "#7ea51d", baseAlpha: 0.5 }),
-    [theme],
-  );
-
   return (
     <section id="invariants" className="border-b border-rule" aria-label="Security invariants">
-      <div className="mx-auto grid max-w-[1440px] gap-12 border-x border-rule px-6 py-20 md:py-28 lg:grid-cols-[1.15fr_0.85fr] lg:px-10">
-        <div>
-          <Reveal>
-            <span
-              className="inline-block rounded-[4px] px-3 pb-1 pt-0.5 text-[clamp(1.75rem,3vw,2.5rem)] font-medium tracking-[-0.02em]"
-              style={{ background: "var(--ink)", color: "var(--paper)" }}
-            >
-              Invariants
-            </span>
-            <p className="lede mt-6 max-w-[56ch]">
-              Every mandate enforces the same printed rules. Not configuration — physics of the
-              contract.
-            </p>
-          </Reveal>
-          <ul className="mt-10">
-            {INVARIANTS.map((inv, i) => (
-              <Reveal key={inv.name} delay={0.05 * i}>
-                <li className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-1 border-t border-rule py-4 last:border-b">
-                  <code className="mono-data shrink-0 font-medium text-ink">{inv.name}</code>
-                  <span className="max-w-[52ch] text-[0.875rem] leading-relaxed text-ink-2">{inv.text}</span>
-                  <span className="h-[6px] w-[6px] shrink-0 self-center rounded-full" style={{ background: "var(--confirmed)" }} aria-hidden="true" />
-                </li>
-              </Reveal>
-            ))}
-          </ul>
-        </div>
-        <Reveal delay={0.1} className="min-h-[320px]">
-          <Halftone draw={sceneSignature} palette={palette} cell={4} className="h-full min-h-[320px] w-full" parallax={6} />
+      <div className="mx-auto max-w-[1440px] border-x border-rule px-6 py-20 md:py-28 lg:px-10">
+        <Reveal>
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <div>
+              <span
+                className="inline-block rounded-[4px] px-3 pb-1 pt-0.5 text-[clamp(1.75rem,3vw,2.5rem)] font-medium tracking-[-0.02em]"
+                style={{ background: "var(--ink)", color: "var(--paper)" }}
+              >
+                Invariants
+              </span>
+              <p className="lede mt-6 max-w-[56ch]">
+                Every mandate enforces the same printed rules. Not configuration: the physics of the contract.
+              </p>
+            </div>
+            <span className="ledger-label pb-2 text-ink-3">Printed rules · not configuration</span>
+          </div>
         </Reveal>
+        <ul className="mt-12">
+          {INVARIANTS.map((inv, i) => (
+            <Reveal key={inv.name} delay={0.05 * i}>
+              <li className="flex items-center gap-5 border-t border-rule py-5 last:border-b">
+                <span
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-[4px]"
+                  style={{ background: "var(--confirmed-soft)", color: "var(--confirmed)" }}
+                  aria-hidden="true"
+                >
+                  <Check size={18} strokeWidth={2.6} />
+                </span>
+                <code className="mono-data w-44 shrink-0 font-medium text-ink max-sm:w-full">{inv.name}</code>
+                <span className="max-w-[64ch] text-[0.9375rem] leading-relaxed text-ink-2">{inv.text}</span>
+              </li>
+            </Reveal>
+          ))}
+        </ul>
       </div>
     </section>
   );

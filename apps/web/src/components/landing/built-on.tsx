@@ -1,21 +1,38 @@
+"use client";
+
+import { Tip } from "@/components/ui/tooltip";
+
 const PARTNERS = [
-  { name: "1inch Aqua", role: "Settlement engine — wallet-custodied pull and push" },
-  { name: "ENSv2", role: "Identity layer — live, revocable agent names" },
-  { name: "Bazantic", role: "Paid machine-readable receipt audits" },
-  { name: "Foundry", role: "Adversarial proofs before any pixels" },
+  { name: "1INCH AQUA", role: "Settlement engine: wallet-custodied pull and push" },
+  { name: "ENSV2", role: "Identity layer: live, revocable agent names" },
+  { name: "BAZANTIC", role: "Paid machine-readable receipt audits" },
+  { name: "FOUNDRY", role: "Adversarial proofs before any pixels" },
+  { name: "VIEM", role: "Typed onchain reads behind every state surface" },
+  { name: "WAGMI", role: "Wallet connection for owner and agent" },
 ] as const;
 
 export function BuiltOn() {
+  const strip = (hidden: boolean) => (
+    <div className="flex w-max items-center" aria-hidden={hidden || undefined}>
+      {PARTNERS.map((p) => (
+        <Tip key={p.name} content={p.role}>
+          <span className="flex cursor-default items-center gap-10 px-10 py-7" tabIndex={hidden ? -1 : undefined}>
+            <span className="h-1.5 w-1.5 rotate-45 bg-ink/30" aria-hidden="true" />
+            <span className="whitespace-nowrap text-[1.0625rem] font-medium tracking-[0.02em] text-ink-2 transition-colors hover:text-ink">
+              {p.name}
+            </span>
+          </span>
+        </Tip>
+      ))}
+    </div>
+  );
+
   return (
     <section className="border-b border-rule" aria-label="Built on">
-      <div className="mx-auto max-w-[1440px] border-x border-rule px-6 py-16 lg:px-10">
-        <div className="grid gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
-          {PARTNERS.map((p) => (
-            <div key={p.name} className="border-l border-rule pl-5 first:border-l-0 first:pl-0 lg:pl-6">
-              <div className="text-[1.125rem] font-medium tracking-[-0.01em]">{p.name}</div>
-              <div className="mono-data mt-1.5 max-w-[30ch] text-ink-2">{p.role}</div>
-            </div>
-          ))}
+      <div className="mx-auto max-w-[1440px] overflow-hidden border-x border-rule">
+        <div className="marquee-track flex w-max animate-marquee">
+          {strip(false)}
+          {strip(true)}
         </div>
       </div>
     </section>

@@ -1,4 +1,4 @@
-import { ArrowRight as PhArrowRight } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight } from "lucide-react";
 import { AuthorityHeader } from "@/components/mandate/authority-header";
 import { ConstraintLedger } from "@/components/mandate/constraint-ledger";
 import { FlowTrace } from "@/components/mandate/flow-trace";
@@ -39,14 +39,14 @@ export function LiveLedger() {
                 className="link-quiet inline-flex items-center gap-1.5 text-[0.9375rem] text-ink-2 hover:text-ink"
               >
                 Open the full inspection
-                <PhArrowRight size={14} weight="bold" aria-hidden="true" />
+                <ArrowRight size={14} strokeWidth={2.25} aria-hidden="true" />
               </a>
             </div>
           </div>
         </Reveal>
         <p className="mono-data mt-3 text-ink-3">
           Sample values for design review. A live inspection reads registry, strategy, and balances
-          onchain — unknown fails closed.
+          onchain; unknown fails closed.
         </p>
       </div>
     </section>

@@ -1,12 +1,10 @@
 "use client";
 
-import { ArrowsClockwise as PhArrowsClockwise } from "@phosphor-icons/react/dist/ssr";
+import { Repeat2 } from "lucide-react";
 import { useInView } from "motion/react";
-import { useMemo, useRef } from "react";
-import { Halftone } from "@/components/dot/halftone";
-import { sceneSealSun } from "@/components/dot/scenes";
+import { useRef } from "react";
+import { Certificate } from "@/components/art/certificate";
 import { ButtonLink } from "@/components/ui/kit";
-import { useTheme } from "@/components/theme";
 import { useCountUp } from "@/lib/use-count-up";
 
 const DEMO_HASH = "0x4a91f2c7d6b3e580a9c1d47fb0e2f53618d7c4a9e5b2f08371c6d9a42f8e0b5d";
@@ -34,21 +32,10 @@ function StatCell({ stat, active }: { stat: (typeof STATS)[number]; active: bool
 export function Hero() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
-  const { theme } = useTheme();
-  const palette = useMemo(
-    () => (theme === "dark" ? { base: "#3a3a44", accent: "#8a91ff" } : { base: "#1a1916", accent: "#0000fe" }),
-    [theme],
-  );
 
   return (
     <section ref={ref} className="relative overflow-hidden border-b border-rule" aria-label="Introduction">
-      <Halftone
-        draw={sceneSealSun}
-        palette={palette}
-        cell={6}
-        parallax={10}
-        className="absolute inset-0 hidden md:block"
-      />
+      {/* full-height column ruling */}
       <div className="pointer-events-none absolute inset-0 hidden md:block" aria-hidden="true">
         <div className="mx-auto grid h-full max-w-[1440px] grid-cols-4 px-6 lg:px-10">
           <span className="border-l border-rule" />
@@ -57,32 +44,40 @@ export function Hero() {
           <span className="border-l border-rule" />
         </div>
       </div>
-      <div className="relative mx-auto flex min-h-[88svh] max-w-[1440px] flex-col border-x border-rule px-6 pt-10 lg:px-10">
-        <div className="grid grid-cols-2 gap-y-8 md:grid-cols-4" aria-label="Protocol counters, sample data">
+
+      <div className="relative mx-auto flex min-h-[92svh] max-w-[1440px] flex-col border-x border-rule px-6 lg:px-10">
+        <div className="grid flex-1 items-center gap-14 pt-16 pb-14 lg:grid-cols-[1.02fr_0.98fr] lg:gap-8 lg:pt-20">
+          <div>
+            <h1 className="display max-w-[12ch] text-[clamp(3rem,7vw,5.75rem)]">
+              Authority without custody<span style={{ color: "var(--accent)" }}>.</span>
+            </h1>
+            <p className="lede mt-6 max-w-[52ch]">
+              One named agent. One immutable Aqua strategy. A revocable, expiring authority, with treasury
+              custody never leaving the owner wallet.
+            </p>
+            <div className="mt-10 flex flex-wrap items-center gap-4">
+              <ButtonLink href={`/mandates/${DEMO_HASH}`} arrow>
+                Inspect the demo mandate
+              </ButtonLink>
+              <ButtonLink href="#how" variant="carbon">
+                How a mandate works
+              </ButtonLink>
+            </div>
+            <p className="mono-data mt-8 flex items-center gap-2 text-ink-2">
+              <Repeat2 size={15} strokeWidth={2} className="text-accent" aria-hidden="true" />
+              Pull. Swap. Push. Output returns to the treasury, never to the agent.
+            </p>
+          </div>
+
+          <div className="relative lg:justify-self-end">
+            <Certificate />
+          </div>
+        </div>
+
+        <div className="grid gap-y-8 border-t border-rule py-9 md:grid-cols-4" aria-label="Protocol counters, sample data">
           {STATS.map((s) => (
             <StatCell key={s.label} stat={s} active={inView} />
           ))}
-        </div>
-        <div className="mt-auto pb-12 pt-24 md:pb-16">
-          <h1 className="display max-w-[13ch] text-[clamp(3rem,8.2vw,6.5rem)]">
-            Authority without custody<span style={{ color: "var(--accent)" }}>.</span>
-          </h1>
-          <p className="lede mt-6 max-w-[58ch]">
-            One named agent. One immutable Aqua strategy. A revocable, expiring authority — with treasury
-            custody never leaving the owner wallet.
-          </p>
-          <div className="mt-10 flex flex-wrap items-center gap-4">
-            <ButtonLink href={`/mandates/${DEMO_HASH}`} arrow>
-              Inspect the demo mandate
-            </ButtonLink>
-            <ButtonLink href="#how" variant="carbon">
-              How a mandate works
-            </ButtonLink>
-          </div>
-          <p className="mono-data mt-8 flex items-center gap-2 text-ink-2">
-            <PhArrowsClockwise size={14} weight="bold" className="text-accent" aria-hidden="true" />
-            Pull. Swap. Push. — output returns to the treasury, never to the agent.
-          </p>
         </div>
       </div>
     </section>

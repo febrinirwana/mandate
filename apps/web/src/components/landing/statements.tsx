@@ -1,6 +1,6 @@
 "use client";
 
-import { At as PhAt, Pulse as PhPulse, SealCheck as PhSealCheck } from "@phosphor-icons/react/dist/ssr";
+import { AtSign, FileCheck2, ShieldCheck } from "lucide-react";
 import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from "motion/react";
 import { useRef } from "react";
 
@@ -9,8 +9,8 @@ const STATEMENTS = [
     num: "01",
     body: (
       <>
-        Identity is <Chip icon={<PhAt weight="bold" />} /> live state, verified onchain at execution time —
-        never a cached approval.
+        Identity is <Chip icon={<AtSign strokeWidth={2.4} />} /> live state, verified onchain at execution
+        time, never a cached approval.
       </>
     ),
   },
@@ -18,7 +18,7 @@ const STATEMENTS = [
     num: "02",
     body: (
       <>
-        The contract authorizes. <Chip icon={<PhPulse weight="bold" />} /> Simulation only informs.
+        The contract authorizes. <Chip icon={<FileCheck2 strokeWidth={2.4} />} /> Simulation only informs.
       </>
     ),
   },
@@ -26,7 +26,7 @@ const STATEMENTS = [
     num: "03",
     body: (
       <>
-        Custody <Chip icon={<PhSealCheck weight="bold" />} /> never leaves the treasury wallet.
+        Custody <Chip icon={<ShieldCheck strokeWidth={2.4} />} /> never leaves the treasury wallet.
       </>
     ),
   },
@@ -36,10 +36,10 @@ function Chip({ icon }: { icon: React.ReactNode }) {
   return (
     <span
       aria-hidden="true"
-      className="mx-1 inline-grid h-[0.72em] w-[0.72em] translate-y-[0.08em] place-items-center rounded-[0.16em] align-baseline text-[0.44em]"
+      className="mx-1.5 inline-grid h-[0.82em] w-[0.82em] translate-y-[0.1em] place-items-center rounded-[0.14em] align-baseline"
       style={{ background: "var(--accent-soft)", color: "var(--accent)" }}
     >
-      {icon}
+      <span className="grid h-[0.5em] w-[0.5em] place-items-center [&_svg]:h-full [&_svg]:w-full">{icon}</span>
     </span>
   );
 }

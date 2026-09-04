@@ -1,4 +1,4 @@
-import { ArrowUpRight as PhArrowUpRight } from "@phosphor-icons/react/dist/ssr";
+import { ArrowUpRight } from "lucide-react";
 import { ButtonLink } from "@/components/ui/kit";
 
 const DEMO_HASH = "0x4a91f2c7d6b3e580a9c1d47fb0e2f53618d7c4a9e5b2f08371c6d9a42f8e0b5d";
@@ -22,7 +22,7 @@ export function CtaBar() {
             style={{ background: "rgb(255 255 255 / 0.16)" }}
             aria-hidden="true"
           >
-            <PhArrowUpRight size={14} weight="bold" />
+            <ArrowUpRight size={14} strokeWidth={2.5} />
           </span>
         </ButtonLink>
       </div>

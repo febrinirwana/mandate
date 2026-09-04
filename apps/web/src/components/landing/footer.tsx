@@ -1,10 +1,4 @@
-"use client";
-
-import { useMemo } from "react";
-import { Halftone } from "@/components/dot/halftone";
-import { Wordmark } from "@/components/brand/wordmark";
-import { ThemeToggle } from "@/components/theme";
-import { useTheme } from "@/components/theme";
+import Image from "next/image";
 
 const COLS: { title: string; links: { label: string; href: string; external?: boolean }[] }[] = [
   {
@@ -33,35 +27,22 @@ const COLS: { title: string; links: { label: string; href: string; external?: bo
 ];
 
 export function Footer() {
-  const { theme } = useTheme();
-  const palette = useMemo(
-    () => (theme === "dark" ? { base: "#33333b", accent: "#a6a8b8" } : { base: "#45433c", accent: "#ecebe4" }),
-    [theme],
-  );
-
   return (
     <footer style={{ background: "var(--ink)", color: "var(--paper)" }}>
       <div className="mx-auto max-w-[1440px] px-6 pt-16 lg:px-10">
-        {/* giant halftone wordmark — the brand rendered as its own material */}
-        <Halftone
-          draw={() => {}}
-          imageSrc="/mandate-logo.png"
-          palette={palette}
-          cell={4}
-          entry={false}
-          parallax={0}
-          className="mx-auto h-[9vw] max-h-[150px] min-h-[64px] w-full max-w-[1080px]"
-        />
-
-        <div className="mt-14 grid gap-10 border-t pb-12 pt-10 sm:grid-cols-2 lg:grid-cols-[1.2fr_repeat(3,0.6fr)]" style={{ borderColor: "rgb(255 255 255 / 0.12)" }}>
+        <div className="grid gap-10 border-b pb-12 pt-2 sm:grid-cols-2 lg:grid-cols-[1.2fr_repeat(3,0.6fr)]" style={{ borderColor: "rgb(255 255 255 / 0.12)" }}>
           <div>
-            <Wordmark className="h-6 w-18" />
-            <p className="mono-data mt-4 max-w-[38ch]" style={{ color: "rgb(255 255 255 / 0.55)" }}>
+            <Image
+              src="/mandate-logo-ivory.png"
+              alt="Mandate"
+              width={336}
+              height={44}
+              priority={false}
+              className="h-8 w-auto"
+            />
+            <p className="mono-data mt-5 max-w-[38ch]" style={{ color: "rgb(255 255 255 / 0.55)" }}>
               A signed operating order for treasury agents. Authority before autonomy.
             </p>
-            <div className="mt-6">
-              <ThemeToggle />
-            </div>
           </div>
           {COLS.map((col) => (
             <nav key={col.title} aria-label={col.title}>
@@ -87,7 +68,7 @@ export function Footer() {
         </div>
 
         <div className="mono-data flex flex-wrap items-center justify-between gap-3 border-t py-6" style={{ borderColor: "rgb(255 255 255 / 0.12)", color: "rgb(255 255 255 / 0.45)" }}>
-          <span>Built for ETHOnline 2026 — 1inch Aqua track</span>
+          <span>Built for ETHOnline 2026 · 1inch Aqua track</span>
           <span>Sample data throughout · unknown fails closed</span>
           <span>© 2026 Mandate</span>
         </div>
