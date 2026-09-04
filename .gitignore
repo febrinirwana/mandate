@@ -3,6 +3,8 @@
 !.env.example
 node_modules/
 .next/
+*.tsbuildinfo
+**/.turbo/
 dist/
 coverage/
 cache/
