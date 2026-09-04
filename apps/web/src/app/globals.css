@@ -1,0 +1,243 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ------------------------------------------------------------------ */
+/* Mandate — "Signed Operating Order"                                  */
+/* Ivory ledger ground, carbon ink, one cobalt authorization accent.   */
+/* Semantic state colors: confirmed, expiring, revoked, unknown.       */
+/* ------------------------------------------------------------------ */
+
+:root {
+  --paper: #f6f5f0;
+  --paper-raised: #fffefb;
+  --paper-recess: #edece5;
+  --ink: #1a1916;
+  --ink-2: #57544b;
+  --ink-3: #8d8a7e;
+  --rule: #e1dfd4;
+  --rule-strong: #1a1916;
+
+  --accent: #0000fe;
+  --accent-deep: #0000c6;
+  --accent-soft: #e4e6ff;
+  --accent-ghost: rgb(0 0 254 / 0.07);
+
+  --confirmed: #17753c;
+  --confirmed-soft: #e0f1e6;
+  --expiring: #8a6100;
+  --expiring-soft: #f3ecd6;
+  --revoked: #c03427;
+  --revoked-soft: #f9e5e1;
+  --unknown: #5e548e;
+  --unknown-soft: #e9e7f4;
+
+  --dot-tint: #1a1916;
+  --dot-accent: #0000fe;
+  --dot-neutral: #b9b6aa;
+}
+
+.dark {
+  --paper: #101013;
+  --paper-raised: #17171b;
+  --paper-recess: #0b0b0e;
+  --ink: #ecebe4;
+  --ink-2: #a4a196;
+  --ink-3: #6e6c63;
+  --rule: #2a2a30;
+  --rule-strong: #ecebe4;
+
+  --accent: #8a91ff;
+  --accent-deep: #aab0ff;
+  --accent-soft: #1c1f45;
+  --accent-ghost: rgb(138 145 255 / 0.1);
+
+  --confirmed: #4ec57f;
+  --confirmed-soft: #12291c;
+  --expiring: #d9a83f;
+  --expiring-soft: #2c2312;
+  --revoked: #ef6a5a;
+  --revoked-soft: #341512;
+  --unknown: #a49ade;
+  --unknown-soft: #1d1b31;
+
+  --dot-tint: #ecebe4;
+  --dot-accent: #8a91ff;
+  --dot-neutral: #3a3a42;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-raised: var(--paper-raised);
+  --color-recess: var(--paper-recess);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-accent: var(--accent);
+  --color-accent-deep: var(--accent-deep);
+  --color-accent-soft: var(--accent-soft);
+  --color-confirmed: var(--confirmed);
+  --color-confirmed-soft: var(--confirmed-soft);
+  --color-expiring: var(--expiring);
+  --color-expiring-soft: var(--expiring-soft);
+  --color-revoked: var(--revoked);
+  --color-revoked-soft: var(--revoked-soft);
+  --color-unknown: var(--unknown);
+  --color-unknown-soft: var(--unknown-soft);
+
+  --font-sans: var(--font-onest), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+
+  --radius-btn: 4px;
+  --radius-panel: 12px;
+}
+
+html {
+  color-scheme: light;
+  scrollbar-gutter: stable;
+}
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "ss01";
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+.dark ::selection {
+  color: #101013;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Scrollbars belong to the design too */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink-3) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--ink-3) 55%, transparent);
+  border-radius: 8px;
+  border: 2px solid var(--paper);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Caret */
+input,
+textarea {
+  caret-color: var(--accent);
+}
+
+/* Type voices ------------------------------------------------------ */
+
+.display {
+  font-weight: 400;
+  letter-spacing: -0.042em;
+  line-height: 0.94;
+  text-wrap: balance;
+}
+
+.statement {
+  font-weight: 400;
+  letter-spacing: -0.038em;
+  line-height: 1.1;
+  text-wrap: pretty;
+}
+
+.lede {
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+
+.mono-data {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.ledger-label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1.35;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Pressable physicality */
+.pressable {
+  transition: transform 160ms var(--ease-out-quart);
+}
+.pressable:active {
+  transform: scale(0.97);
+}
+
+/* Underline that draws in on hover */
+.link-quiet {
+  position: relative;
+  transition: color 150ms var(--ease-out-quart);
+}
+.link-quiet::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: -2px;
+  height: 1px;
+  background: currentColor;
+  transition: right 220ms var(--ease-out-expo);
+}
+.link-quiet:hover::after {
+  right: 0;
+}
+
+/* Reduced motion: kill ornament, keep state changes instant */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

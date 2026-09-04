@@ -14,3 +14,5 @@ artifacts/
 *.pem
 .DS_Store
 Thumbs.db
+
+reference/.turbo/
