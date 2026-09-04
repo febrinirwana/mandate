@@ -1,11 +1,10 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
-
 /* ------------------------------------------------------------------ */
-/* Mandate — "Signed Operating Order"                                  */
+/* Mandate: "Signed Operating Order"                                   */
 /* Ivory ledger ground, carbon ink, one cobalt authorization accent.   */
 /* Semantic state colors: confirmed, expiring, revoked, unknown.       */
+/* Light only: the paper IS the product.                               */
 /* ------------------------------------------------------------------ */
 
 :root {
@@ -31,39 +30,6 @@
   --revoked-soft: #f9e5e1;
   --unknown: #5e548e;
   --unknown-soft: #e9e7f4;
-
-  --dot-tint: #1a1916;
-  --dot-accent: #0000fe;
-  --dot-neutral: #b9b6aa;
-}
-
-.dark {
-  --paper: #101013;
-  --paper-raised: #17171b;
-  --paper-recess: #0b0b0e;
-  --ink: #ecebe4;
-  --ink-2: #a4a196;
-  --ink-3: #6e6c63;
-  --rule: #2a2a30;
-  --rule-strong: #ecebe4;
-
-  --accent: #8a91ff;
-  --accent-deep: #aab0ff;
-  --accent-soft: #1c1f45;
-  --accent-ghost: rgb(138 145 255 / 0.1);
-
-  --confirmed: #4ec57f;
-  --confirmed-soft: #12291c;
-  --expiring: #d9a83f;
-  --expiring-soft: #2c2312;
-  --revoked: #ef6a5a;
-  --revoked-soft: #341512;
-  --unknown: #a49ade;
-  --unknown-soft: #1d1b31;
-
-  --dot-tint: #ecebe4;
-  --dot-accent: #8a91ff;
-  --dot-neutral: #3a3a42;
 }
 
 @theme inline {
@@ -96,14 +62,23 @@
 
   --radius-btn: 4px;
   --radius-panel: 12px;
+
+  --animate-marquee: marquee 36s linear infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
 }
 
 html {
   color-scheme: light;
   scrollbar-gutter: stable;
-}
-html.dark {
-  color-scheme: dark;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -120,11 +95,8 @@ body {
   background: var(--accent);
   color: #fff;
 }
-.dark ::selection {
-  color: #101013;
-}
 
-:focus-visible {
+::focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 2px;
@@ -221,21 +193,17 @@ textarea {
   right: 0;
 }
 
-/* Reduced motion: kill ornament, keep state changes instant */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+/* Marquee (built-on strip). Reduced motion: the global kill stops it. */
+.marquee-track:hover {
+  animation-play-state: paused;
 }
 
-html {
-  scroll-behavior: smooth;
+/* Uniform dot-grid patch: crisp decoration, no sampling */
+.dot-grid {
+  background-image: radial-gradient(circle, color-mix(in oklab, var(--ink) 26%, transparent) 1px, transparent 1.5px);
+  background-size: 14px 14px;
 }
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { ThemeProvider } from "@/components/theme";
 import "./globals.css";
 
 const onest = localFont({
@@ -23,28 +22,19 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Mandate — Authority without custody",
+  title: "Mandate: Authority Without Custody",
   description:
-    "Mandate gives one named agent a narrow, revocable, expiring onchain right to execute one immutable 1inch Aqua strategy — while treasury custody never leaves the owner wallet.",
-  icons: { icon: "/icon.svg" },
+    "Mandate gives one named agent a narrow, revocable, expiring onchain right to execute one immutable 1inch Aqua strategy while treasury custody never leaves the owner wallet.",
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f6f5f0" },
-    { media: "(prefers-color-scheme: dark)", color: "#101013" },
-  ],
+  themeColor: "#f6f5f0",
 };
-
-const themePrepaint = `try{if(localStorage.getItem('mandate-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
-      <body className={`${onest.variable} ${geistMono.variable}`}>
-        <script dangerouslySetInnerHTML={{ __html: themePrepaint }} />
-        <ThemeProvider>{children}</ThemeProvider>
-      </body>
+    <html lang="en" data-scroll-behavior="smooth">
+      <body className={`${onest.variable} ${geistMono.variable}`}>{children}</body>
     </html>
   );
 }
