@@ -6,6 +6,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract MockExactInputVenue {
     IERC20 public immutable tokenIn;
     IERC20 public immutable tokenOut;
+    uint256 public observedInputAllowance;
 
     constructor(IERC20 tokenIn_, IERC20 tokenOut_) {
         tokenIn = tokenIn_;
@@ -13,6 +14,7 @@ contract MockExactInputVenue {
     }
 
     function swap(uint256 amountIn, uint256 amountOut, address recipient) public virtual {
+        observedInputAllowance = tokenIn.allowance(msg.sender, address(this));
         require(tokenIn.transferFrom(msg.sender, address(this), amountIn), "INPUT_TRANSFER_FAILED");
         require(tokenOut.transfer(recipient, amountOut), "OUTPUT_TRANSFER_FAILED");
     }
