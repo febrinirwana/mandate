@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { CaretRight as PhCaretRight } from "@phosphor-icons/react/dist/ssr";
 import { useState } from "react";
 import { AuthorityHeader } from "@/components/mandate/authority-header";
@@ -52,9 +53,9 @@ export function MandateInspector({ hash, resolved }: { hash: string; resolved: b
     <div className="mx-auto max-w-[1440px] border-x border-rule px-6 py-10 lg:px-10 lg:py-14">
       {/* breadcrumb */}
       <nav aria-label="Breadcrumb" className="mono-data flex items-center gap-2 text-ink-3">
-        <a href="/" className="link-quiet hover:text-ink">
+        <Link href="/" className="link-quiet hover:text-ink">
           mandates
-        </a>
+        </Link>
         <PhCaretRight size={12} aria-hidden="true" />
         <CopyValue value={hash} />
       </nav>

@@ -1,5 +1,11 @@
+import path from "node:path";
 import eslint from "@eslint/js";
+import nextPlugin from "@next/eslint-plugin-next";
 import tseslint from "typescript-eslint";
+
+const repoRoot = path.resolve(import.meta.dirname);
+
+const typedFiles = ["apps/web/**/*.{ts,tsx}", "packages/**/*.{ts,tsx}"];
 
 export default tseslint.config(
   {
@@ -14,9 +20,21 @@ export default tseslint.config(
     ],
   },
   eslint.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
   {
-    files: ["packages/**/*.ts"],
+    ...nextPlugin.configs["core-web-vitals"],
+    files: ["apps/web/**/*.{js,jsx,ts,tsx}"],
+    settings: {
+      next: {
+        rootDir: path.join(repoRoot, "apps/web"),
+      },
+    },
+  },
+  ...tseslint.configs.recommendedTypeChecked.map((config) => ({
+    ...config,
+    files: typedFiles,
+  })),
+  {
+    files: typedFiles,
     languageOptions: {
       parserOptions: {
         projectService: true,
@@ -25,6 +43,7 @@ export default tseslint.config(
     },
     rules: {
       "@typescript-eslint/consistent-type-imports": "error",
+      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
     },
   },
 );

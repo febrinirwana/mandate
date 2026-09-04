@@ -19,7 +19,7 @@ export function CopyValue({ value, display, className }: { value: string; displa
   return (
     <button
       type="button"
-      onClick={copy}
+      onClick={() => void copy()}
       title={value}
       aria-label={`Copy full value ${value}`}
       className={`mono-data group inline-flex max-w-full items-center gap-1.5 text-ink-2 hover:text-ink ${className ?? ""}`}

@@ -1,6 +1,5 @@
 import { minOutput, TOKENS } from "@/lib/demo";
 import { Stamp } from "@/components/ui/kit";
-import type { StampKind } from "@/lib/demo";
 
 type Row = {
   constraint: string;

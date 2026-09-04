@@ -9,7 +9,7 @@ import {
   useTransform,
   type MotionValue,
 } from "motion/react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Halftone, type DrawScene } from "@/components/dot/halftone";
 import { sceneIdentity, sceneMandate, sceneSettlement } from "@/components/dot/scenes";
 import { useTheme } from "@/components/theme";
