@@ -252,4 +252,4 @@ No address enters production code as an unexplained constant.
 
 ## 11. Source and claim discipline
 
-A README/submission claim uses one of: verified source citation, deployed bytecode/transaction, passing test output, or recorded UI behavior. Product copy must distinguish official deployment, self-deployed source, local fixture, and pinned fork. Reverify all track terms at submission because the event has not begun at this research cut-off.
+A README/submission claim uses one of: verified source citation, deployed bytecode/transaction, passing test output, or recorded UI behavior. Product copy must distinguish official deployment, self-deployed source, local fixture, and pinned fork. Reverify all track terms at submission.

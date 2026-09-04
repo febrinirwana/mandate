@@ -1,0 +1,5 @@
+.agents/
+contracts/lib/
+node_modules/
+.next/
+reference/

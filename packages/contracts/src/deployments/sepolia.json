@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "environment": "SEPOLIA",
+  "chainId": "11155111",
+  "generatedAt": "2026-09-04T17:48:36.000Z",
+  "contracts": [
+    {
+      "kind": "AQUA",
+      "name": "Aqua registry",
+      "enabled": true,
+      "external": true,
+      "official": true,
+      "chainId": "11155111",
+      "address": "0x1111113ccf1426a8e30e2bff5e005d929bf6a90a",
+      "codeHash": "0x720bc02d220db318164dc3bade86eec1f3655bdc00fc1174de7d816a95c341f8",
+      "sourceRevision": "81c26e4619ce21556ab02b3284ee2685de21fb18",
+      "sourceUrl": "https://github.com/1inch/aqua/tree/81c26e4619ce21556ab02b3284ee2685de21fb18",
+      "verificationBlock": {
+        "number": "11634993",
+        "hash": "0xfa6aa87d51040cc664902d6ff5a11b0c1917c0deb0e3ce48651f3655e33fb338"
+      },
+      "verifiedAt": "2026-09-04T17:48:36.000Z",
+      "probes": [
+        {
+          "method": "owner() ABI result bytes, SHA-256",
+          "resultHash": "0xe91b9a6bf35595a61e0b024708b310534c4489ae4bb8058b692807c0bd54de7b"
+        }
+      ]
+    },
+    {
+      "kind": "ENS_REGISTRY",
+      "name": "ENSv2 ETHRegistry",
+      "enabled": true,
+      "external": true,
+      "official": true,
+      "chainId": "11155111",
+      "address": "0xbdc85dd5b15d7ecb354cd7cb6f2c50b4f2c4f0e2",
+      "codeHash": "0x99a6ba74173ac220fd9d7a2000a8142cf52d98c7a17ac6abc6d74fa17d8f086c",
+      "sourceRevision": "97a57293f3b4279d94b571e678edb53ce62638f4",
+      "sourceUrl": "https://github.com/ensdomains/contracts-v2/tree/97a57293f3b4279d94b571e678edb53ce62638f4",
+      "verificationBlock": {
+        "number": "11634993",
+        "hash": "0xfa6aa87d51040cc664902d6ff5a11b0c1917c0deb0e3ce48651f3655e33fb338"
+      },
+      "verifiedAt": "2026-09-04T17:48:36.000Z",
+      "probes": [
+        {
+          "method": "getState(uint256) with label id 0 ABI result bytes, SHA-256",
+          "resultHash": "0xb393978842a0fa3d3e1470196f098f473f9678e72463cb65ec4ab5581856c2e4"
+        }
+      ]
+    },
+    {
+      "kind": "ENS_RESOLVER",
+      "name": "ENSv2 PublicResolverV2",
+      "enabled": false,
+      "external": true,
+      "official": true,
+      "chainId": "11155111",
+      "address": "0xe7b9a25607e02da8145e4eb1836ca539e53f11f7",
+      "codeHash": "0x15e1eca874f53a880df16f9a6646c978e400d3d58883ab28960a6050f8472d16",
+      "sourceRevision": "97a57293f3b4279d94b571e678edb53ce62638f4",
+      "sourceUrl": "https://github.com/ensdomains/contracts-v2/tree/97a57293f3b4279d94b571e678edb53ce62638f4",
+      "verificationBlock": {
+        "number": "11634993",
+        "hash": "0xfa6aa87d51040cc664902d6ff5a11b0c1917c0deb0e3ce48651f3655e33fb338"
+      },
+      "verifiedAt": "2026-09-04T17:48:36.000Z",
+      "probes": [
+        {
+          "method": "addr(bytes32) with node 0 ABI result bytes, SHA-256",
+          "resultHash": "0x66687aadf862bd776c8fc18b8e9f8e20089714856ee233b3902a591d0d5f2925"
+        }
+      ]
+    }
+  ],
+  "tokens": []
+}

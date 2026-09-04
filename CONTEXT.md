@@ -142,10 +142,10 @@ When documents disagree: PRD owns product scope; Smart Contract owns onchain inv
 
 Research snapshots used for the mechanics above:
 
-| Source | HEAD verified on 3 September 2026 |
+| Source | HEAD verified on 4 September 2026 at 23:37 WIB (UTC+7) |
 |---|---|
 | `1inch/aqua` | `9c5c42e5840e8741fba3597c48456c9510212b66` |
-| `1inch/swap-vm` | `08089a1853de2391d5db446d5c3867efbeb06e30` |
+| `1inch/swap-vm` | `f09a41e689240adc645934f965c8061749397cd2` |
 | `ensdomains/contracts-v2` | `48b3e2d39513b9dd32ef1850877a29009bc807b9` |
 
-Research cut-off: 3 September 2026. Reverify sponsor rules, deployment addresses, and API behavior at kickoff.
+Research snapshot captured: 4 September 2026 at 23:37 WIB (UTC+7). Reverify sponsor rules, deployment addresses, and API behavior before submission.

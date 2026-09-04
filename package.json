@@ -1,0 +1,28 @@
+{
+  "name": "mandate",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.33.2",
+  "engines": {
+    "node": ">=24.15.0 <25"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "docs:verify": "node scripts/verify-docs.mjs",
+    "secrets:scan": "node scripts/scan-secrets.mjs",
+    "verify": "pnpm lint && pnpm test && pnpm typecheck && pnpm format:check && pnpm docs:verify && pnpm secrets:scan"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.10.0",
+    "prettier": "3.9.6",
+    "turbo": "2.10.12",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.69.0"
+  }
+}

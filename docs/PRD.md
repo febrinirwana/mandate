@@ -4,7 +4,7 @@
 **Product:** Mandate  
 **Primary event:** ETHOnline 2026  
 **Target integrations:** 1inch Aqua, ENSv2, Bazantic  
-**Research cut-off:** 3 September 2026
+**Research snapshot:** 4 September 2026 at 23:37 WIB (UTC+7)
 
 ## 1. Product decision
 
