@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CaretRight as PhCaretRight } from "@phosphor-icons/react/dist/ssr";
+import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { AuthorityHeader } from "@/components/mandate/authority-header";
 import { AquaBalances } from "@/components/mandate/aqua-balances";
@@ -32,13 +32,13 @@ export function MandateInspector({ hash, resolved }: { hash: string; resolved: b
   if (!resolved) {
     return (
       <div className="mx-auto max-w-[1440px] border-x border-rule px-6 py-24 lg:px-10">
-        <h1 className="display text-[clamp(2rem,4vw,3.25rem)]">UNKNOWN — mandate not resolved</h1>
+        <h1 className="display text-[clamp(2rem,4vw,3.25rem)]">UNKNOWN: mandate not resolved</h1>
         <p className="lede mt-4 max-w-[60ch]">
           This inspection route only resolves mandates this deployment knows. An unknown strategy hash
           fails closed: no status, no assumptions, no cached green state.
         </p>
         <div className="mono-data mt-6">
-          <CopyValue value={hash || "—"} />
+          <CopyValue value={hash || "unknown"} />
         </div>
         <div className="mt-8">
           <Button onClick={() => (window.location.href = `/mandates/${DEMO_STRATEGY_HASH}`)}>
@@ -56,12 +56,12 @@ export function MandateInspector({ hash, resolved }: { hash: string; resolved: b
         <Link href="/" className="link-quiet hover:text-ink">
           mandates
         </Link>
-        <PhCaretRight size={12} aria-hidden="true" />
+        <ChevronRight size={12} strokeWidth={2.25} aria-hidden="true" />
         <CopyValue value={hash} />
       </nav>
 
       <div className="mono-data mt-6 flex flex-wrap items-center gap-3" style={{ color: "var(--expiring)" }}>
-        <Stamp kind="EXPIRING" label="SAMPLE — synthetic demo state, not live chain data" />
+        <Stamp kind="EXPIRING" label="SAMPLE: synthetic demo state, not live chain data" />
         <span className="text-ink-3">
           A live deployment performs every read below onchain; unknown fails closed.
         </span>

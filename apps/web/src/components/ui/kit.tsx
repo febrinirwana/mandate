@@ -1,4 +1,4 @@
-import { ArrowUpRight as PhArrowUpRight } from "@phosphor-icons/react/dist/ssr";
+import { ArrowUpRight } from "lucide-react";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, CSSProperties, ReactNode, Ref } from "react";
 import { STAMP_STYLE, type StampKind } from "@/lib/demo";
 
@@ -56,7 +56,7 @@ export function ButtonLink({
       {children}
       {arrow && (
         <span className="grid h-5 w-5 place-items-center rounded-[3px] bg-white/20" aria-hidden="true">
-          <PhArrowUpRight size={12} weight="bold" />
+          <ArrowUpRight size={12} strokeWidth={2.5} />
         </span>
       )}
     </a>
@@ -77,7 +77,7 @@ export function Button({
       {children}
       {arrow && (
         <span className="grid h-5 w-5 place-items-center rounded-[3px] bg-white/20" aria-hidden="true">
-          <PhArrowUpRight size={12} weight="bold" />
+          <ArrowUpRight size={12} strokeWidth={2.5} />
         </span>
       )}
     </button>

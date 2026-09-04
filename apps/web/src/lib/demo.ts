@@ -18,7 +18,7 @@ export const TOKENS = {
 } as const;
 
 export const DEMO = {
-  label: "SAMPLE — synthetic demo state, not live chain data",
+  label: "SAMPLE: synthetic demo state, not live chain data",
   maker: {
     ens: "ops.infinex.eth",
     address: "0x8C4A3fD2B9e15a70Cd4bE6f19aD7E2c583B04d1e",

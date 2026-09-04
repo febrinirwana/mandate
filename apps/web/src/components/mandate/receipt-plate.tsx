@@ -1,4 +1,4 @@
-import { ArrowSquareOut as PhArrowSquareOut } from "@phosphor-icons/react/dist/ssr";
+import { ExternalLink } from "lucide-react";
 import { CopyValue } from "@/components/ui/copy-value";
 import { Stamp } from "@/components/ui/kit";
 import { CHAIN, DEMO, fmtUnits, minOutput, rateOf, TOKENS } from "@/lib/demo";
@@ -33,7 +33,7 @@ export function ReceiptPlate() {
             className="ml-1 text-ink-3 transition-colors hover:text-accent"
             aria-label="Open transaction in explorer"
           >
-            <PhArrowSquareOut size={12} aria-hidden="true" />
+            <ExternalLink size={12} strokeWidth={2} aria-hidden="true" />
           </a>
         </Row>
         <Row label="Confirmed">
@@ -64,7 +64,7 @@ export function ReceiptPlate() {
         </Row>
         <Row label="Agent balance">
           <span>
-            {DEMO.agent.tokenBalance} tokens — gas only ({DEMO.agent.gasBalanceEth.toFixed(4)} ETH)
+            {DEMO.agent.tokenBalance} tokens (gas only: {DEMO.agent.gasBalanceEth.toFixed(4)} ETH)
           </span>
         </Row>
       </dl>
@@ -83,7 +83,7 @@ export function ReceiptPlate() {
             App, 0.178934 {TOKENS.out.symbol})
           </li>
           <li>
-            <span className="text-ink">AquaPush</span>(App → treasury, 0.178934 {TOKENS.out.symbol}) — allowance
+            <span className="text-ink">AquaPush</span>(App → treasury, 0.178934 {TOKENS.out.symbol}), allowance
             cleared
           </li>
         </ul>

@@ -77,7 +77,7 @@ export function FlowTrace({ stopped = false, estimate = true }: { stopped?: bool
       </ol>
       {stopped && (
         <p className="mono-data mt-2 text-ink-2">
-          <span style={{ color: "var(--revoked)" }}>REVOKED</span> — further execution reverts onchain.
+          <span style={{ color: "var(--revoked)" }}>REVOKED</span>: further execution reverts onchain.
         </p>
       )}
     </div>

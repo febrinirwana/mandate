@@ -1,6 +1,7 @@
 "use client";
 
-import { Prohibit as PhProhibit } from "@phosphor-icons/react/dist/ssr";
+import * as Dialog from "@radix-ui/react-dialog";
+import { Ban } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/kit";
 import { DEMO } from "@/lib/demo";
@@ -25,7 +26,7 @@ const PATHS: { key: Path; title: string; consequence: string; recovery: string; 
   {
     key: "ens",
     title: "Revoke ENS identity",
-    consequence: "Invalidates the agent identity itself — execution fails on identity checks.",
+    consequence: "Invalidates the agent identity itself: execution fails on identity checks.",
     recovery: "May affect other uses of the name; expiry also ends it naturally.",
     action: "unregister(subname)",
   },
@@ -34,21 +35,17 @@ const PATHS: { key: Path; title: string; consequence: string; recovery: string; 
 /**
  * Revocation console — three independent stop paths, each confirmed alone.
  * In this demo the signature is simulated; the state flip is real UI state.
+ * Focus trap, Escape, and aria wiring come from the Radix dialog primitive.
  */
 export function Revocation({ revoked, onRevoke }: { revoked: boolean; onRevoke: (path: Path) => void }) {
   const [pending, setPending] = useState<Path | null>(null);
   const confirmRef = useRef<HTMLButtonElement>(null);
-  const lastTrigger = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     if (pending) confirmRef.current?.focus();
   }, [pending]);
 
-  const close = () => {
-    setPending(null);
-    lastTrigger.current?.focus();
-  };
-
+  const close = () => setPending(null);
   const target = PATHS.find((p) => p.key === pending);
 
   return (
@@ -67,7 +64,7 @@ export function Revocation({ revoked, onRevoke }: { revoked: boolean; onRevoke: 
               <div className="flex items-center gap-2 text-[0.9375rem]">
                 {revoked ? (
                   <span className="font-medium" style={{ color: "var(--revoked)" }}>
-                    {p.title} — exercised
+                    {p.title} · exercised
                   </span>
                 ) : (
                   p.title
@@ -83,12 +80,9 @@ export function Revocation({ revoked, onRevoke }: { revoked: boolean; onRevoke: 
                 variant={revoked ? "ghost" : "carbon"}
                 className="h-9 px-3.5 text-[0.8125rem]"
                 disabled={revoked}
-                onClick={(e) => {
-                  lastTrigger.current = e.currentTarget;
-                  setPending(p.key);
-                }}
+                onClick={() => setPending(p.key)}
               >
-                <PhProhibit size={13} weight="bold" aria-hidden="true" />
+                <Ban size={13} strokeWidth={2.5} aria-hidden="true" />
                 {revoked ? "Stopped" : "Sign"}
               </Button>
             </div>
@@ -96,46 +90,43 @@ export function Revocation({ revoked, onRevoke }: { revoked: boolean; onRevoke: 
         ))}
       </ul>
 
-      {target && (
-        <div
-          className="fixed inset-0 z-[100] grid place-items-center bg-ink/40 p-4 backdrop-blur-[2px]"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="revoke-title"
-          onKeyDown={(e) => e.key === "Escape" && close()}
-          onClick={(e) => e.target === e.currentTarget && close()}
-        >
-          <div
-            className="w-full max-w-[28rem] rounded-[12px] border border-rule bg-raised p-6 shadow-[0_24px_64px_-24px_rgb(0_0_0/0.35)]"
-            style={{ transformOrigin: "center" }}
+      <Dialog.Root open={!!target} onOpenChange={(open) => !open && close()}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-[100] bg-ink/40 backdrop-blur-[2px]" />
+          <Dialog.Content
+            className="fixed left-1/2 top-1/2 z-[101] w-[calc(100%-2rem)] max-w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-[12px] border border-rule bg-raised p-6 shadow-[0_24px_64px_-24px_rgb(0_0_0/0.35)]"
+            onOpenAutoFocus={(e) => {
+              e.preventDefault();
+              confirmRef.current?.focus();
+            }}
           >
-            <h4 id="revoke-title" className="text-[1.0625rem] font-medium">
-              Confirm — {target.title}
-            </h4>
-            <p className="mono-data mt-3 text-ink-2">{target.consequence}</p>
+            <Dialog.Title className="text-[1.0625rem] font-medium">Confirm: {target?.title}</Dialog.Title>
+            <Dialog.Description className="mono-data mt-3 text-ink-2">{target?.consequence}</Dialog.Description>
             <p className="mono-data mt-2 text-ink-3">
               agent {DEMO.agent.ens} · strategy 0x4a91…0b5d
             </p>
             <div className="mt-6 flex justify-end gap-3">
-              <Button variant="ghost" className="h-10" onClick={close}>
-                Cancel
-              </Button>
+              <Dialog.Close asChild>
+                <Button variant="ghost" className="h-10">
+                  Cancel
+                </Button>
+              </Dialog.Close>
               <Button
                 ref={confirmRef}
                 variant="carbon"
                 className="h-10"
                 style={{ background: "var(--revoked)" }}
                 onClick={() => {
-                  onRevoke(target.key);
+                  if (pending) onRevoke(pending);
                   close();
                 }}
               >
                 Revoke in demo
               </Button>
             </div>
-          </div>
-        </div>
-      )}
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   );
 }

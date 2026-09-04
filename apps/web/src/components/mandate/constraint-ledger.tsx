@@ -77,7 +77,7 @@ export function ConstraintLedger({ stopped = false }: { stopped?: boolean }) {
         </tbody>
       </table>
       <p className="mono-data mt-3 text-ink-3">
-        Display units shown; base units on hover. Policy math is integer-only — {TOKENS.in.symbol} 6 dec,{" "}
+        Display units shown; base units on hover. Policy math is integer-only: {TOKENS.in.symbol} 6 dec,{" "}
         {TOKENS.out.symbol} 18 dec.
       </p>
     </div>

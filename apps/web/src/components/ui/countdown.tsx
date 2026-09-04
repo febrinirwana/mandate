@@ -27,7 +27,7 @@ export function Countdown({ until, className }: { until: string; className?: str
   }, [targetMs]);
 
   const pad = (n: number) => String(n).padStart(2, "0");
-  const text = t ? (t.expired ? "00:00:00:00" : `${pad(t.d)}:${pad(t.h)}:${pad(t.m)}:${pad(t.s)}`) : "——:——:——:——";
+  const text = t ? (t.expired ? "00:00:00:00" : `${pad(t.d)}:${pad(t.h)}:${pad(t.m)}:${pad(t.s)}`) : "--:--:--:--";
   const absolute = `${until.replace("T", " ").replace(":00Z", " UTC")}`;
 
   return (

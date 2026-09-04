@@ -1,4 +1,4 @@
-import { CaretDown as PhCaretDown } from "@phosphor-icons/react/dist/ssr";
+import { ChevronDown } from "lucide-react";
 import { DEMO } from "@/lib/demo";
 
 const TOKEN_IN = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
@@ -35,7 +35,7 @@ export function StrategyFields() {
         <span className="text-[0.9375rem] font-medium">Exact strategy fields</span>
         <span className="mono-data flex items-center gap-2 text-ink-3">
           hash = keccak256(abi.encode(Strategy))
-          <PhCaretDown size={14} className="transition-transform duration-300 group-open:rotate-180" aria-hidden="true" />
+          <ChevronDown size={14} strokeWidth={2} className="transition-transform duration-300 group-open:rotate-180" aria-hidden="true" />
         </span>
       </summary>
       <table className="w-full min-w-[560px] border-collapse">

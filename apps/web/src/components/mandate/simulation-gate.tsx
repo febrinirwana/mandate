@@ -1,6 +1,6 @@
 "use client";
 
-import { Pulse as PhPulse } from "@phosphor-icons/react/dist/ssr";
+import { Activity } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/kit";
 import { DEMO } from "@/lib/demo";
@@ -56,13 +56,13 @@ export function SimulationGate({ stopped = false }: { stopped?: boolean }) {
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rule pb-3">
         <h3 className="text-[1.0625rem] font-medium tracking-[-0.01em]">Simulation gate</h3>
         <Button variant="ghost" className="h-9 px-3.5 text-[0.8125rem]" onClick={run} disabled={state === "checking" || stopped}>
-          <PhPulse size={14} weight="bold" aria-hidden="true" />
+          <Activity size={14} strokeWidth={2.5} aria-hidden="true" />
           {state === "checking" ? "Checking…" : state === "pass" ? "Run again" : "Run simulation"}
         </Button>
       </div>
 
       <p className="mt-3 text-[0.875rem] leading-relaxed text-ink-2">
-        Simulation is advisory. The contract repeats every check at execution — a pass here never
+        Simulation is advisory. The contract repeats every check at execution; a pass here never
         authorizes by itself.
       </p>
       <p className="mono-data mt-2 text-ink-3">
@@ -90,7 +90,7 @@ export function SimulationGate({ stopped = false }: { stopped?: boolean }) {
                     ) : checking ? (
                       <span className="mono-data animate-pulse text-accent">···</span>
                     ) : (
-                      <span className="mono-data text-ink-3">—</span>
+                      <span className="mono-data text-ink-3">·</span>
                     )}
                   </li>
                 );
@@ -102,13 +102,13 @@ export function SimulationGate({ stopped = false }: { stopped?: boolean }) {
 
       {state === "pass" && !stopped && (
         <p className="mono-data mt-5 text-ink-2">
-          <span style={{ color: "var(--accent)" }}>PASS — SIMULATION ONLY.</span> Expected movement: maker −500.00
+          <span style={{ color: "var(--accent)" }}>PASS · SIMULATION ONLY.</span> Expected movement: maker −500.00
           USDC → +0.178934… WETH · agent delta 0.
         </p>
       )}
       {stopped && (
         <p className="mono-data mt-5" style={{ color: "var(--revoked)" }}>
-          FAIL — MANDATE_REVOKED. Identical calldata, different world state.
+          FAIL · MANDATE_REVOKED. Identical calldata, different world state.
         </p>
       )}
     </div>

@@ -24,7 +24,7 @@ export function AquaBalances() {
       </div>
       <div className="mt-4 grid gap-8 md:grid-cols-2">
         <dl>
-          <dt className="ledger-label text-ink-3">Physical — maker wallet</dt>
+          <dt className="ledger-label text-ink-3">Physical: maker wallet</dt>
           {PHYSICAL.map((r) => (
             <div key={r.label} className="flex items-baseline justify-between gap-6 border-b border-rule py-2.5">
               <dd className="text-[0.875rem] text-ink-2">{r.label}</dd>
@@ -33,7 +33,7 @@ export function AquaBalances() {
           ))}
         </dl>
         <dl>
-          <dt className="ledger-label text-ink-3">Virtual — Aqua strategy lane</dt>
+          <dt className="ledger-label text-ink-3">Virtual: Aqua strategy lane</dt>
           {VIRTUAL.map((r) => (
             <div key={r.label} className="flex items-baseline justify-between gap-6 border-b border-rule py-2.5">
               <dd className="text-[0.875rem] text-ink-2">{r.label}</dd>
@@ -41,7 +41,7 @@ export function AquaBalances() {
             </div>
           ))}
           <p className="mono-data mt-3 text-ink-3">
-            Virtual balances are per-maker/app/strategy accounting lanes at Aqua — never a second token
+            Virtual balances are per-maker/app/strategy accounting lanes at Aqua, never a second token
             balance. Physical tokens stay in the treasury wallet between executions.
           </p>
         </dl>

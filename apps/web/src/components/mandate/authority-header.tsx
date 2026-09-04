@@ -1,4 +1,4 @@
-import { SealCheck as PhSealCheck } from "@phosphor-icons/react/dist/ssr";
+import { BadgeCheck } from "lucide-react";
 import { CopyValue } from "@/components/ui/copy-value";
 import { Countdown } from "@/components/ui/countdown";
 import { Stamp } from "@/components/ui/kit";
@@ -24,7 +24,7 @@ export function AuthorityHeader({
           <Stamp kind={status} />
           {status === "REVOKED" || status === "FAILED" ? (
             <span className="mono-data font-medium" style={{ color: "var(--revoked)" }}>
-              stopped by owner — execution reverts
+              stopped by owner: execution reverts
             </span>
           ) : (
             <span className="mono-data text-ink-3">
@@ -52,7 +52,7 @@ export function AuthorityHeader({
         </div>
         {sentence && (
           <p className="mt-4 flex max-w-[64ch] items-start gap-2 text-[0.9375rem] leading-relaxed text-ink-2">
-            <PhSealCheck size={16} weight="fill" className="mt-0.5 shrink-0 text-accent" aria-hidden="true" />
+            <BadgeCheck size={16} strokeWidth={2.25} className="mt-0.5 shrink-0 text-accent" aria-hidden="true" />
             {sentence}
           </p>
         )}

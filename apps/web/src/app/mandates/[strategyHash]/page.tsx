@@ -5,7 +5,7 @@ import { Nav } from "@/components/landing/nav";
 import { DEMO_STRATEGY_HASH } from "@/lib/demo";
 
 export const metadata: Metadata = {
-  title: "Mandate — Inspection",
+  title: "Mandate: Inspection",
   description: "Public, read-only authority inspection: who may act, on what, until when, and how to stop it.",
 };
 
