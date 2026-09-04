@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+node_modules/
+.next/
+dist/
+coverage/
+cache/
+out/
+broadcast/
+artifacts/
+*.keystore
+*.key
+*.pem
+.DS_Store
+Thumbs.db
