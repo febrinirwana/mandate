@@ -51,6 +51,7 @@ contract MandateAquaApp {
 
     IAqua public immutable AQUA;
     uint64 public immutable MAX_MANDATE_DURATION;
+    uint64 internal constant MAX_ALLOWED_MANDATE_DURATION = 365 days;
 
     mapping(bytes32 strategyHash => MandateState mandate) public mandates;
 
@@ -102,7 +103,9 @@ contract MandateAquaApp {
     }
 
     constructor(IAqua aqua, uint64 maxMandateDuration) {
-        if (address(aqua) == address(0) || maxMandateDuration == 0) revert InvalidStrategy();
+        bool invalidConstructor =
+            address(aqua) == address(0) || maxMandateDuration == 0 || maxMandateDuration > MAX_ALLOWED_MANDATE_DURATION;
+        if (invalidConstructor) revert InvalidStrategy();
         AQUA = aqua;
         MAX_MANDATE_DURATION = maxMandateDuration;
     }

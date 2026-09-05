@@ -5,7 +5,13 @@ import {IAqua} from "@1inch/aqua/src/interfaces/IAqua.sol";
 import {MandateAquaApp} from "../src/MandateAquaApp.sol";
 import {MockFailingAqua} from "./fixtures/MockFailingAqua.sol";
 import {MockPermissionedRegistry} from "./fixtures/MockIdentity.sol";
-import {MockERC20, MockFalseReturnToken, MockFeeOnTransferToken, MockReentrantToken} from "./fixtures/MockTokens.sol";
+import {
+    MockBalanceMutationToken,
+    MockERC20,
+    MockFalseReturnToken,
+    MockFeeOnTransferToken,
+    MockReentrantToken
+} from "./fixtures/MockTokens.sol";
 import {
     MockExactInputVenue,
     MockPartialSpendVenue,
@@ -17,6 +23,11 @@ import {
 import {TestMandateFixture} from "./fixtures/TestMandateFixture.sol";
 
 contract MandateAquaAppTest is TestMandateFixture {
+    function testConstructorRejectsExcessiveMaxDuration() public {
+        vm.expectRevert(MandateAquaApp.InvalidStrategy.selector);
+        new MandateAquaApp(aqua, 366 days);
+    }
+
     function testActivateRequiresMaker() public {
         vm.expectRevert(MandateAquaApp.NotMaker.selector);
         vm.prank(OTHER);
@@ -374,6 +385,49 @@ contract MandateAquaAppTest is TestMandateFixture {
         vm.prank(AGENT);
         app.execute(routed, 1e18, 1e18, uint64(block.timestamp), _route(1e18, 1e18, address(app)));
         assertEq(_used(routed), 0, "false-return token changed state");
+    }
+
+    function testInputBalanceMutationRollsBackStateAndBalances() public {
+        MockBalanceMutationToken mutationToken = new MockBalanceMutationToken();
+        MockExactInputVenue mutationVenue = new MockExactInputVenue(mutationToken, tokenOut);
+        mutationToken.mint(MAKER, INPUT_ALLOCATION);
+        tokenOut.mint(address(mutationVenue), 1e18);
+        vm.prank(MAKER);
+        mutationToken.approve(address(aqua), type(uint256).max);
+        MandateAquaApp.Strategy memory routed =
+            _strategy(address(mutationToken), address(tokenOut), address(mutationVenue));
+        routed.salt = keccak256("input-balance-mutation");
+        _configureIdentity(routed, AGENT);
+        _activate(routed);
+        mutationToken.setMutationRecipient(address(app));
+        uint256 makerInputBefore = mutationToken.balanceOf(MAKER);
+        vm.expectRevert(MandateAquaApp.InputTransferMismatch.selector);
+        vm.prank(AGENT);
+        app.execute(routed, 1e18, 1e18, uint64(block.timestamp), _route(1e18, 1e18, address(app)));
+        assertEq(_used(routed), 0, "input mutation changed used input");
+        assertEq(mutationToken.balanceOf(MAKER), makerInputBefore, "input mutation did not roll back");
+    }
+
+    function testOutputTokenCallbackRollsBackStateAndBalances() public {
+        MockReentrantToken callbackToken = new MockReentrantToken();
+        MockExactInputVenue callbackVenue = new MockExactInputVenue(tokenIn, callbackToken);
+        callbackToken.mint(address(callbackVenue), 1e18);
+        MandateAquaApp.Strategy memory routed =
+            _strategy(address(tokenIn), address(callbackToken), address(callbackVenue));
+        routed.salt = keccak256("output-token-callback");
+        _configureIdentity(routed, AGENT);
+        _activate(routed);
+        callbackToken.setCallback(
+            address(app),
+            abi.encodeCall(app.execute, (routed, 1e18, 1e18, uint64(block.timestamp), _route(1e18, 1e18, address(app))))
+        );
+        uint256 makerInputBefore = tokenIn.balanceOf(MAKER);
+        vm.expectRevert();
+        vm.prank(AGENT);
+        app.execute(routed, 1e18, 1e18, uint64(block.timestamp), _route(1e18, 1e18, address(app)));
+        assertEq(_used(routed), 0, "output callback changed used input");
+        assertEq(tokenIn.balanceOf(MAKER), makerInputBefore, "output callback did not roll back input");
+        assertEq(callbackToken.balanceOf(MAKER), 0, "output callback credited maker");
     }
 
     function testFeeOnTransferTokenRollsBackStateAndBalances() public {
