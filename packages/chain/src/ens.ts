@@ -241,3 +241,26 @@ export function serializeEnsIdentity(identity: EnsIdentity): SerializedEnsIdenti
     tokenId: identity.tokenId.toString(),
   };
 }
+
+export interface ContractCodeProof {
+  address: Address;
+  codeHash: Hex;
+  verificationBlock: {
+    number: bigint;
+    hash: Hex;
+  };
+}
+
+export async function verifyContractCodeAtBlock(client: PublicClient, proof: ContractCodeProof): Promise<void> {
+  const header = await client.getBlock({ blockNumber: proof.verificationBlock.number });
+  if (header.hash !== proof.verificationBlock.hash) throw new Error("manifest verification block hash mismatch");
+
+  const code = await client.getCode({ address: proof.address, blockNumber: proof.verificationBlock.number });
+  if (code === undefined || code === "0x") throw new Error("manifest contract has no runtime code");
+  if (keccak256(code) !== proof.codeHash) throw new Error("manifest runtime code hash mismatch");
+
+  const canonicalHeader = await client.getBlock({ blockHash: proof.verificationBlock.hash });
+  if (canonicalHeader.number !== proof.verificationBlock.number || canonicalHeader.hash !== proof.verificationBlock.hash) {
+    throw new Error("manifest verification block is not canonical");
+  }
+}

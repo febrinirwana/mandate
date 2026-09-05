@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { keccak256 } from "viem";
 
-import { readEnsIdentity, serializeEnsIdentity } from "../src/ens.js";
+import { readEnsIdentity, serializeEnsIdentity, verifyContractCodeAtBlock } from "../src/ens.js";
 
 const registry = "0xbdc85dd5b15d7ecb354cd7cb6f2c50b4f2c4f0e2" as const;
 const resolver = "0xe7b9a25607e02da8145e4eb1836ca539e53f11f7" as const;
@@ -141,5 +142,30 @@ describe("readEnsIdentity", () => {
       expiry: "123456789",
       tokenId: "77",
     });
+  });
+});
+
+describe("verifyContractCodeAtBlock", () => {
+  it("verifies runtime bytecode and the exact manifest block", async () => {
+    const requests: Array<Record<string, unknown>> = [];
+    const code = "0x6000" as const;
+    const client = {
+      getBlock(request: Record<string, unknown>) {
+        requests.push(request);
+        return { number: blockNumber, hash: blockHash, timestamp: 123_000_000n };
+      },
+      getCode(request: Record<string, unknown>) {
+        requests.push(request);
+        return code;
+      },
+    };
+
+    await verifyContractCodeAtBlock(client as never, {
+      address: registry,
+      codeHash: keccak256(code),
+      verificationBlock: { number: blockNumber, hash: blockHash },
+    });
+
+    expect(requests).toEqual([{ blockNumber }, { address: registry, blockNumber }, { blockHash }]);
   });
 });
