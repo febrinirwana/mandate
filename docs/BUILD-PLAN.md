@@ -48,15 +48,15 @@ docs                           product and technical specifications
 
 **Produces:** exact tool/dependency versions, shared domain schema, deployment manifest schema, and recorded sponsor/deployment evidence.
 
-- [ ] At kickoff, capture current ETHOnline 1inch/ENS/Bazantic requirements with official URLs and timestamps; separate requirements from interpretation.
-- [ ] Pin Node, pnpm, Solidity 0.8.30, Foundry dependencies, Aqua revision, ENSv2 contracts revision, and selected OpenZeppelin/1inch utility revisions.
-- [ ] Probe official Aqua and ENSv2 deployments with `eth_chainId`, `eth_getCode`, runtime code hash, and one interface read; record official versus self-deployed status.
-- [ ] Scaffold only directories in the target map; configure strict TypeScript, lint, format, test, typecheck, docs verification, and secret scanning scripts.
-- [ ] Define Zod schemas for address/hash/decimal-string/block ref, `StrategyV1`, simulation binding/checks, mandate snapshot, receipt audit, and deployment manifest.
-- [ ] Define the stable reason-code union exactly as the PRD; generate JSON Schema/OpenAPI inputs rather than maintaining copies.
-- [ ] Write tests rejecting floating amounts, malformed addresses/hashes, unknown fields/codes, zero denominators, inconsistent caps/windows, and incomplete deployment evidence.
-- [ ] Run `pnpm --filter @mandate/domain test` and `pnpm --filter @mandate/domain typecheck`.
-- [ ] Commit `chore: pin Mandate kickoff evidence and domain contracts`.
+- [x] At kickoff, capture current ETHOnline 1inch/ENS/Bazantic requirements with official URLs and timestamps; separate requirements from interpretation.
+- [x] Pin Node, pnpm, Solidity 0.8.30, Foundry dependencies, Aqua revision, ENSv2 contracts revision, and selected OpenZeppelin/1inch utility revisions.
+- [x] Probe official Aqua and ENSv2 deployments with `eth_chainId`, `eth_getCode`, runtime code hash, and one interface read; record official versus self-deployed status.
+- [x] Scaffold only directories in the target map; configure strict TypeScript, lint, format, test, typecheck, docs verification, and secret scanning scripts.
+- [x] Define Zod schemas for address/hash/decimal-string/block ref, `StrategyV1`, simulation binding/checks, mandate snapshot, receipt audit, and deployment manifest.
+- [x] Define the stable reason-code union exactly as the PRD; generate JSON Schema/OpenAPI inputs rather than maintaining copies.
+- [x] Write tests rejecting floating amounts, malformed addresses/hashes, unknown fields/codes, zero denominators, inconsistent caps/windows, and incomplete deployment evidence.
+- [x] Run `pnpm --filter @mandate/domain test` and `pnpm --filter @mandate/domain typecheck`.
+- [x] Commit `chore: pin Mandate kickoff evidence and domain contracts`.
 
 Acceptance: a valid strategy/manifest round-trips through JSON with no bigint loss; every enabled external contract has chain, address, code hash, source revision, and verification block.
 
@@ -67,16 +67,16 @@ Acceptance: a valid strategy/manifest round-trips through JSON with no bigint lo
 **Consumes:** exact pinned Aqua/ENS interfaces and Strategy layout from Task 1.  
 **Produces:** executable contract acceptance suite before implementation.
 
-- [ ] Build a real pinned Aqua local fixture from sponsor source, not a hand-written approximation.
-- [ ] Implement only minimal ENS registry/resolver and venue/token adversarial fixtures required to drive boundary behavior; fixture names must say `Mock` or `Test`.
-- [ ] Write failing activation tests: maker-only, valid fields, duration, duplicate hash, both Aqua tokens active, exact Aqua/local hash equality.
-- [ ] Write failing identity tests: wrong caller, unregistered, expired, stale token ID handling, owner mismatch, resolver mismatch, read revert.
-- [ ] Write failing policy tests for time edges, zero amount, exact per-call/total boundaries, cumulative breach, rate ceiling division, selector mismatch, and expired execution deadline.
-- [ ] Write failing settlement tests for exact pull, exact target approval, full input spend, output delta, output push, allowance clearing, event fields, and baseline-safe direct dust.
-- [ ] Write rollback tests for route revert, short output, partial spend, false/fee/reentrant token, malicious target, and failed Aqua push.
-- [ ] Write stateful invariants: used never exceeds total, revoked never reactivates, failed call changes no state/balance, successful output reaches maker only, attributable app balances/allowances return to baseline.
-- [ ] Run focused tests and record expected failures because `MandateAquaApp` is absent.
-- [ ] Commit `test: define Mandate authority and settlement invariants`.
+- [x] Build a real pinned Aqua local fixture from sponsor source, not a hand-written approximation.
+- [x] Implement only minimal ENS registry/resolver and venue/token adversarial fixtures required to drive boundary behavior; fixture names must say `Mock` or `Test`.
+- [x] Write failing activation tests: maker-only, valid fields, duration, duplicate hash, both Aqua tokens active, exact Aqua/local hash equality.
+- [x] Write failing identity tests: wrong caller, unregistered, expired, stale token ID handling, owner mismatch, resolver mismatch, read revert.
+- [x] Write failing policy tests for time edges, zero amount, exact per-call/total boundaries, cumulative breach, rate ceiling division, selector mismatch, and expired execution deadline.
+- [x] Write failing settlement tests for exact pull, exact target approval, full input spend, output delta, output push, allowance clearing, event fields, and baseline-safe direct dust.
+- [x] Write rollback tests for route revert, short output, partial spend, false/fee/reentrant token, malicious target, and failed Aqua push.
+- [x] Write stateful invariants: used never exceeds total, revoked never reactivates, failed call changes no state/balance, successful output reaches maker only, attributable app balances/allowances return to baseline.
+- [x] Run focused tests and record expected failures because `MandateAquaApp` is absent.
+- [x] Commit `test: define Mandate authority and settlement invariants`.
 
 Acceptance: tests fail for missing production contract rather than fixture/setup errors, and each PRD contract invariant has a named test.
 
@@ -86,17 +86,17 @@ Acceptance: tests fail for missing production contract rather than fixture/setup
 
 **Interface:** exact `Strategy`, `MandateState`, `strategyHash`, `minimumOutput`, `activate`, `revoke`, `inspect`, and `execute` from SMART-CONTRACT.
 
-- [ ] Implement constructor immutables and shared strategy validation with custom errors.
-- [ ] Implement exact ABI strategy hashing and activation against Aqua `safeBalances`.
-- [ ] Implement current-token ENS status/expiry/owner/resolver checks from pinned official interfaces.
-- [ ] Implement owner-only irreversible revoke.
-- [ ] Implement full-precision ceiling rate calculation.
-- [ ] Implement globally or strategy-scoped non-reentrancy according to the simplest passing threat model.
-- [ ] Implement execution in specified order: checks, reserve usage, Aqua pull, exact target approval/call/reset, baseline/delta checks, rate checks, exact Aqua approval/push/reset, residual checks, event.
-- [ ] Preserve bounded external revert evidence without trusting arbitrary revert strings.
-- [ ] Make all Task 2 unit/fuzz/invariant tests pass; run `forge fmt --check`, `forge build`, `forge test`, and gas snapshot.
-- [ ] Review storage packing only after correctness; do not change public encoding for cosmetic gas savings.
-- [ ] Commit `feat: enforce identity-bound Aqua mandates`.
+- [x] Implement constructor immutables and shared strategy validation with custom errors.
+- [x] Implement exact ABI strategy hashing and activation against Aqua `safeBalances`.
+- [x] Implement current-token ENS status/expiry/owner/resolver checks from pinned official interfaces.
+- [x] Implement owner-only irreversible revoke.
+- [x] Implement full-precision ceiling rate calculation.
+- [x] Implement globally or strategy-scoped non-reentrancy according to the simplest passing threat model.
+- [x] Implement execution in specified order: checks, reserve usage, Aqua pull, exact target approval/call/reset, baseline/delta checks, rate checks, exact Aqua approval/push/reset, residual checks, event.
+- [x] Preserve bounded external revert evidence without trusting arbitrary revert strings.
+- [x] Make all Task 2 unit/fuzz/invariant tests pass; run `forge fmt --check`, `forge build`, `forge test`, and gas snapshot.
+- [x] Review storage packing only after correctness; do not change public encoding for cosmetic gas savings.
+- [x] Commit `feat: enforce identity-bound Aqua mandates`.
 
 Acceptance: all adversarial paths roll back atomically; no test-only branch, admin bypass, arbitrary target/recipient, or upgrade hook exists.
 
