@@ -104,14 +104,14 @@ Acceptance: all adversarial paths roll back atomically; no test-only branch, adm
 
 **Files:** create `contracts/script/DeployLocal.s.sol`, `SetupLocalStrategy.s.sol`, `contracts/test/MandateAquaApp.integration.t.sol`; generate ABI artifacts into `packages/contracts`.
 
-- [ ] Deploy pinned Aqua, standard test tokens, exact-input test venue, and Mandate to a clean Anvil state.
-- [ ] Create owner and dedicated agent accounts; fund agent with gas only; assert agent has zero strategy tokens.
-- [ ] Owner approves Aqua, ships both strategy tokens with output allocation zero, and activates exact hash.
-- [ ] Simulate then execute one conversion and capture physical balances, Aqua raw balances, allowances, and events before/after.
-- [ ] Execute wrong signer, cap breach, poor-output, and revoke-then-repeat scenarios.
-- [ ] Restart from clean Anvil and prove deployment addresses/hashes are reproducible under the selected method.
-- [ ] Generate TypeScript ABI types from the built artifact and compare Strategy tuple layout/hash in Solidity and viem.
-- [ ] Commit `test: prove atomic Aqua mandate settlement`.
+- [x] Deploy pinned Aqua, standard test tokens, exact-input test venue, and Mandate to a clean Anvil state.
+- [x] Create owner and dedicated agent accounts; fund agent with gas only; assert agent has zero strategy tokens.
+- [x] Owner approves Aqua, ships both strategy tokens with output allocation zero, and activates exact hash.
+- [x] Simulate then execute one conversion and capture physical balances, Aqua raw balances, allowances, and events before/after.
+- [x] Execute wrong signer, cap breach, poor-output, and revoke-then-repeat scenarios.
+- [x] Restart from clean Anvil and prove deployment addresses/hashes are reproducible under the selected method.
+- [x] Generate TypeScript ABI types from the built artifact and compare Strategy tuple layout/hash in Solidity and viem.
+- [x] Commit `test: prove atomic Aqua mandate settlement`.
 
 Acceptance: one command starts clean chain, deploys, ships, activates, executes, revokes, and asserts all deltas; fixture venue is visibly labeled local-only.
 
