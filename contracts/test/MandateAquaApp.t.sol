@@ -449,7 +449,7 @@ contract MandateAquaAppTest is TestMandateFixture {
         assertEq(_used(routed), 0, "reentrant venue changed used input");
     }
 
-    function testFailedAquaPushRollsBackStateAndBalances() public {
+    function test_RevertWhenAquaPushFailsRollsBackStateAndBalances() public {
         MockFailingAqua failingAqua = new MockFailingAqua();
         MandateAquaApp failingApp = new MandateAquaApp(IAqua(address(failingAqua)), MAX_MANDATE_DURATION);
         MockERC20 failingInput = new MockERC20("Failing Input", "FIN");
