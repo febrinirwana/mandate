@@ -79,6 +79,19 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
 
+  packages/chain:
+    dependencies:
+      viem:
+        specifier: 2.56.3
+        version: 2.56.3(typescript@5.9.3)(zod@4.5.4)
+    devDependencies:
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: 5.0.0
+        version: 5.0.0(@types/node@24.13.3)(vite@8.2.2(@types/node@24.13.3)(jiti@2.7.0))
+
   packages/contracts:
     dependencies:
       viem:
