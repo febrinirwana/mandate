@@ -304,7 +304,14 @@ contract MandateAquaAppTest is TestMandateFixture {
         uint256 makerInputBefore = tokenIn.balanceOf(MAKER);
         uint256 makerOutputBefore = tokenOut.balanceOf(MAKER);
 
-        vm.expectRevert(MandateAquaApp.RouteCallFailed.selector);
+        bytes memory routeRevert = abi.encodeWithSelector(MockRevertingVenue.RouteReverted.selector);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                MandateAquaApp.RouteCallFailed.selector,
+                MockRevertingVenue.RouteReverted.selector,
+                keccak256(routeRevert)
+            )
+        );
         vm.prank(AGENT);
         app.execute(
             routed,

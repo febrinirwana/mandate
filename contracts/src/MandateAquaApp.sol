@@ -75,7 +75,7 @@ contract MandateAquaApp {
     error PerCallCapExceeded();
     error TotalCapExceeded();
     error WrongSelector();
-    error RouteCallFailed();
+    error RouteCallFailed(bytes4 selector, bytes32 reasonHash);
     error InputTransferMismatch();
     error InputNotFullySpent();
     error OutputTooLow();
@@ -196,8 +196,8 @@ contract MandateAquaApp {
         }
 
         tokenIn.forceApprove(strategy.swapTarget, amountIn);
-        (bool succeeded,) = strategy.swapTarget.call(routeData);
-        if (!succeeded) revert RouteCallFailed();
+        (bool succeeded, bytes memory routeReturnData) = strategy.swapTarget.call(routeData);
+        if (!succeeded) _revertRouteCall(routeReturnData);
         tokenIn.forceApprove(strategy.swapTarget, 0);
 
         if (tokenIn.balanceOf(address(this)) != inputBaseline) revert InputNotFullySpent();
@@ -285,5 +285,15 @@ contract MandateAquaApp {
         assembly ("memory-safe") {
             selector := calldataload(routeData.offset)
         }
+    }
+
+    function _revertRouteCall(bytes memory returnData) private pure {
+        bytes4 selector;
+        if (returnData.length >= 4) {
+            assembly ("memory-safe") {
+                selector := mload(add(returnData, 0x20))
+            }
+        }
+        revert RouteCallFailed(selector, keccak256(returnData));
     }
 }
