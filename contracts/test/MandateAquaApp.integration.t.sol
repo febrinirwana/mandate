@@ -23,6 +23,34 @@ contract MandateAquaAppIntegrationTest is TestMandateFixture {
         MockExactInputVenue venue;
     }
 
+    function testStrategyHashMatchesViemPublishedVector() public view {
+        MandateAquaApp.Strategy memory vector = MandateAquaApp.Strategy({
+            maker: address(0x1111111111111111111111111111111111111111),
+            agent: address(0x2222222222222222222222222222222222222222),
+            ensRegistry: address(0x3333333333333333333333333333333333333333),
+            ensResolver: address(0x4444444444444444444444444444444444444444),
+            ensLabel: "mandate-agent",
+            ensNode: 0xc498c1b2d999c5e0ccd355baab1ba96394922f2aea9823167bea91fcbcda313f,
+            tokenIn: address(0x5555555555555555555555555555555555555555),
+            tokenOut: address(0x6666666666666666666666666666666666666666),
+            swapTarget: address(0x7777777777777777777777777777777777777777),
+            swapSelector: 0xe3547335,
+            minRateNumerator: 3,
+            minRateDenominator: 2,
+            maxInputPerCall: 100,
+            maxInputTotal: 1_000,
+            validAfter: 1_000,
+            validUntil: 2_000,
+            salt: 0x8888888888888888888888888888888888888888888888888888888888888888
+        });
+
+        assertEq(
+            app.strategyHash(vector),
+            0xf71f6723d6a2b1e170a9c884d5fffae336644f75a1f78171ade4caeac2c626b0,
+            "Solidity hash diverged from the viem vector"
+        );
+    }
+
     function testLocalAquaSettlementSimulatesThenExecutesWithExactDeltas() public {
         vm.deal(AGENT, 1 ether);
         assertGt(AGENT.balance, 0, "agent has no gas");
