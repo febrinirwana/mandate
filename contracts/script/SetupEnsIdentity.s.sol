@@ -41,7 +41,9 @@ contract SetupEnsIdentity is Script {
 
         uint256 labelId = uint256(keccak256(bytes(label)));
         IPermissionedRegistry.State memory beforeState = registry.getState(labelId);
-        if (beforeState.status != IPermissionedRegistry.Status.AVAILABLE) revert IdentityUnavailable(beforeState.status);
+        if (beforeState.status != IPermissionedRegistry.Status.AVAILABLE) {
+            revert IdentityUnavailable(beforeState.status);
+        }
 
         vm.startBroadcast();
         tokenId = registry.register(label, agent, IRegistry(address(0)), address(resolver), 0, expiry);

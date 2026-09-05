@@ -168,4 +168,23 @@ describe("verifyContractCodeAtBlock", () => {
 
     expect(requests).toEqual([{ blockNumber }, { address: registry, blockNumber }, { blockHash }]);
   });
+
+  it("rejects bytecode that differs from the manifest proof", async () => {
+    const client = {
+      getBlock() {
+        return { number: blockNumber, hash: blockHash, timestamp: 123_000_000n };
+      },
+      getCode() {
+        return "0x6000" as const;
+      },
+    };
+
+    await expect(
+      verifyContractCodeAtBlock(client as never, {
+        address: registry,
+        codeHash: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        verificationBlock: { number: blockNumber, hash: blockHash },
+      }),
+    ).rejects.toThrow("manifest runtime code hash mismatch");
+  });
 });

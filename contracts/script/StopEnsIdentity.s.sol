@@ -21,12 +21,16 @@ contract StopEnsIdentity is Script {
         if (address(registry).code.length == 0) revert CodeMissing(address(registry));
 
         uint256 labelId = uint256(keccak256(bytes(label)));
-        if (registry.getState(labelId).status != IPermissionedRegistry.Status.REGISTERED) revert IdentityNotRegistered();
+        if (registry.getState(labelId).status != IPermissionedRegistry.Status.REGISTERED) {
+            revert IdentityNotRegistered();
+        }
 
         vm.startBroadcast();
         registry.unregister(labelId);
         vm.stopBroadcast();
 
-        if (registry.getState(labelId).status == IPermissionedRegistry.Status.REGISTERED) revert IdentityStillRegistered();
+        if (registry.getState(labelId).status == IPermissionedRegistry.Status.REGISTERED) {
+            revert IdentityStillRegistered();
+        }
     }
 }

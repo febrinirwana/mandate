@@ -52,7 +52,7 @@
     },
     {
       "kind": "ENS_RESOLVER",
-      "name": "ENSv2 PublicResolverV2",
+      "name": "ENSv2 PublicResolverV2 (not identity authority)",
       "enabled": false,
       "external": true,
       "official": true,
