@@ -19,7 +19,7 @@ ENSv2 sources are pinned to [`97a57293f3b4279d94b571e678edb53ce62638f4`](https:/
 ## Prepared deployment and authority model
 
 - `DeploySepolia.s.sol` deploys pinned Aqua source (`81c26e4619ce21556ab02b3284ee2685de21fb18`) and `MandateAquaApp` only on chain ID `11155111`. It does not claim an unverified external Aqua address.
-- `SetupEnsIdentity.s.sol` registers the normalized immediate label with a finite expiry, pins the registry resolver, then sets `addr(node)` to the dedicated agent. It re-reads every identity component after the transaction.
+- `SetupEnsIdentity.s.sol` accepts a normalized ASCII immediate label and selected parent node, derives the child node locally, registers it with a finite expiry, pins the registry resolver, then sets `addr(node)` to the dedicated agent. It re-reads every identity component after the transaction.
 - The treasury broadcaster must hold the parent registry's registrar and unregister authority and must be permitted to set the chosen resolver address record. The agent receives the identity token with role bitmap zero; it needs gas only.
 - `StopEnsIdentity.s.sol` calls the owner-controlled `unregister(labelId)` path and verifies the label is no longer registered. The next identical Mandate execution must then revert through the existing live identity guard.
 
@@ -39,7 +39,7 @@ The same module's `verifyContractCodeAtBlock` confirms an address's runtime code
 The remaining gate needs these non-secret inputs configured on the execution host:
 
 1. `SEPOLIA_RPC_URL`.
-2. An owner-controlled Permissioned Registry address and the selected parent/name.
+2. An owner-controlled Permissioned Registry address, normalized immediate label, and selected parent node.
 3. Public treasury and dedicated-agent addresses plus Foundry `--account` aliases or keystore configuration. Do not provide raw private keys; fund the agent with gas only.
 
 With those inputs, record the selected canonical block, code hashes, deployment and setup transaction links, deployed Aqua and Mandate addresses, active permit transaction/receipt, stop transaction/receipt, and the subsequent expected identity-denial transaction/receipt. Until then, there are no public transaction links, deployed app address, agent name, or stop-denial proof to cite.

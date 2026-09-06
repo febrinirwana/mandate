@@ -29,12 +29,13 @@ contract SetupEnsIdentity is Script {
         IEnsAddressResolver resolver = IEnsAddressResolver(vm.envAddress("SEPOLIA_IDENTITY_RESOLVER"));
         address agent = vm.envAddress("SEPOLIA_AGENT_ADDRESS");
         string memory label = vm.envString("SEPOLIA_IDENTITY_LABEL");
-        bytes32 node = vm.envBytes32("SEPOLIA_IDENTITY_NODE");
+        bytes32 parentNode = vm.envBytes32("SEPOLIA_IDENTITY_PARENT_NODE");
         uint64 expiry = uint64(vm.envUint("SEPOLIA_IDENTITY_EXPIRY"));
+        bytes32 node = deriveNode(parentNode, label);
 
         if (address(registry).code.length == 0) revert CodeMissing(address(registry));
         if (address(resolver).code.length == 0) revert CodeMissing(address(resolver));
-        if (agent == address(0) || node == bytes32(0) || !_isNormalizedLabel(label)) revert InvalidIdentityLabel();
+        if (agent == address(0)) revert InvalidIdentityLabel();
         if (expiry <= block.timestamp || expiry > block.timestamp + MAX_IDENTITY_DURATION) {
             revert InvalidIdentityExpiry(expiry);
         }
@@ -58,13 +59,22 @@ contract SetupEnsIdentity is Script {
         ) revert IdentityBindingMismatch();
     }
 
+    /// @dev Computes the ENS child node from the selected parent and normalized immediate label.
+    function deriveNode(bytes32 parentNode, string memory label) public pure returns (bytes32) {
+        if (!_isNormalizedLabel(label)) revert InvalidIdentityLabel();
+        return keccak256(abi.encodePacked(parentNode, keccak256(bytes(label))));
+    }
+
     function _isNormalizedLabel(string memory label) private pure returns (bool) {
         bytes memory value = bytes(label);
-        if (value.length == 0) return false;
+        if (value.length == 0 || value.length > 63 || value[0] == "-" || value[value.length - 1] == "-") {
+            return false;
+        }
 
         for (uint256 i; i < value.length; ++i) {
             bytes1 character = value[i];
-            if (character == "." || character == 0x00 || (character >= "A" && character <= "Z")) return false;
+            bool alphanumeric = (character >= "a" && character <= "z") || (character >= "0" && character <= "9");
+            if (!alphanumeric && character != "-") return false;
         }
         return true;
     }

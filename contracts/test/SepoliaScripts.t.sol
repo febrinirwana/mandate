@@ -21,6 +21,22 @@ contract SepoliaScriptsTest is Test {
         script.run();
     }
 
+    function testSetupEnsIdentityDerivesChildNodeFromParentAndLabel() public {
+        SetupEnsIdentity script = new SetupEnsIdentity();
+
+        assertEq(
+            script.deriveNode(0xdd7a036b39ddb68d00246a619eb9e530659628b15523b435bf9ad5c5c4d74c90, "agent"),
+            0xdac922a62f53701c35dce88d9d2ee0b24f15871f4af98f6131b5a966abdc76b5
+        );
+    }
+
+    function testSetupEnsIdentityRejectsNonNormalizedAsciiLabel() public {
+        SetupEnsIdentity script = new SetupEnsIdentity();
+
+        vm.expectRevert(SetupEnsIdentity.InvalidIdentityLabel.selector);
+        script.deriveNode(0xdd7a036b39ddb68d00246a619eb9e530659628b15523b435bf9ad5c5c4d74c90, "-agent");
+    }
+
     function testStopEnsIdentityRefusesAnyNonSepoliaChain() public {
         StopEnsIdentity script = new StopEnsIdentity();
 
