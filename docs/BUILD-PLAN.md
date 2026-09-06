@@ -120,7 +120,7 @@ Acceptance: one command starts clean chain, deploys, ships, activates, executes,
 **Files:** create `packages/chain/src/ens.ts`, `contracts/script/DeploySepolia.s.sol`, `SetupEnsIdentity.s.sol`, `packages/contracts/src/deployments/sepolia.json`, and ENS integration tests/scripts.
 
 - [x] Compile against official ENSv2 interfaces and replace any documentation-only guessed types.
-- [ ] Record official Sepolia registry/resolver addresses and code hashes at a verified block.
+- [x] Record official Sepolia registry/resolver addresses and code hashes at a verified block.
 - [ ] Register/select the owner-controlled parent/subregistry and finite-expiry agent subname through the sponsor-recommended flow.
 - [ ] Bind current token owner and resolver address to the dedicated agent; read all identity fields at one block and validate domain schema.
 - [ ] Deploy compatible Aqua source if no official Sepolia Aqua exists, marking `official: false`; deploy Mandate with verified constructor args.

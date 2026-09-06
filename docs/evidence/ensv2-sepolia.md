@@ -4,7 +4,15 @@
 
 **Public-chain proof is blocked, not claimed.** This branch contains source-backed ENSv2 integration code and local tests, but it has not registered an identity, deployed Mandate, or executed against Sepolia in this session.
 
-The existing [`sepolia.json`](../../packages/contracts/src/deployments/sepolia.json) records historical/preliminary contract observations. Before it can authorize a public deployment, re-check every retained address and runtime code hash at one canonical Sepolia block with `verifyContractCodeAtBlock`; do not treat its `official` fields or historical timestamps as a substitute for that probe.
+Runtime code is reverified at canonical Sepolia block [`11645813`](https://sepolia.etherscan.io/block/11645813), hash `0xb32305bfd7b46e4b539c9dd831eaa31b4c5d23cd6d62c26354f92e22a1da70fb`, timestamp `2026-09-06T07:29:36Z`. The retained runtime hashes for Aqua, `ETHRegistry`, and `PublicResolverV2` all match the manifest at that block. This only proves the listed contracts' code; it does not prove a Mandate identity or execution.
+
+## Runtime code proof
+
+| Contract                 | Address                                      | Runtime code hash                                                    |
+| ------------------------ | -------------------------------------------- | -------------------------------------------------------------------- |
+| Aqua                     | `0x1111113ccf1426a8e30e2bff5e005d929bf6a90a` | `0x720bc02d220db318164dc3bade86eec1f3655bdc00fc1174de7d816a95c341f8` |
+| ENSv2 `ETHRegistry`      | `0xbdc85dd5b15d7ecb354cd7cb6f2c50b4f2c4f0e2` | `0x99a6ba74173ac220fd9d7a2000a8142cf52d98c7a17ac6abc6d74fa17d8f086c` |
+| ENSv2 `PublicResolverV2` | `0xe7b9a25607e02da8145e4eb1836ca539e53f11f7` | `0x15e1eca874f53a880df16f9a6646c978e400d3d58883ab28960a6050f8472d16` |
 
 ## Source-backed topology
 
