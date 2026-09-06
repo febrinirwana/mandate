@@ -14,6 +14,16 @@ contract SepoliaScriptsTest is Test {
         script.run();
     }
 
+    function testDeploySepoliaRejectsMismatchedOfficialAquaCode() public {
+        vm.chainId(11_155_111);
+        vm.etch(0x1111113CCf1426A8E30e2bfF5E005d929bF6a90a, hex"6000");
+
+        DeploySepolia script = new DeploySepolia();
+
+        vm.expectRevert(abi.encodeWithSelector(DeploySepolia.AquaCodeHashMismatch.selector, keccak256(hex"6000")));
+        script.run();
+    }
+
     function testSetupEnsIdentityRefusesAnyNonSepoliaChain() public {
         SetupEnsIdentity script = new SetupEnsIdentity();
 
