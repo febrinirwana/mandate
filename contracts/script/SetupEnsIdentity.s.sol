@@ -4,6 +4,7 @@ pragma solidity 0.8.30;
 import {IPermissionedRegistry} from "@ensv2/contracts/registry/interfaces/IPermissionedRegistry.sol";
 import {IRegistry} from "@ensv2/contracts/registry/interfaces/IRegistry.sol";
 import {Script} from "forge-std/Script.sol";
+import {EnsNamehash} from "./EnsNamehash.sol";
 
 interface IEnsAddressResolver {
     function addr(bytes32 node) external view returns (address);
@@ -29,7 +30,7 @@ contract SetupEnsIdentity is Script {
         IEnsAddressResolver resolver = IEnsAddressResolver(vm.envAddress("SEPOLIA_IDENTITY_RESOLVER"));
         address agent = vm.envAddress("SEPOLIA_AGENT_ADDRESS");
         string memory label = vm.envString("SEPOLIA_IDENTITY_LABEL");
-        bytes32 parentNode = vm.envBytes32("SEPOLIA_IDENTITY_PARENT_NODE");
+        bytes32 parentNode = deriveEthParentNode(vm.envString("SEPOLIA_PARENT_LABEL"));
         uint64 expiry = uint64(vm.envUint("SEPOLIA_IDENTITY_EXPIRY"));
         bytes32 node = deriveNode(parentNode, label);
 
@@ -61,21 +62,12 @@ contract SetupEnsIdentity is Script {
 
     /// @dev Computes the ENS child node from the selected parent and normalized immediate label.
     function deriveNode(bytes32 parentNode, string memory label) public pure returns (bytes32) {
-        if (!_isNormalizedLabel(label)) revert InvalidIdentityLabel();
-        return keccak256(abi.encodePacked(parentNode, keccak256(bytes(label))));
+        if (!EnsNamehash.isNormalizedLabel(label)) revert InvalidIdentityLabel();
+        return EnsNamehash.derive(parentNode, label);
     }
 
-    function _isNormalizedLabel(string memory label) private pure returns (bool) {
-        bytes memory value = bytes(label);
-        if (value.length == 0 || value.length > 63 || value[0] == "-" || value[value.length - 1] == "-") {
-            return false;
-        }
-
-        for (uint256 i; i < value.length; ++i) {
-            bytes1 character = value[i];
-            bool alphanumeric = (character >= "a" && character <= "z") || (character >= "0" && character <= "9");
-            if (!alphanumeric && character != "-") return false;
-        }
-        return true;
+    function deriveEthParentNode(string memory parentLabel) public pure returns (bytes32) {
+        if (!EnsNamehash.isNormalizedLabel(parentLabel)) revert InvalidIdentityLabel();
+        return EnsNamehash.derive(EnsNamehash.ethNode(), parentLabel);
     }
 }

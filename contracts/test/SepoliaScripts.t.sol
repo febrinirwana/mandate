@@ -6,6 +6,7 @@ import {DeploySepolia} from "../script/DeploySepolia.s.sol";
 import {ProvisionEnsNamespace} from "../script/ProvisionEnsNamespace.s.sol";
 import {SetupEnsIdentity} from "../script/SetupEnsIdentity.s.sol";
 import {StopEnsIdentity} from "../script/StopEnsIdentity.s.sol";
+import {RepairEnsIdentity} from "../script/RepairEnsIdentity.s.sol";
 
 contract SepoliaScriptsTest is Test {
     function testDeploySepoliaRefusesAnyNonSepoliaChain() public {
@@ -54,13 +55,20 @@ contract SepoliaScriptsTest is Test {
         script.run();
     }
 
-    function testProvisionEnsNamespaceDerivesEthParentNode() public {
-        ProvisionEnsNamespace script = new ProvisionEnsNamespace();
+    function testEnsScriptsUseStandardNamehash() public {
+        ProvisionEnsNamespace provision = new ProvisionEnsNamespace();
+        SetupEnsIdentity setup = new SetupEnsIdentity();
+        RepairEnsIdentity repair = new RepairEnsIdentity();
 
+        bytes32 parentNode = provision.deriveEthParentNode("mandate-test");
+        assertEq(parentNode, 0xd73c596f4f79b222fa0f4358616377627ec437235166aeec8741e3507ced9a8a);
         assertEq(
-            script.deriveEthParentNode("mandate-f48d"),
-            keccak256(abi.encodePacked(keccak256(bytes("eth")), keccak256(bytes("mandate-f48d"))))
+            setup.deriveNode(parentNode, "agent"), 0x38487fa23703342a9da685adffe972546c61377db5e07135a27fadf646e14e64
         );
+
+        (bytes32 standardNode, bytes32 legacyNode) = repair.deriveNodes("mandate-test", "agent");
+        assertEq(standardNode, 0x38487fa23703342a9da685adffe972546c61377db5e07135a27fadf646e14e64);
+        assertEq(legacyNode, 0x0b4b546c72d29758482cdc0641d2f33ce055313dc77d7ccac472a0d399618bd6);
     }
 
     function testProvisionEnsNamespaceRejectsNonNormalizedParentLabel() public {
@@ -98,6 +106,20 @@ contract SepoliaScriptsTest is Test {
 
         vm.expectRevert(SetupEnsIdentity.InvalidIdentityLabel.selector);
         script.deriveNode(0xdd7a036b39ddb68d00246a619eb9e530659628b15523b435bf9ad5c5c4d74c90, "-agent");
+    }
+
+    function testRepairEnsIdentityRefusesAnyNonSepoliaChain() public {
+        RepairEnsIdentity script = new RepairEnsIdentity();
+
+        vm.expectRevert(abi.encodeWithSelector(RepairEnsIdentity.WrongChain.selector, block.chainid));
+        script.run();
+    }
+
+    function testRepairEnsIdentityRejectsNonNormalizedLabels() public {
+        RepairEnsIdentity script = new RepairEnsIdentity();
+
+        vm.expectRevert(RepairEnsIdentity.InvalidIdentityLabel.selector);
+        script.deriveNodes("-mandate", "agent");
     }
 
     function testStopEnsIdentityRefusesAnyNonSepoliaChain() public {

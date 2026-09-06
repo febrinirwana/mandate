@@ -4,6 +4,7 @@ pragma solidity 0.8.30;
 import {IRegistry} from "@ensv2/contracts/registry/interfaces/IRegistry.sol";
 import {IPermissionedRegistry} from "@ensv2/contracts/registry/interfaces/IPermissionedRegistry.sol";
 import {Script} from "forge-std/Script.sol";
+import {EnsNamehash} from "./EnsNamehash.sol";
 
 interface IVerifiableFactory {
     function deployProxy(address implementation, uint256 salt, bytes calldata data) external returns (address proxy);
@@ -92,8 +93,8 @@ contract ProvisionEnsNamespace is Script {
     }
 
     function deriveEthParentNode(string memory parentLabel) public pure returns (bytes32) {
-        if (!_isNormalizedLabel(parentLabel)) revert InvalidParentLabel();
-        return keccak256(abi.encodePacked(keccak256(bytes("eth")), keccak256(bytes(parentLabel))));
+        if (!EnsNamehash.isNormalizedLabel(parentLabel)) revert InvalidParentLabel();
+        return EnsNamehash.derive(EnsNamehash.ethNode(), parentLabel);
     }
 
     function userRegistryInitialRoles() public pure returns (uint256) {
@@ -169,19 +170,5 @@ contract ProvisionEnsNamespace is Script {
 
     function _resolverSalt(address owner, string memory parentLabel) private pure returns (uint256) {
         return uint256(keccak256(abi.encode(owner, parentLabel, "mandate-agent-resolver-v1")));
-    }
-
-    function _isNormalizedLabel(string memory label) private pure returns (bool) {
-        bytes memory value = bytes(label);
-        if (value.length == 0 || value.length > 63 || value[0] == "-" || value[value.length - 1] == "-") {
-            return false;
-        }
-
-        for (uint256 i; i < value.length; ++i) {
-            bytes1 character = value[i];
-            bool alphanumeric = (character >= "a" && character <= "z") || (character >= "0" && character <= "9");
-            if (!alphanumeric && character != "-") return false;
-        }
-        return true;
     }
 }
