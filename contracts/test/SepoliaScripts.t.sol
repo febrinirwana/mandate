@@ -3,6 +3,7 @@ pragma solidity 0.8.30;
 
 import {Test} from "forge-std/Test.sol";
 import {DeploySepolia} from "../script/DeploySepolia.s.sol";
+import {ProvisionEnsNamespace} from "../script/ProvisionEnsNamespace.s.sol";
 import {SetupEnsIdentity} from "../script/SetupEnsIdentity.s.sol";
 import {StopEnsIdentity} from "../script/StopEnsIdentity.s.sol";
 
@@ -22,6 +23,58 @@ contract SepoliaScriptsTest is Test {
 
         vm.expectRevert(abi.encodeWithSelector(DeploySepolia.AquaCodeHashMismatch.selector, keccak256(hex"6000")));
         script.run();
+    }
+
+    function testProvisionEnsNamespaceRefusesAnyNonSepoliaChain() public {
+        ProvisionEnsNamespace script = new ProvisionEnsNamespace();
+
+        vm.expectRevert(abi.encodeWithSelector(ProvisionEnsNamespace.WrongChain.selector, block.chainid));
+        script.run();
+    }
+
+    function testProvisionEnsNamespaceRejectsModifiedOfficialRegistryCode() public {
+        vm.chainId(11_155_111);
+        vm.setEnv("SEPOLIA_OWNER_ADDRESS", "0xf48DBc49B23669e8B08fC6c08e0aB61cf7301466");
+        vm.setEnv("SEPOLIA_AGENT_ADDRESS", "0x77606352f523f8a076498aB8BeFF3af3BC1e492A");
+        vm.setEnv("SEPOLIA_PARENT_LABEL", "mandate-f48d");
+        vm.etch(0xBDC85dD5b15D7ecb354cd7cb6f2c50b4f2c4F0E2, hex"6000");
+        vm.etch(0x10dC6333CDFe1FCEf624c6e0a8221b91804Cd7ef, hex"6000");
+        vm.etch(0x624a25d67B59D587752EbEc8DdeD8827dAe52050, hex"6000");
+        vm.etch(0x9EAe5C2730a7dD16BDD1DeE6421a1B91e3B0365e, hex"6000");
+
+        ProvisionEnsNamespace script = new ProvisionEnsNamespace();
+
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                ProvisionEnsNamespace.OfficialCodeHashMismatch.selector,
+                0xBDC85dD5b15D7ecb354cd7cb6f2c50b4f2c4F0E2,
+                keccak256(hex"6000")
+            )
+        );
+        script.run();
+    }
+
+    function testProvisionEnsNamespaceDerivesEthParentNode() public {
+        ProvisionEnsNamespace script = new ProvisionEnsNamespace();
+
+        assertEq(
+            script.deriveEthParentNode("mandate-f48d"),
+            keccak256(abi.encodePacked(keccak256(bytes("eth")), keccak256(bytes("mandate-f48d"))))
+        );
+    }
+
+    function testProvisionEnsNamespaceRejectsNonNormalizedParentLabel() public {
+        ProvisionEnsNamespace script = new ProvisionEnsNamespace();
+
+        vm.expectRevert(ProvisionEnsNamespace.InvalidParentLabel.selector);
+        script.deriveEthParentNode("-mandate");
+    }
+
+    function testProvisionEnsNamespaceGrantsOnlyRequiredRootRoles() public {
+        ProvisionEnsNamespace script = new ProvisionEnsNamespace();
+
+        assertEq(script.userRegistryInitialRoles(), (1 << 0) | (1 << 8) | (1 << 12) | ((1 << 8) << 128));
+        assertEq(script.resolverInitialRoles(), 1 << 0);
     }
 
     function testSetupEnsIdentityRefusesAnyNonSepoliaChain() public {
