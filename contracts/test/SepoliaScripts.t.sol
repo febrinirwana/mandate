@@ -7,6 +7,9 @@ import {ProvisionEnsNamespace} from "../script/ProvisionEnsNamespace.s.sol";
 import {SetupEnsIdentity} from "../script/SetupEnsIdentity.s.sol";
 import {StopEnsIdentity} from "../script/StopEnsIdentity.s.sol";
 import {RepairEnsIdentity} from "../script/RepairEnsIdentity.s.sol";
+import {ExecuteSepoliaProofStrategy} from "../script/ExecuteSepoliaProofStrategy.s.sol";
+import {SetupSepoliaProofStrategy} from "../script/SetupSepoliaProofStrategy.s.sol";
+import {SepoliaProofConfig} from "../script/SepoliaProofConfig.sol";
 
 contract SepoliaScriptsTest is Test {
     function testDeploySepoliaRefusesAnyNonSepoliaChain() public {
@@ -120,6 +123,20 @@ contract SepoliaScriptsTest is Test {
 
         vm.expectRevert(RepairEnsIdentity.InvalidIdentityLabel.selector);
         script.deriveNodes("-mandate", "agent");
+    }
+
+    function testSetupSepoliaProofStrategyRefusesAnyNonSepoliaChain() public {
+        SetupSepoliaProofStrategy script = new SetupSepoliaProofStrategy();
+
+        vm.expectRevert(abi.encodeWithSelector(SepoliaProofConfig.WrongChain.selector, block.chainid));
+        script.run();
+    }
+
+    function testExecuteSepoliaProofStrategyRefusesAnyNonSepoliaChain() public {
+        ExecuteSepoliaProofStrategy script = new ExecuteSepoliaProofStrategy();
+
+        vm.expectRevert(abi.encodeWithSelector(SepoliaProofConfig.WrongChain.selector, block.chainid));
+        script.run();
     }
 
     function testStopEnsIdentityRefusesAnyNonSepoliaChain() public {
