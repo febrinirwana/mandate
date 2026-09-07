@@ -2,52 +2,53 @@
 
 ## Status
 
-**Public-chain proof is blocked, not claimed.** This branch contains source-backed ENSv2 integration code and local tests, but it has not registered an identity, deployed Mandate, or executed against Sepolia in this session.
+**Complete public-chain proof.** A treasury-controlled ENSv2 identity authorized one bounded Mandate/Aqua execution, then the treasury unregistered that identity. The same agent's subsequent on-chain call reverted because the live ENSv2 registry state was no longer registered.
 
-Runtime code is reverified at canonical Sepolia block [`11645813`](https://sepolia.etherscan.io/block/11645813), hash `0xb32305bfd7b46e4b539c9dd831eaa31b4c5d23cd6d62c26354f92e22a1da70fb`, timestamp `2026-09-06T07:29:36Z`. The retained runtime hashes for Aqua, `ETHRegistry`, and `PublicResolverV2` all match the manifest at that block. This only proves the listed contracts' code; it does not prove a Mandate identity or execution.
+The denial is independently reproducible at canonical block [`11651791`](https://sepolia.etherscan.io/block/11651791): an `eth_call` from the dedicated agent using the submitted calldata returns `0x6940c9e0`, the selector for `MandateAquaApp.ENSNotRegistered()`.
 
-## Runtime code proof
+## Public identity and deployment
 
-| Contract                 | Address                                      | Runtime code hash                                                    |
-| ------------------------ | -------------------------------------------- | -------------------------------------------------------------------- |
-| Aqua                     | `0x1111113ccf1426a8e30e2bff5e005d929bf6a90a` | `0x720bc02d220db318164dc3bade86eec1f3655bdc00fc1174de7d816a95c341f8` |
-| ENSv2 `ETHRegistry`      | `0xbdc85dd5b15d7ecb354cd7cb6f2c50b4f2c4f0e2` | `0x99a6ba74173ac220fd9d7a2000a8142cf52d98c7a17ac6abc6d74fa17d8f086c` |
-| ENSv2 `PublicResolverV2` | `0xe7b9a25607e02da8145e4eb1836ca539e53f11f7` | `0x15e1eca874f53a880df16f9a6646c978e400d3d58883ab28960a6050f8472d16` |
+| Component                 | Value                                                                                                                           |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Treasury / strategy maker | [`0xf48DBc49B23669e8B08fC6c08e0aB61cf7301466`](https://sepolia.etherscan.io/address/0xf48DBc49B23669e8B08fC6c08e0aB61cf7301466) |
+| Dedicated agent           | [`0x77606352f523f8a076498aB8BeFF3af3BC1e492A`](https://sepolia.etherscan.io/address/0x77606352f523f8a076498aB8BeFF3af3BC1e492A) |
+| ENSv2 name                | `agent.mandate-test.eth`                                                                                                        |
+| ENS node                  | `0x38487fa23703342a9da685adffe972546c61377db5e07135a27fadf646e14e64`                                                            |
+| Permissioned Registry     | [`0xb15cBA2d8B5FF4C26C001D39cd026a00DCD94DEe`](https://sepolia.etherscan.io/address/0xb15cBA2d8B5FF4C26C001D39cd026a00DCD94DEe) |
+| Identity resolver         | [`0x88a0B6bCf7b1983d2D419786304c78068fb31610`](https://sepolia.etherscan.io/address/0x88a0B6bCf7b1983d2D419786304c78068fb31610) |
+| MandateAquaApp            | [`0x34bd1a513858f33c8929b93E892725F80c106576`](https://sepolia.etherscan.io/address/0x34bd1a513858f33c8929b93E892725F80c106576) |
+| Official Sepolia Aqua     | [`0x1111113CCf1426A8E30e2bfF5E005d929bF6a90a`](https://sepolia.etherscan.io/address/0x1111113CCf1426A8E30e2bfF5E005d929bF6a90a) |
+| Strategy hash             | `0xeb1763618d66f22f3575a1516fffbe0db1107e9ec6825780a1f50f6df6c8cede`                                                            |
 
-## Source-backed topology
+## Transaction evidence
 
-| Component                    | Address                                      | Role                                                                                                  |
-| ---------------------------- | -------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| ENSv2 `ETHRegistry`          | `0xbdc85dd5b15d7ecb354cd7cb6f2c50b4f2c4f0e2` | Parent Permissioned Registry for the agent label                                                      |
-| ENSv2 `PublicResolverV2`     | `0xe7b9a25607e02da8145e4eb1836ca539e53f11f7` | Official public resolver deployment; deliberately disabled in the manifest and not identity authority |
-| ENSv2 `PermissionedResolver` | Per-account proxy, selected during setup     | Registry-pinned resolver whose `addr(node)` must equal the agent                                      |
+| Step                                        |                                                     Block | Transaction                                                                                                                                                                |
+| ------------------------------------------- | --------------------------------------------------------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Repair standard ENSv2 identity state        | [`11648593`](https://sepolia.etherscan.io/block/11648593) | [`0xf78f68b79e11c1faa4e0a4245c9e022323c86d6d89495c4c052334c0b155d876`](https://sepolia.etherscan.io/tx/0xf78f68b79e11c1faa4e0a4245c9e022323c86d6d89495c4c052334c0b155d876) |
+| Clear legacy namehash state                 | [`11648593`](https://sepolia.etherscan.io/block/11648593) | [`0x7111d604172666053d52242fcabcb40014cec2da2f1fc5d8ec1b3012a98bda4b`](https://sepolia.etherscan.io/tx/0x7111d604172666053d52242fcabcb40014cec2da2f1fc5d8ec1b3012a98bda4b) |
+| Deploy MandateAquaApp against official Aqua | [`11648628`](https://sepolia.etherscan.io/block/11648628) | [`0x1b07dce63c9bfd03eebbcb04affbbe4e7b9bad10bcd0913fdb5416dbfe67becc`](https://sepolia.etherscan.io/tx/0x1b07dce63c9bfd03eebbcb04affbbe4e7b9bad10bcd0913fdb5416dbfe67becc) |
+| Activate bounded strategy                   | [`11648735`](https://sepolia.etherscan.io/block/11648735) | [`0x46465aff7971c7b4b3121598769745fecf1d8db2ae66775f527180e21425f489`](https://sepolia.etherscan.io/tx/0x46465aff7971c7b4b3121598769745fecf1d8db2ae66775f527180e21425f489) |
+| Execute 10 MockUSDC → 10 MockDAI            | [`11648741`](https://sepolia.etherscan.io/block/11648741) | [`0x0e9ad62080a578346eef814e7a0a1ad09d2c647c779bff2e32ecf393d3b62f5f`](https://sepolia.etherscan.io/tx/0x0e9ad62080a578346eef814e7a0a1ad09d2c647c779bff2e32ecf393d3b62f5f) |
+| Treasury unregisters `agent` label          | [`11651775`](https://sepolia.etherscan.io/block/11651775) | [`0x77c940dae0c33040dd6260f616725b19b09af022816948662bd3ef456c2b3377`](https://sepolia.etherscan.io/tx/0x77c940dae0c33040dd6260f616725b19b09af022816948662bd3ef456c2b3377) |
+| Agent denial probe, reverted                | [`11651791`](https://sepolia.etherscan.io/block/11651791) | [`0x6185e78ad5d793165b7d139c96b40f1e50e9edb2e7c68d70b16a76a3212989bb`](https://sepolia.etherscan.io/tx/0x6185e78ad5d793165b7d139c96b40f1e50e9edb2e7c68d70b16a76a3212989bb) |
 
-ENSv2 sources are pinned to [`97a57293f3b4279d94b571e678edb53ce62638f4`](https://github.com/ensdomains/contracts-v2/tree/97a57293f3b4279d94b571e678edb53ce62638f4). `MandateAquaApp` uses that source's `IPermissionedRegistry`; it verifies label state, finite expiry, current token ownership, registry resolver pointer, and the resolver address record live on every execution.
+## Settlement and stop semantics
 
-## Prepared deployment and authority model
+The activated strategy capped each call at 10 MockUSDC and total input at 100 MockUSDC. The successful agent execution consumed `10_000_000` raw MockUSDC units and produced `10_000_000_000_000_000_000` raw MockDAI units; the strategy inspection and Aqua raw balances were checked at block `11648741`.
 
-- `DeploySepolia.s.sol` binds `MandateAquaApp` to the official Sepolia Aqua at `0x1111113ccf1426a8e30e2bff5e005d929bf6a90a`, only when its runtime hash is `0x720bc02d220db318164dc3bade86eec1f3655bdc00fc1174de7d816a95c341f8`. It then deploys Mandate only on chain ID `11155111`.
-- `SetupEnsIdentity.s.sol` accepts a normalized ASCII immediate label and selected parent node, derives the child node locally, registers it with a finite expiry, pins the registry resolver, then sets `addr(node)` to the dedicated agent. It re-reads every identity component after the transaction.
-- The treasury broadcaster must hold the parent registry's registrar and unregister authority and must be permitted to set the chosen resolver address record. The agent receives the identity token with role bitmap zero; it needs gas only.
-- `StopEnsIdentity.s.sol` calls the owner-controlled `unregister(labelId)` path and verifies the label is no longer registered. The next identical Mandate execution must then revert through the existing live identity guard.
+`StopEnsIdentity.s.sol` used the treasury's registry-level `unregister(labelId)` authority. The agent has no owner or registrar authority.
 
-## Deterministic probes
+`BuildSepoliaStopProbe.s.sol` builds a zero-input `MandateAquaApp.execute` call. `execute` validates the caller's live ENSv2 identity before its zero-amount guard, so no token pull, approval, route call, or Aqua state mutation can occur. The submitted call was sent by the dedicated agent to the deployed app with an explicit gas limit:
 
-`packages/chain/src/ens.ts` reads the following fields at one requested block and rejects a changing canonical header:
+- receipt status: `0` (reverted);
+- sender: the dedicated agent;
+- destination: `MandateAquaApp`;
+- replay at that canonical block returns `0x6940c9e0` = `ENSNotRegistered()`.
 
-1. `getState(labelId)` for registration status and expiry.
-2. `ownerOf(state.tokenId)` for the current token owner.
-3. `getResolver(labelId)` for the registry-selected resolver.
-4. `addr(namehash(name))` against that selected resolver for the resolved agent address.
+This proves that treasury removal of the ENSv2 label immediately denies Mandate execution at the contract guard, rather than merely preventing a later swap.
 
-The same module's `verifyContractCodeAtBlock` confirms an address's runtime code hash and re-checks the block hash by number and by hash. The reader never substitutes `PublicResolverV2` for an identity's resolver pointer.
+## Runtime binding
 
-## Required public evidence
+`DeploySepolia.s.sol` binds `MandateAquaApp` to the official Sepolia Aqua at `0x1111113CCf1426A8E30e2bfF5E005d929bF6a90a` after checking its pinned runtime hash. `MandateAquaApp` reads `IPermissionedRegistry.getState`, current token ownership, registry resolver selection, and resolver `addr(node)` on every call.
 
-The remaining gate needs these non-secret inputs configured on the execution host:
-
-1. `SEPOLIA_RPC_URL`.
-2. An owner-controlled Permissioned Registry address, normalized immediate label, and selected parent node.
-3. Public treasury and dedicated-agent addresses plus Foundry `--account` aliases or keystore configuration. Do not provide raw private keys; fund the agent with gas only.
-
-With those inputs, record the selected canonical block, code hashes, deployment and setup transaction links, deployed Aqua and Mandate addresses, active permit transaction/receipt, stop transaction/receipt, and the subsequent expected identity-denial transaction/receipt. Until then, there are no public transaction links, deployed app address, agent name, or stop-denial proof to cite.
+ENSv2 sources are pinned to [`97a57293f3b4279d94b571e678edb53ce62638f4`](https://github.com/ensdomains/contracts-v2/tree/97a57293f3b4279d94b571e678edb53ce62638f4). No private key, keystore password, or RPC URL is recorded here.

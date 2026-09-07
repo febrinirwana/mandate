@@ -10,6 +10,7 @@ import {RepairEnsIdentity} from "../script/RepairEnsIdentity.s.sol";
 import {ExecuteSepoliaProofStrategy} from "../script/ExecuteSepoliaProofStrategy.s.sol";
 import {SetupSepoliaProofStrategy} from "../script/SetupSepoliaProofStrategy.s.sol";
 import {SepoliaProofConfig} from "../script/SepoliaProofConfig.sol";
+import {BuildSepoliaStopProbe} from "../script/BuildSepoliaStopProbe.s.sol";
 
 contract SepoliaScriptsTest is Test {
     function testDeploySepoliaRefusesAnyNonSepoliaChain() public {
@@ -134,6 +135,13 @@ contract SepoliaScriptsTest is Test {
 
     function testExecuteSepoliaProofStrategyRefusesAnyNonSepoliaChain() public {
         ExecuteSepoliaProofStrategy script = new ExecuteSepoliaProofStrategy();
+
+        vm.expectRevert(abi.encodeWithSelector(SepoliaProofConfig.WrongChain.selector, block.chainid));
+        script.run();
+    }
+
+    function testBuildSepoliaStopProbeRefusesAnyNonSepoliaChain() public {
+        BuildSepoliaStopProbe script = new BuildSepoliaStopProbe();
 
         vm.expectRevert(abi.encodeWithSelector(SepoliaProofConfig.WrongChain.selector, block.chainid));
         script.run();
