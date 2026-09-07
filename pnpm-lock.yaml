@@ -125,6 +125,25 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
 
+  apps/worker:
+    dependencies:
+      '@mandate/chain':
+        specifier: workspace:*
+        version: link:../../packages/chain
+      '@mandate/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+    devDependencies:
+      '@types/node':
+        specifier: 24.13.3
+        version: 24.13.3
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: 5.0.0
+        version: 5.0.0(@types/node@24.13.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
+
   packages/chain:
     dependencies:
       '@mandate/contracts':
