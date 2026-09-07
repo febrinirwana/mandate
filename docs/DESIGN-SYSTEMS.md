@@ -17,7 +17,7 @@ signed, revocable financial instrument, authorized in electric cobalt
 
 - **Palette:** ivory `#f6f5f0` / carbon `#1a1916` in light; carbon `#101013` /
   bone `#ecebe4` in dark. One accent: cobalt `#0000fe` (light) / `#8a91ff`
-  (dark) — *authorization only*. States: confirmed `#17753c`, expiring
+  (dark) — _authorization only_. States: confirmed `#17753c`, expiring
   `#8a6100`, revoked `#c03427`, unknown `#5e548e`, each with a soft tint.
   Lime is artwork-only.
 - **Type:** Onest 400/500/600 (display at 400, tracking −0.042em) + Geist Mono

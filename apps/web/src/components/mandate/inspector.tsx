@@ -36,8 +36,8 @@ export function MandateInspector({ hash, resolved }: { hash: string; resolved: b
       <div className="mx-auto max-w-[1440px] border-x border-rule px-6 py-24 lg:px-10">
         <h1 className="display text-[clamp(2rem,4vw,3.25rem)]">UNKNOWN: mandate not resolved</h1>
         <p className="lede mt-4 max-w-[60ch]">
-          This inspection route only resolves mandates this deployment knows. An unknown strategy hash
-          fails closed: no status, no assumptions, no cached green state.
+          This inspection route only resolves mandates this deployment knows. An unknown strategy
+          hash fails closed: no status, no assumptions, no cached green state.
         </p>
         <div className="mono-data mt-6">
           <CopyValue value={hash || "unknown"} />
@@ -68,19 +68,27 @@ export function MandateInspector({ hash, resolved }: { hash: string; resolved: b
           <div className="mono-data flex flex-wrap items-center gap-3">
             <Stamp kind="EXPIRING" label="SAMPLE: synthetic demo state, not live chain data" />
           </div>
-          <h1 className="display mt-5 break-all text-[clamp(2.5rem,5vw,4.25rem)]">{DEMO.agent.ens}</h1>
+          <h1 className="display mt-5 break-all text-[clamp(2.5rem,5vw,4.25rem)]">
+            {DEMO.agent.ens}
+          </h1>
           <p className="lede mt-5 max-w-[60ch]">
-            May convert USDC → WETH through 1inch Aggregation Router v6, capped per call and in total,
-            output pushed back to the treasury.
+            May convert USDC → WETH through 1inch Aggregation Router v6, capped per call and in
+            total, output pushed back to the treasury.
           </p>
           <div className="mono-data mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-ink-2">
             <CopyValue value={DEMO.agent.address} />
-            <span className="text-ink-3" aria-hidden="true">·</span>
+            <span className="text-ink-3" aria-hidden="true">
+              ·
+            </span>
             <span>Sepolia</span>
-            <span className="text-ink-3" aria-hidden="true">·</span>
+            <span className="text-ink-3" aria-hidden="true">
+              ·
+            </span>
             <span>
               verified at block{" "}
-              <span className="text-ink">{DEMO.identity.verifiedAtBlock.toLocaleString("en-US")}</span>
+              <span className="text-ink">
+                {DEMO.identity.verifiedAtBlock.toLocaleString("en-US")}
+              </span>
             </span>
           </div>
         </div>

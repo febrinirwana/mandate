@@ -52,13 +52,21 @@ describe("MandateAquaApp generated ABI", () => {
       throw new Error("Generated ABI is missing strategyHash");
     }
     const strategyParameter = strategyHash.inputs[0];
-    if (!strategyParameter || strategyParameter.type !== "tuple" || !("components" in strategyParameter)) {
+    if (
+      !strategyParameter ||
+      strategyParameter.type !== "tuple" ||
+      !("components" in strategyParameter)
+    ) {
       throw new Error("Generated ABI is missing the Strategy tuple");
     }
 
-    expect(strategyParameter.components.map((component) => component.name)).toEqual(expectedFieldNames);
+    expect(strategyParameter.components.map((component) => component.name)).toEqual(
+      expectedFieldNames,
+    );
 
     const encoded = encodeAbiParameters([strategyParameter as AbiParameter], [strategy]);
-    expect(keccak256(encoded)).toBe("0xf71f6723d6a2b1e170a9c884d5fffae336644f75a1f78171ade4caeac2c626b0");
+    expect(keccak256(encoded)).toBe(
+      "0xf71f6723d6a2b1e170a9c884d5fffae336644f75a1f78171ade4caeac2c626b0",
+    );
   });
 });

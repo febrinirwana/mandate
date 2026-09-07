@@ -8,7 +8,14 @@ export function Nav() {
     <header className="sticky top-0 z-50 border-b border-rule bg-paper/90 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between border-x border-rule px-6 lg:px-10">
         <Link href="/" className="flex items-center gap-3" aria-label="Mandate home">
-          <Image src="/mandate-logo.png" alt="Mandate" width={162} height={20} priority className="h-[19px] w-auto" />
+          <Image
+            src="/mandate-logo.png"
+            alt="Mandate"
+            width={162}
+            height={20}
+            priority
+            className="h-[19px] w-auto"
+          />
           <span className="hidden h-4 w-px bg-rule sm:block" aria-hidden="true" />
           <span className="ledger-label hidden text-ink-3 sm:block">Signed operating orders</span>
         </Link>
@@ -19,7 +26,10 @@ export function Nav() {
           >
             Inspect demo
           </Link>
-          <a href="#invariants" className="link-quiet hidden text-[0.9375rem] text-ink-2 hover:text-ink md:block">
+          <a
+            href="#invariants"
+            className="link-quiet hidden text-[0.9375rem] text-ink-2 hover:text-ink md:block"
+          >
             Invariants
           </a>
           <a

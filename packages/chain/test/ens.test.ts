@@ -32,7 +32,13 @@ function identityClient() {
       readRequests.push(request);
       switch (request["functionName"]) {
         case "getState":
-          return { status: 2, expiry: 123_456_789n, latestOwner: agent, tokenId: 77n, resource: 99n };
+          return {
+            status: 2,
+            expiry: 123_456_789n,
+            latestOwner: agent,
+            tokenId: 77n,
+            resource: 99n,
+          };
         case "ownerOf":
         case "addr":
           return agent;
@@ -83,7 +89,9 @@ describe("readEnsIdentity", () => {
       },
     });
     expect(client.readRequests).toHaveLength(4);
-    expect(client.readRequests.every((request) => request["blockNumber"] === blockNumber)).toBe(true);
+    expect(client.readRequests.every((request) => request["blockNumber"] === blockNumber)).toBe(
+      true,
+    );
     expect(client.blockRequests).toEqual([{ blockNumber }, { blockHash }]);
   });
 

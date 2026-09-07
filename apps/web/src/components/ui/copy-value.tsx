@@ -3,7 +3,15 @@
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 
-export function CopyValue({ value, display, className }: { value: string; display?: string; className?: string }) {
+export function CopyValue({
+  value,
+  display,
+  className,
+}: {
+  value: string;
+  display?: string;
+  className?: string;
+}) {
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
@@ -26,7 +34,11 @@ export function CopyValue({ value, display, className }: { value: string; displa
     >
       <span className="truncate">{display ?? value}</span>
       <span className="grid h-4 w-4 shrink-0 place-items-center text-ink-3 transition-colors group-hover:text-accent">
-        {copied ? <Check size={12} strokeWidth={2.5} className="text-confirmed" /> : <Copy size={12} strokeWidth={2} />}
+        {copied ? (
+          <Check size={12} strokeWidth={2.5} className="text-confirmed" />
+        ) : (
+          <Copy size={12} strokeWidth={2} />
+        )}
       </span>
     </button>
   );

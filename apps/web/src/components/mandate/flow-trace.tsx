@@ -3,13 +3,26 @@
 import { animate } from "motion";
 import { useEffect, useState } from "react";
 
-const STEPS = ["Agent call", "ENS check", "Mandate check", "Aqua pull", "Fixed swap", "Aqua push"] as const;
+const STEPS = [
+  "Agent call",
+  "ENS check",
+  "Mandate check",
+  "Aqua pull",
+  "Fixed swap",
+  "Aqua push",
+] as const;
 
 /**
  * Flow trace — six checkpoints on one path. Before confirmation it is an
  * estimate; after, it is reconstructed from events. The label says which.
  */
-export function FlowTrace({ stopped = false, estimate = true }: { stopped?: boolean; estimate?: boolean }) {
+export function FlowTrace({
+  stopped = false,
+  estimate = true,
+}: {
+  stopped?: boolean;
+  estimate?: boolean;
+}) {
   const [lit, setLit] = useState(stopped ? 0 : STEPS.length);
 
   useEffect(() => {
@@ -35,9 +48,14 @@ export function FlowTrace({ stopped = false, estimate = true }: { stopped?: bool
     <div>
       <div className="flex items-baseline justify-between border-b border-rule pb-3">
         <h3 className="text-[1.0625rem] font-medium tracking-[-0.01em]">Flow trace</h3>
-        <span className="ledger-label text-ink-3">{stopped ? "stopped by revocation" : estimate ? "estimated" : "from events"}</span>
+        <span className="ledger-label text-ink-3">
+          {stopped ? "stopped by revocation" : estimate ? "estimated" : "from events"}
+        </span>
       </div>
-      <ol className="relative mt-6 flex flex-col gap-0 md:flex-row md:items-start md:gap-0" aria-label="Execution path">
+      <ol
+        className="relative mt-6 flex flex-col gap-0 md:flex-row md:items-start md:gap-0"
+        aria-label="Execution path"
+      >
         {STEPS.map((s, i) => (
           <li
             key={s}
@@ -49,7 +67,10 @@ export function FlowTrace({ stopped = false, estimate = true }: { stopped?: bool
               <span
                 className="absolute left-[7px] top-6 h-[calc(100%-1.5rem)] w-px bg-rule md:left-[20px] md:top-[27px] md:h-px md:w-[calc(100%-1.9rem)]"
                 aria-hidden="true"
-                style={{ background: lit > i ? "var(--accent)" : "var(--rule)", transition: "background 400ms var(--ease-out-quart)" }}
+                style={{
+                  background: lit > i ? "var(--accent)" : "var(--rule)",
+                  transition: "background 400ms var(--ease-out-quart)",
+                }}
               />
             )}
             {/* detent node */}
@@ -70,14 +91,19 @@ export function FlowTrace({ stopped = false, estimate = true }: { stopped?: bool
               />
             </span>
             <div className="md:pt-2">
-              <div className={`text-[0.875rem] transition-colors duration-300 ${lit > i ? "text-ink" : "text-ink-3"}`}>{s}</div>
+              <div
+                className={`text-[0.875rem] transition-colors duration-300 ${lit > i ? "text-ink" : "text-ink-3"}`}
+              >
+                {s}
+              </div>
             </div>
           </li>
         ))}
       </ol>
       {stopped && (
         <p className="mono-data mt-2 text-ink-2">
-          <span style={{ color: "var(--revoked)" }}>REVOKED</span>: further execution reverts onchain.
+          <span style={{ color: "var(--revoked)" }}>REVOKED</span>: further execution reverts
+          onchain.
         </p>
       )}
     </div>

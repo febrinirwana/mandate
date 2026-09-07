@@ -18,7 +18,9 @@ export function AuthorityHeader({
   compact?: boolean;
 }) {
   return (
-    <header className={`grid gap-6 border-b border-rule pb-8 md:grid-cols-[1fr_auto] ${compact ? "pb-6" : ""}`}>
+    <header
+      className={`grid gap-6 border-b border-rule pb-8 md:grid-cols-[1fr_auto] ${compact ? "pb-6" : ""}`}
+    >
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-3">
           <Stamp kind={status} />
@@ -47,19 +49,30 @@ export function AuthorityHeader({
           </span>
           <span className="text-ink-2">
             verified at block{" "}
-            <span className="text-ink">{DEMO.identity.verifiedAtBlock.toLocaleString("en-US")}</span>
+            <span className="text-ink">
+              {DEMO.identity.verifiedAtBlock.toLocaleString("en-US")}
+            </span>
           </span>
         </div>
         {sentence && (
           <p className="mt-4 flex max-w-[64ch] items-start gap-2 text-[0.9375rem] leading-relaxed text-ink-2">
-            <BadgeCheck size={16} strokeWidth={2.25} className="mt-0.5 shrink-0 text-accent" aria-hidden="true" />
+            <BadgeCheck
+              size={16}
+              strokeWidth={2.25}
+              className="mt-0.5 shrink-0 text-accent"
+              aria-hidden="true"
+            />
             {sentence}
           </p>
         )}
       </div>
       <div className="mono-data self-end text-right text-ink-3 max-md:self-start max-md:text-left">
         <div className="ledger-label">Strategy</div>
-        <CopyValue value={DEMO.strategyHash} display="0x4a91…0b5d" className="mt-1 justify-end max-md:justify-start" />
+        <CopyValue
+          value={DEMO.strategyHash}
+          display="0x4a91…0b5d"
+          className="mt-1 justify-end max-md:justify-start"
+        />
       </div>
     </header>
   );

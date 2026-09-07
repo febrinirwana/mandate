@@ -60,7 +60,6 @@ export const addrResolverAbi = [
 
 export type EnsStatus = "AVAILABLE" | "RESERVED" | "REGISTERED";
 
-
 export interface EnsIdentityRequest {
   blockNumber: bigint;
   registry: Address;
@@ -95,7 +94,10 @@ export interface EnsIdentity {
   };
 }
 
-export interface SerializedEnsIdentity extends Omit<EnsIdentity, "blockNumber" | "labelId" | "expiry" | "tokenId"> {
+export interface SerializedEnsIdentity extends Omit<
+  EnsIdentity,
+  "blockNumber" | "labelId" | "expiry" | "tokenId"
+> {
   blockNumber: string;
   labelId: string;
   expiry: string;
@@ -136,9 +138,16 @@ function statusFrom(value: number | bigint): EnsStatus {
   }
 }
 
-export async function readEnsIdentity(client: PublicClient, request: EnsIdentityRequest): Promise<EnsIdentity> {
+export async function readEnsIdentity(
+  client: PublicClient,
+  request: EnsIdentityRequest,
+): Promise<EnsIdentity> {
   requireNormalizedImmediateLabel(request.label, request.name);
-  if (!isAddress(request.registry) || !isAddress(request.expectedAgent) || !isAddress(request.expectedResolver)) {
+  if (
+    !isAddress(request.registry) ||
+    !isAddress(request.expectedAgent) ||
+    !isAddress(request.expectedResolver)
+  ) {
     throw new Error("ENS identity addresses must be valid");
   }
 
@@ -146,7 +155,8 @@ export async function readEnsIdentity(client: PublicClient, request: EnsIdentity
     client.getChainId(),
     client.getBlock({ blockNumber: request.blockNumber }),
   ]);
-  if (header.number === null || header.hash === null) throw new Error("ENS identity block is unavailable");
+  if (header.number === null || header.hash === null)
+    throw new Error("ENS identity block is unavailable");
 
   const blockNumber = header.number;
   const blockHash = header.hash;
@@ -182,13 +192,15 @@ export async function readEnsIdentity(client: PublicClient, request: EnsIdentity
     blockNumber,
   });
   const resolver = getAddress(resolverValue);
-  const resolvedAddress = getAddress(await client.readContract({
-    address: resolver,
-    abi: addrResolverAbi,
-    functionName: "addr",
-    args: [node],
-    blockNumber,
-  }));
+  const resolvedAddress = getAddress(
+    await client.readContract({
+      address: resolver,
+      abi: addrResolverAbi,
+      functionName: "addr",
+      args: [node],
+      blockNumber,
+    }),
+  );
   const canonicalHeader = await client.getBlock({ blockHash });
   if (canonicalHeader.number !== blockNumber || canonicalHeader.hash !== blockHash) {
     throw new Error("ENS identity block is not canonical");
@@ -251,16 +263,26 @@ export interface ContractCodeProof {
   };
 }
 
-export async function verifyContractCodeAtBlock(client: PublicClient, proof: ContractCodeProof): Promise<void> {
+export async function verifyContractCodeAtBlock(
+  client: PublicClient,
+  proof: ContractCodeProof,
+): Promise<void> {
   const header = await client.getBlock({ blockNumber: proof.verificationBlock.number });
-  if (header.hash !== proof.verificationBlock.hash) throw new Error("manifest verification block hash mismatch");
+  if (header.hash !== proof.verificationBlock.hash)
+    throw new Error("manifest verification block hash mismatch");
 
-  const code = await client.getCode({ address: proof.address, blockNumber: proof.verificationBlock.number });
+  const code = await client.getCode({
+    address: proof.address,
+    blockNumber: proof.verificationBlock.number,
+  });
   if (code === undefined || code === "0x") throw new Error("manifest contract has no runtime code");
   if (keccak256(code) !== proof.codeHash) throw new Error("manifest runtime code hash mismatch");
 
   const canonicalHeader = await client.getBlock({ blockHash: proof.verificationBlock.hash });
-  if (canonicalHeader.number !== proof.verificationBlock.number || canonicalHeader.hash !== proof.verificationBlock.hash) {
+  if (
+    canonicalHeader.number !== proof.verificationBlock.number ||
+    canonicalHeader.hash !== proof.verificationBlock.hash
+  ) {
     throw new Error("manifest verification block is not canonical");
   }
 }

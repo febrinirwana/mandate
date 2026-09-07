@@ -16,7 +16,10 @@ export function BuiltOn() {
     <div className="flex w-max items-center" aria-hidden={hidden || undefined}>
       {PARTNERS.map((p) => (
         <Tip key={p.name} content={p.role}>
-          <span className="flex cursor-default items-center gap-10 px-10 py-7" tabIndex={hidden ? -1 : undefined}>
+          <span
+            className="flex cursor-default items-center gap-10 px-10 py-7"
+            tabIndex={hidden ? -1 : undefined}
+          >
             <span className="h-1.5 w-1.5 rotate-45 bg-ink/30" aria-hidden="true" />
             <span className="whitespace-nowrap text-[1.0625rem] font-medium tracking-[0.02em] text-ink-2 transition-colors hover:text-ink">
               {p.name}

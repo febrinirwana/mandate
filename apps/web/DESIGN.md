@@ -16,7 +16,7 @@ authorized in the 1inch Aqua track's electric blue.
   adds full-height column rules.
 - **Ink:** carbon `#1a1916`; secondary `#57544b`; tertiary `#8d8a7e`.
 - **Accent — one voice:** electric cobalt `#0000fe` (deep `#0000c6`, soft
-  `#e4e6ff`). It means *authorization*: active stamps, PASS, the primary
+  `#e4e6ff`). It means _authorization_: active stamps, PASS, the primary
   action, the headline's terminal period, the certificate seal.
 - **State colors (semantic, never decorative):** confirmed green `#17753c`,
   expiring ochre `#8a6100`, revoked vermilion `#c03427`, unknown violet

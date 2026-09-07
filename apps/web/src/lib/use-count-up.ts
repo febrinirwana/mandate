@@ -7,7 +7,12 @@ import { useEffect, useRef, useState } from "react";
  * `format` receives the eased value each frame; returns display text.
  * Reduced motion and SSR render the final value directly.
  */
-export function useCountUp(target: number, active: boolean, format: (v: number) => string, duration = 1200) {
+export function useCountUp(
+  target: number,
+  active: boolean,
+  format: (v: number) => string,
+  duration = 1200,
+) {
   const [text, setText] = useState(() => format(target));
   const rafRef = useRef(0);
 

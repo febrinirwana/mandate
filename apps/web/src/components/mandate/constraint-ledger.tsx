@@ -55,17 +55,32 @@ export function ConstraintLedger({ stopped = false }: { stopped?: boolean }) {
       <table className="w-full min-w-[560px] border-collapse">
         <thead>
           <tr className="border-b border-rule text-left">
-            <th scope="col" className="ledger-label py-2.5 pr-4 font-medium text-ink-3">Constraint</th>
-            <th scope="col" className="ledger-label py-2.5 pr-4 font-medium text-ink-3">Approved</th>
-            <th scope="col" className="ledger-label py-2.5 pr-4 font-medium text-ink-3">Current</th>
-            <th scope="col" className="ledger-label py-2.5 text-right font-medium text-ink-3">Result</th>
+            <th scope="col" className="ledger-label py-2.5 pr-4 font-medium text-ink-3">
+              Constraint
+            </th>
+            <th scope="col" className="ledger-label py-2.5 pr-4 font-medium text-ink-3">
+              Approved
+            </th>
+            <th scope="col" className="ledger-label py-2.5 pr-4 font-medium text-ink-3">
+              Current
+            </th>
+            <th scope="col" className="ledger-label py-2.5 text-right font-medium text-ink-3">
+              Result
+            </th>
           </tr>
         </thead>
         <tbody>
           {ROWS.map((r) => (
-            <tr key={r.constraint} className="group border-b border-rule transition-colors hover:bg-accent-ghost">
-              <th scope="row" className="py-3 pr-4 text-left text-[0.9375rem] font-normal">{r.constraint}</th>
-              <td className="mono-data py-3 pr-4 text-ink" title={r.detail}>{r.approved}</td>
+            <tr
+              key={r.constraint}
+              className="group border-b border-rule transition-colors hover:bg-accent-ghost"
+            >
+              <th scope="row" className="py-3 pr-4 text-left text-[0.9375rem] font-normal">
+                {r.constraint}
+              </th>
+              <td className="mono-data py-3 pr-4 text-ink" title={r.detail}>
+                {r.approved}
+              </td>
               <td className="mono-data py-3 pr-4 text-ink-2">
                 {stopped ? "no execution possible" : r.current}
               </td>
@@ -77,8 +92,8 @@ export function ConstraintLedger({ stopped = false }: { stopped?: boolean }) {
         </tbody>
       </table>
       <p className="mono-data mt-3 text-ink-3">
-        Display units shown; base units on hover. Policy math is integer-only: {TOKENS.in.symbol} 6 dec,{" "}
-        {TOKENS.out.symbol} 18 dec.
+        Display units shown; base units on hover. Policy math is integer-only: {TOKENS.in.symbol} 6
+        dec, {TOKENS.out.symbol} 18 dec.
       </p>
     </div>
   );

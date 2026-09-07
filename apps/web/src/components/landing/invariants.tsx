@@ -40,7 +40,8 @@ export function Invariants() {
                 Invariants
               </span>
               <p className="lede mt-6 max-w-[56ch]">
-                Every mandate enforces the same printed rules. Not configuration: the physics of the contract.
+                Every mandate enforces the same printed rules. Not configuration: the physics of the
+                contract.
               </p>
             </div>
             <span className="ledger-label pb-2 text-ink-3">Printed rules · not configuration</span>
@@ -57,8 +58,12 @@ export function Invariants() {
                 >
                   <Check size={18} strokeWidth={2.6} />
                 </span>
-                <code className="mono-data w-44 shrink-0 font-medium text-ink max-sm:w-full">{inv.name}</code>
-                <span className="max-w-[64ch] text-[0.9375rem] leading-relaxed text-ink-2">{inv.text}</span>
+                <code className="mono-data w-44 shrink-0 font-medium text-ink max-sm:w-full">
+                  {inv.name}
+                </code>
+                <span className="max-w-[64ch] text-[0.9375rem] leading-relaxed text-ink-2">
+                  {inv.text}
+                </span>
               </li>
             </Reveal>
           ))}

@@ -200,7 +200,11 @@ textarea {
 
 /* Uniform dot-grid patch: crisp decoration, no sampling */
 .dot-grid {
-  background-image: radial-gradient(circle, color-mix(in oklab, var(--ink) 26%, transparent) 1px, transparent 1.5px);
+  background-image: radial-gradient(
+    circle,
+    color-mix(in oklab, var(--ink) 26%, transparent) 1px,
+    transparent 1.5px
+  );
   background-size: 14px 14px;
 }
 

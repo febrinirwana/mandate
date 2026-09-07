@@ -7,7 +7,10 @@ export function CtaBar() {
   return (
     <section aria-label="Get started" style={{ background: "var(--ink)" }}>
       <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-6 px-6 py-14 lg:px-10">
-        <h2 className="display max-w-[22ch] text-[clamp(1.75rem,3.4vw,3rem)]" style={{ color: "var(--paper)" }}>
+        <h2
+          className="display max-w-[22ch] text-[clamp(1.75rem,3.4vw,3rem)]"
+          style={{ color: "var(--paper)" }}
+        >
           Issue your first mandate on Sepolia.
         </h2>
         <ButtonLink

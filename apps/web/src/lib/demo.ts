@@ -13,8 +13,18 @@ export const CHAIN = {
 } as const;
 
 export const TOKENS = {
-  in: { symbol: "USDC", name: "USD Coin", decimals: 6, address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238" },
-  out: { symbol: "WETH", name: "Wrapped Ether", decimals: 18, address: "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B36" },
+  in: {
+    symbol: "USDC",
+    name: "USD Coin",
+    decimals: 6,
+    address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+  },
+  out: {
+    symbol: "WETH",
+    name: "Wrapped Ether",
+    decimals: 18,
+    address: "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B36",
+  },
 } as const;
 
 export const DEMO = {
@@ -96,14 +106,25 @@ export function fmtCompact(base: number, decimals: number): string {
   return scaled.toFixed(decimals <= 6 ? 0 : 4);
 }
 
-export function minOutput(baseIn: number, inDecimals: number, outDecimals: number, num: number, den: number): number {
+export function minOutput(
+  baseIn: number,
+  inDecimals: number,
+  outDecimals: number,
+  num: number,
+  den: number,
+): number {
   // Ceiling division, decimal-aware: the ratio is stated in display units
   // (tokenOut per tokenIn), so base-unit output carries the decimal gap.
   const outBase = Math.ceil((baseIn * num * 10 ** (outDecimals - inDecimals)) / den);
   return outBase / 10 ** outDecimals;
 }
 
-export function rateOf(out: number, outDecimals: number, inBase: number, inDecimals: number): number {
+export function rateOf(
+  out: number,
+  outDecimals: number,
+  inBase: number,
+  inDecimals: number,
+): number {
   const outUnits = out / 10 ** outDecimals;
   const inUnits = inBase / 10 ** inDecimals;
   return outUnits / inUnits;
@@ -114,7 +135,8 @@ export function shortenHex(hex: string, head = 6, tail = 4): string {
   return `${hex.slice(0, head + 2)}…${hex.slice(-tail)}`;
 }
 
-export type StampKind = "ACTIVE" | "PASS" | "CONFIRMED" | "EXPIRING" | "REVOKED" | "FAILED" | "UNKNOWN";
+export type StampKind =
+  "ACTIVE" | "PASS" | "CONFIRMED" | "EXPIRING" | "REVOKED" | "FAILED" | "UNKNOWN";
 
 export const STAMP_STYLE: Record<StampKind, { color: string; soft: string }> = {
   ACTIVE: { color: "var(--accent)", soft: "var(--accent-soft)" },

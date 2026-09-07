@@ -28,11 +28,11 @@ None gives a reviewer one answer to: **who can act, on whose funds, through whic
 
 A useful mandate has three independent layers:
 
-| Layer | Question | Enforcement |
-|---|---|---|
-| ENSv2 identity | Who is the current authorized signer and is the name active? | Permissioned Registry + resolver reads onchain |
-| Mandate policy | What may that signer do and how far may funds move? | Immutable strategy plus app state |
-| Aqua settlement | How do tokens move while owner custody is retained between actions? | Aqua virtual balances and app-only pull/push |
+| Layer           | Question                                                            | Enforcement                                    |
+| --------------- | ------------------------------------------------------------------- | ---------------------------------------------- |
+| ENSv2 identity  | Who is the current authorized signer and is the name active?        | Permissioned Registry + resolver reads onchain |
+| Mandate policy  | What may that signer do and how far may funds move?                 | Immutable strategy plus app state              |
+| Aqua settlement | How do tokens move while owner custody is retained between actions? | Aqua virtual balances and app-only pull/push   |
 
 Removing any layer weakens the product: ENS alone is cosmetic; policy without settlement is a generic permission contract; Aqua without policy gives an app power but not a comprehensible authority lifecycle.
 

@@ -24,8 +24,18 @@ export function OrderSummary({ stopped = false }: { stopped?: boolean }) {
             <dt className="ledger-label text-ink-3">Per execution</dt>
             <dd className="mono-data font-medium text-ink">500 / 1,000 USDC</dd>
           </div>
-          <div className="mt-2.5 h-[6px] w-full bg-recess" role="img" aria-label="Half of the per-execution cap used">
-            <div className="h-full transition-all duration-700" style={{ width: `${perExecPct}%`, background: stopped ? "var(--revoked)" : "var(--accent)" }} />
+          <div
+            className="mt-2.5 h-[6px] w-full bg-recess"
+            role="img"
+            aria-label="Half of the per-execution cap used"
+          >
+            <div
+              className="h-full transition-all duration-700"
+              style={{
+                width: `${perExecPct}%`,
+                background: stopped ? "var(--revoked)" : "var(--accent)",
+              }}
+            />
           </div>
         </div>
         <div className="border-b border-rule py-4">
@@ -33,8 +43,18 @@ export function OrderSummary({ stopped = false }: { stopped?: boolean }) {
             <dt className="ledger-label text-ink-3">Total budget</dt>
             <dd className="mono-data font-medium text-ink">1,250 / 5,000 USDC</dd>
           </div>
-          <div className="mt-2.5 h-[6px] w-full bg-recess" role="img" aria-label="A quarter of the lifetime budget used">
-            <div className="h-full transition-all duration-700" style={{ width: `${budgetPct}%`, background: stopped ? "var(--revoked)" : "var(--accent)" }} />
+          <div
+            className="mt-2.5 h-[6px] w-full bg-recess"
+            role="img"
+            aria-label="A quarter of the lifetime budget used"
+          >
+            <div
+              className="h-full transition-all duration-700"
+              style={{
+                width: `${budgetPct}%`,
+                background: stopped ? "var(--revoked)" : "var(--accent)",
+              }}
+            />
           </div>
         </div>
         <div className="flex items-baseline justify-between gap-4 border-b border-rule py-4">
@@ -48,7 +68,11 @@ export function OrderSummary({ stopped = false }: { stopped?: boolean }) {
         <div className="pt-4">
           <dt className="ledger-label text-ink-3">Strategy</dt>
           <dd className="mt-2">
-            <CopyValue value={DEMO.strategyHash} display="0x4a91f2c7…42f8e0b5d" className="font-medium text-ink" />
+            <CopyValue
+              value={DEMO.strategyHash}
+              display="0x4a91f2c7…42f8e0b5d"
+              className="font-medium text-ink"
+            />
           </dd>
         </div>
       </dl>
