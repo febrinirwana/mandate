@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "environment": "ETHEREUM_MAINNET_FORK",
+  "chainId": "1",
+  "generatedAt": "2026-09-07T09:19:03.924Z",
+  "verificationBlock": {
+    "number": "25924448",
+    "hash": "0xf3f0a18d22c90db7a5e144d70be1293653a349d2bd2fc28d4a69ead489c2814b"
+  },
+  "contracts": [
+    {
+      "kind": "AQUA",
+      "name": "1inch Aqua",
+      "enabled": true,
+      "external": true,
+      "official": true,
+      "chainId": "1",
+      "address": "0x1111113ccf1426a8e30e2bff5e005d929bf6a90a",
+      "codeHash": "0x720bc02d220db318164dc3bade86eec1f3655bdc00fc1174de7d816a95c341f8",
+      "sourceRevision": "81c26e4619ce21556ab02b3284ee2685de21fb18",
+      "sourceUrl": "https://business.1inch.com/portal/documentation/aqua/reference/contract-addresses",
+      "verificationBlock": {
+        "number": "25924448",
+        "hash": "0xf3f0a18d22c90db7a5e144d70be1293653a349d2bd2fc28d4a69ead489c2814b"
+      },
+      "verifiedAt": "2026-09-07T09:01:11.000Z",
+      "probes": [
+        {
+          "method": "eth_getCode",
+          "resultHash": "0x720bc02d220db318164dc3bade86eec1f3655bdc00fc1174de7d816a95c341f8"
+        }
+      ]
+    },
+    {
+      "kind": "SWAP_TARGET",
+      "name": "1inch Aggregation Router V6",
+      "enabled": true,
+      "external": true,
+      "official": true,
+      "chainId": "1",
+      "address": "0x111111125421ca6dc452d289314280a0f8842a65",
+      "codeHash": "0xa5a286be4b80006cc547d7e899871aa01a0e0551e2a509233375405f92098c2f",
+      "sourceRevision": "etherscan-verified:AggregationRouterV6",
+      "sourceUrl": "https://etherscan.io/address/0x111111125421ca6dc452d289314280a0f8842a65#code",
+      "verificationBlock": {
+        "number": "25924448",
+        "hash": "0xf3f0a18d22c90db7a5e144d70be1293653a349d2bd2fc28d4a69ead489c2814b"
+      },
+      "verifiedAt": "2026-09-07T09:01:11.000Z",
+      "probes": [
+        {
+          "method": "eth_getCode",
+          "resultHash": "0xa5a286be4b80006cc547d7e899871aa01a0e0551e2a509233375405f92098c2f"
+        }
+      ]
+    },
+    {
+      "kind": "SWAP_EXECUTOR",
+      "name": "1inch Aggregation Executor",
+      "enabled": true,
+      "external": true,
+      "official": true,
+      "chainId": "1",
+      "address": "0x111116053f09d34a7eae8102887004445176ca11",
+      "codeHash": "0x17060e8cd05749bed98f4810852c270ee5458a4f0761f1b0a15bc4730babe18f",
+      "sourceRevision": "etherscan-verified:AggregationExecutor",
+      "sourceUrl": "https://etherscan.io/address/0x111116053F09d34a7Eae8102887004445176CA11#code",
+      "verificationBlock": {
+        "number": "25924448",
+        "hash": "0xf3f0a18d22c90db7a5e144d70be1293653a349d2bd2fc28d4a69ead489c2814b"
+      },
+      "verifiedAt": "2026-09-07T09:01:11.000Z",
+      "probes": [
+        {
+          "method": "eth_getCode",
+          "resultHash": "0x17060e8cd05749bed98f4810852c270ee5458a4f0761f1b0a15bc4730babe18f"
+        }
+      ]
+    }
+  ],
+  "tokens": [
+    {
+      "chainId": "1",
+      "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "codeHash": "0xd0a06b12ac47863b5c7be4185c2deaad1c61557033f56c7d4ea74429cbb25e23",
+      "decimals": 18,
+      "symbol": "WETH"
+    },
+    {
+      "chainId": "1",
+      "address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "codeHash": "0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505",
+      "decimals": 6,
+      "symbol": "USDC"
+    }
+  ],
+  "route": {
+    "provider": "1inch-classic-swap-v6.1",
+    "chainId": "1",
+    "apiVersion": "v6.1",
+    "endpoint": "https://api.1inch.com/swap/v6.1/1/swap",
+    "requestId": "431589eb1f7d1a7ca21e08068577c69f",
+    "requestedAt": "2026-09-07T09:19:03.013Z",
+    "responseHash": "0x19accb7ffa47cf433782ab3ce23e1679d9792438c9059cf01352413a47167d64",
+    "target": "0x111111125421ca6dc452d289314280a0f8842a65",
+    "selector": "0x07ed2379",
+    "calldataSchema": "swap(address,(address,address,address,address,uint256,uint256,uint256),bytes)",
+    "calldata": "0x07ed2379000000000000000000000000111116053f09d34a7eae8102887004445176ca11000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc2000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48000000000000000000000000111116053f09d34a7eae8102887004445176ca1100000000000000000000000029e72b3700facc83f083bfbf051ce5ecc5c13bd7000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000000eadc9e40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000012000000000000000000000000000000000000000000000000000000000000000cf0000000000000000000000000000000000000000000000000000b100004e00a0744c8c09c02aaa39b223fe8d0a0e5c4f27ead9083c756cc290cbe4bdd538d6e9b379bff5fe72c3d67a521de5000000000000000000000000000000000000000000000000000110d9316ec00002a0000000000000000000000000000000000000000000000000000000000eadc9e4ee63c1e580e0554a476a092703abdb3ef35c80e0d76d32939fc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2111111125421ca6dc452d289314280a0f8842a65000000000000000000000000000000000080ddfa29",
+    "calldataHash": "0x6ec6412659aaccb994ff7b25a9729495c43248e61a179303fb33a550a9f202bf",
+    "caller": "0x29e72b3700facc83f083bfbf051ce5ecc5c13bd7",
+    "executor": "0x111116053f09d34a7eae8102887004445176ca11",
+    "recipient": "0x29e72b3700facc83f083bfbf051ce5ecc5c13bd7",
+    "tokenIn": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    "tokenOut": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+    "amountIn": "100000000000000000",
+    "quotedAmountOut": "248758017",
+    "routeMinimumOut": "246270436",
+    "nativeValue": "0",
+    "allowPartialFill": false,
+    "deadline": null,
+    "protocols": ["UNISWAP_V3"]
+  }
+}

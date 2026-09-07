@@ -11,6 +11,7 @@ cache/
 out/
 broadcast/
 artifacts/
+graphify-out/
 *.keystore
 *.key
 *.pem

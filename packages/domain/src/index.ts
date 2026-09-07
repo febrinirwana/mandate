@@ -195,7 +195,14 @@ const DeploymentProbeSchema = z.strictObject({
 });
 
 const DeploymentRecordSchema = z.strictObject({
-  kind: z.enum(["AQUA", "MANDATE_APP", "ENS_REGISTRY", "ENS_RESOLVER", "SWAP_TARGET"]),
+  kind: z.enum([
+    "AQUA",
+    "MANDATE_APP",
+    "ENS_REGISTRY",
+    "ENS_RESOLVER",
+    "SWAP_TARGET",
+    "SWAP_EXECUTOR",
+  ]),
   name: z.string().min(1),
   enabled: z.boolean(),
   external: z.boolean(),
@@ -248,6 +255,150 @@ export const DeploymentManifestV1Schema = z
     });
   });
 
+const HexBytesSchema = z.string().regex(/^0x(?:[0-9a-f]{2})+$/);
+
+const VenueRouteV1Schema = z.strictObject({
+  provider: z.literal("1inch-classic-swap-v6.1"),
+  chainId: z.literal("1"),
+  apiVersion: z.literal("v6.1"),
+  endpoint: z.literal("https://api.1inch.com/swap/v6.1/1/swap"),
+  requestId: z.string().min(1),
+  requestedAt: TimestampSchema,
+  responseHash: NonZeroHash32Schema,
+  target: NonZeroAddressSchema,
+  selector: z.literal("0x07ed2379"),
+  calldataSchema: z.literal(
+    "swap(address,(address,address,address,address,uint256,uint256,uint256),bytes)",
+  ),
+  calldata: HexBytesSchema,
+  calldataHash: NonZeroHash32Schema,
+  caller: NonZeroAddressSchema,
+  executor: NonZeroAddressSchema,
+  recipient: NonZeroAddressSchema,
+  tokenIn: NonZeroAddressSchema,
+  tokenOut: NonZeroAddressSchema,
+  amountIn: PositiveUint256StringSchema,
+  quotedAmountOut: PositiveUint256StringSchema,
+  routeMinimumOut: PositiveUint256StringSchema,
+  nativeValue: z.literal("0"),
+  allowPartialFill: z.literal(false),
+  deadline: z.null(),
+  protocols: z.array(z.string().regex(/^[A-Z0-9_]+$/)).min(1),
+});
+const VenueContractRecordSchema = DeploymentRecordSchema.extend({
+  sourceRevision: z.string().min(1),
+});
+
+export const VenueManifestV1Schema = z
+  .strictObject({
+    version: z.literal(1),
+    environment: z.literal("ETHEREUM_MAINNET_FORK"),
+    chainId: z.literal("1"),
+    generatedAt: TimestampSchema,
+    verificationBlock: BlockRefSchema,
+    contracts: z.array(VenueContractRecordSchema).min(3),
+    tokens: z.array(ManifestTokenSchema).length(2),
+    route: VenueRouteV1Schema,
+  })
+  .superRefine((manifest, context) => {
+    manifest.contracts.forEach((contract, index) => {
+      if (contract.chainId !== manifest.chainId) {
+        context.addIssue({
+          code: "custom",
+          message: "contract chainId must match venue manifest chainId",
+          path: ["contracts", index, "chainId"],
+        });
+      }
+      if (
+        contract.verificationBlock.number !== manifest.verificationBlock.number ||
+        contract.verificationBlock.hash !== manifest.verificationBlock.hash
+      ) {
+        context.addIssue({
+          code: "custom",
+          message: "contract must be verified at the venue manifest block",
+          path: ["contracts", index, "verificationBlock"],
+        });
+      }
+    });
+    manifest.tokens.forEach((token, index) => {
+      if (token.chainId !== manifest.chainId) {
+        context.addIssue({
+          code: "custom",
+          message: "token chainId must match venue manifest chainId",
+          path: ["tokens", index, "chainId"],
+        });
+      }
+    });
+
+    const route = manifest.route;
+    if (route.caller !== route.recipient) {
+      context.addIssue({
+        code: "custom",
+        message: "route caller and recipient must both be the Mandate app",
+        path: ["route", "recipient"],
+      });
+    }
+    if (route.tokenIn === route.tokenOut) {
+      context.addIssue({
+        code: "custom",
+        message: "route tokens must differ",
+        path: ["route", "tokenOut"],
+      });
+    }
+    if (!route.calldata.startsWith(route.selector)) {
+      context.addIssue({
+        code: "custom",
+        message: "route selector must match calldata",
+        path: ["route", "calldata"],
+      });
+    }
+    if (BigInt(route.routeMinimumOut) > BigInt(route.quotedAmountOut)) {
+      context.addIssue({
+        code: "custom",
+        message: "route minimum output cannot exceed quoted output",
+        path: ["route", "routeMinimumOut"],
+      });
+    }
+    if (
+      !manifest.contracts.some(
+        (contract) =>
+          contract.kind === "SWAP_TARGET" && contract.enabled && contract.address === route.target,
+      )
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "route target must be an enabled SWAP_TARGET contract",
+        path: ["route", "target"],
+      });
+    }
+    if (
+      !manifest.contracts.some(
+        (contract) =>
+          contract.kind === "SWAP_EXECUTOR" &&
+          contract.enabled &&
+          contract.address === route.executor,
+      )
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "route executor must be an enabled SWAP_EXECUTOR contract",
+        path: ["route", "executor"],
+      });
+    }
+    for (const [field, tokenAddress] of [
+      ["tokenIn", route.tokenIn],
+      ["tokenOut", route.tokenOut],
+    ] as const) {
+      if (!manifest.tokens.some((token) => token.address === tokenAddress)) {
+        context.addIssue({
+          code: "custom",
+          message: `${field} must be recorded in venue manifest tokens`,
+          path: ["route", field],
+        });
+      }
+    }
+  });
+
 export const jsonSchemas = {
   strategyV1: z.toJSONSchema(StrategyV1Schema),
   simulationBindingV1: z.toJSONSchema(SimulationBindingV1Schema),
@@ -255,6 +406,7 @@ export const jsonSchemas = {
   mandateSnapshotV1: z.toJSONSchema(MandateSnapshotV1Schema),
   receiptAuditV1: z.toJSONSchema(ReceiptAuditV1Schema),
   deploymentManifestV1: z.toJSONSchema(DeploymentManifestV1Schema),
+  venueManifestV1: z.toJSONSchema(VenueManifestV1Schema),
 } as const;
 
 export type Address = z.infer<typeof AddressSchema>;
@@ -274,4 +426,5 @@ export type CheckV1 = z.infer<typeof CheckV1Schema>;
 export type MandateSnapshotV1 = z.infer<typeof MandateSnapshotV1Schema>;
 export type ReceiptAuditV1 = z.infer<typeof ReceiptAuditV1Schema>;
 export type DeploymentManifestV1 = z.infer<typeof DeploymentManifestV1Schema>;
+export type VenueManifestV1 = z.infer<typeof VenueManifestV1Schema>;
 export type SimulationV1 = z.infer<typeof SimulationV1Schema>;

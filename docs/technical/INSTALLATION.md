@@ -85,13 +85,19 @@ anvil --host 127.0.0.1 --port 8545
 
 Deploy pinned Aqua, token/venue fixtures, ENS-compatible identity fixture, and Mandate using the deterministic local script. Fixture contracts are for tests only and must have names that include `Mock` or `Test`. UI labels the environment `LOCAL FIXTURE`.
 
-For real settlement, fork a verified supported chain at a pinned block:
+Capture a live 1inch route and its finalized-block deployment manifest:
 
 ```bash
-anvil --fork-url "$SETTLEMENT_FORK_RPC_URL" --fork-block-number <verified-block>
+pnpm --filter @mandate/chain capture:route
 ```
 
-The concrete block is recorded only after a successful live probe. Never leave `<verified-block>` in an executable script or claimed result.
+Then replay the exact route against the production Mandate app, official Aqua, and real 1inch liquidity at the manifest's pinned block:
+
+```bash
+pnpm verify:venue
+```
+
+`verify:venue` reads the block from `packages/contracts/src/deployments/mainnet.json`. Foundry must be available as `forge`, or `FORGE_BIN` must point to the executable. The manifest records only public route and runtime evidence; secrets remain in the ignored `.env`.
 
 ## 6. ENSv2 Sepolia setup
 

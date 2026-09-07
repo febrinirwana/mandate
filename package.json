@@ -15,6 +15,7 @@
     "format:check": "prettier --check .",
     "docs:verify": "node scripts/verify-docs.mjs",
     "secrets:scan": "node scripts/scan-secrets.mjs",
+    "verify:venue": "node scripts/verify-mainnet-fork.mjs",
     "verify": "pnpm lint && pnpm test && pnpm typecheck && pnpm format:check && pnpm docs:verify && pnpm secrets:scan"
   },
   "devDependencies": {

@@ -135,13 +135,13 @@ Acceptance: public Sepolia evidence proves active identity permits and owner-con
 
 **Files:** create `packages/contracts/src/deployments/<chain>.json`, `packages/chain/src/route.ts`, `contracts/test/MandateAquaApp.fork.t.sol`, and `docs/evidence/settlement.md`.
 
-- [ ] Request a live route/quote for the fixed pair using current 1inch or verified venue API; record destination, selector, calldata schema, recipient, amount, deadline, and response/request ID.
-- [ ] Verify target bytecode/source and exact-input full-spend semantics at a pinned block.
-- [ ] Reject routes that require arbitrary target, agent-selected recipient, native value, partial input residue, callback custody, or approval persistence.
-- [ ] Run the exact production Mandate app on testnet or pinned fork; do not replace it with a harness that skips ENS/Aqua/policy checks.
-- [ ] Prove actual maker/app/agent physical balance deltas, Aqua virtual deltas, allowance reset, and event correlation.
-- [ ] If no real route works on Sepolia, document the dual proof without implying cross-chain atomicity: Sepolia identity proof plus supported-chain pinned fork settlement.
-- [ ] Commit `feat: admit one verified Mandate settlement route`.
+- [x] Request a live route/quote for the fixed pair using current 1inch or verified venue API; record destination, selector, calldata schema, recipient, amount, deadline, and response/request ID.
+- [x] Verify target bytecode/source and exact-input full-spend semantics at a pinned block.
+- [x] Reject routes that require arbitrary target, agent-selected recipient, native value, partial input residue, callback custody, or approval persistence.
+- [x] Run the exact production Mandate app on testnet or pinned fork; do not replace it with a harness that skips ENS/Aqua/policy checks.
+- [x] Prove actual maker/app/agent physical balance deltas, Aqua virtual deltas, allowance reset, and event correlation.
+- [x] If no real route works on Sepolia, document the dual proof without implying cross-chain atomicity: Sepolia identity proof plus supported-chain pinned fork settlement.
+- [x] Commit `feat: admit one verified Mandate settlement route`.
 
 Acceptance: venue manifest passes schema and runtime probe; successful proof uses real venue code/liquidity, while fixtures remain separately labeled.
 

@@ -21,6 +21,17 @@ export default tseslint.config(
   },
   eslint.configs.recommended,
   {
+    files: ["scripts/**/*.mjs", "packages/*/scripts/**/*.mjs"],
+    languageOptions: {
+      globals: {
+        console: "readonly",
+        process: "readonly",
+        TextEncoder: "readonly",
+        URL: "readonly",
+      },
+    },
+  },
+  {
     ...nextPlugin.configs["core-web-vitals"],
     files: ["apps/web/**/*.{js,jsx,ts,tsx}"],
     settings: {
