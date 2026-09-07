@@ -1,8 +1,11 @@
 import { mandateAquaAppAbi } from "@mandate/contracts/mandate-aqua-app";
 import {
+  CanonicalReceiptEvidenceV1Schema,
   ReceiptAuditV1Schema,
   SimulationV1Schema,
   StrategyV1Schema,
+  type BalanceDeltaEvidenceV1,
+  type CanonicalReceiptEvidenceV1,
   type CheckV1,
   type ExecutionV1,
   type MandateSnapshotV1,
@@ -91,6 +94,12 @@ function toContractStrategy(strategy: StrategyV1) {
     validUntil: BigInt(strategy.validUntil),
     salt: strategy.salt,
   };
+}
+
+export function assembleCanonicalReceiptEvidence(
+  input: Omit<CanonicalReceiptEvidenceV1, "version">,
+): CanonicalReceiptEvidenceV1 {
+  return CanonicalReceiptEvidenceV1Schema.parse({ version: 1, ...input });
 }
 
 export interface BuiltExecutionCall {
@@ -636,6 +645,159 @@ export class MandateChainService {
     );
     if (!event) throw new ChainReadError("NOT_FOUND", "MandateExecuted event not found");
     return { receipt, event };
+  }
+
+  private async balanceDeltas(
+    runtime: ChainRuntime,
+    strategy: StrategyV1,
+    execution: ExecutionV1,
+  ): Promise<BalanceDeltaEvidenceV1[]> {
+    const afterNumber = BigInt(execution.block.number);
+    if (afterNumber === 0n) return [];
+
+    try {
+      const beforeHeader = await runtime.client.getBlock({ blockNumber: afterNumber - 1n });
+      if (beforeHeader.hash === null) return [];
+      const beforeBlock = {
+        number: (afterNumber - 1n).toString(),
+        hash: beforeHeader.hash,
+      };
+      const accounts = [...new Set([strategy.maker, strategy.agent, runtime.mandateApp])];
+      const tokens = [strategy.tokenIn, strategy.tokenOut];
+      const physical = await Promise.all(
+        accounts.flatMap((account) =>
+          tokens.map(async (token) => {
+            const [before, after] = await Promise.all([
+              runtime.client.readContract({
+                address: token,
+                abi: erc20Abi,
+                functionName: "balanceOf",
+                args: [account],
+                blockNumber: afterNumber - 1n,
+              }),
+              runtime.client.readContract({
+                address: token,
+                abi: erc20Abi,
+                functionName: "balanceOf",
+                args: [account],
+                blockNumber: afterNumber,
+              }),
+            ]);
+            return { account, token, before, after };
+          }),
+        ),
+      );
+      const aqua = await runtime.client.readContract({
+        address: runtime.mandateApp,
+        abi: mandateAquaAppAbi,
+        functionName: "AQUA",
+        blockNumber: afterNumber,
+      });
+      const virtual = await Promise.all(
+        tokens.map(async (token) => {
+          const [before, after] = await Promise.all([
+            runtime.client.readContract({
+              address: aqua,
+              abi: aquaAbi,
+              functionName: "rawBalances",
+              args: [strategy.maker, runtime.mandateApp, execution.strategyHash, token],
+              blockNumber: afterNumber - 1n,
+            }),
+            runtime.client.readContract({
+              address: aqua,
+              abi: aquaAbi,
+              functionName: "rawBalances",
+              args: [strategy.maker, runtime.mandateApp, execution.strategyHash, token],
+              blockNumber: afterNumber,
+            }),
+          ]);
+          return { token, before: before[0], after: after[0] };
+        }),
+      );
+
+      return [
+        ...physical.map(({ account, token, before, after }) => ({
+          account: normalizeAddress(account),
+          token: normalizeAddress(token),
+          beforeBlock,
+          afterBlock: execution.block,
+          before: before.toString(),
+          after: after.toString(),
+          delta: (after - before).toString(),
+          source: "RPC_CALL" as const,
+        })),
+        ...virtual.map(({ token, before, after }) => ({
+          account: strategy.maker,
+          token: normalizeAddress(token),
+          beforeBlock,
+          afterBlock: execution.block,
+          before: before.toString(),
+          after: after.toString(),
+          delta: (after - before).toString(),
+          source: "AQUA_RAW_BALANCE" as const,
+        })),
+      ];
+    } catch {
+      return [];
+    }
+  }
+
+  async readCanonicalEvidence(input: {
+    chainId: string;
+    txHash: Hex;
+  }): Promise<CanonicalReceiptEvidenceV1> {
+    const runtime = this.runtime(input.chainId);
+    const execution = await this.readExecution(input);
+    if (execution.status !== "CONFIRMED") {
+      throw new ChainReadError("UNAVAILABLE", "receipt block is non-canonical");
+    }
+    const [audit, strategy, receipt] = await Promise.all([
+      this.auditReceipt(input),
+      this.strategy(runtime, execution.strategyHash),
+      this.receipt(runtime, input.txHash),
+    ]);
+    const decoded = new Map(
+      parseEventLogs({
+        abi: mandateAquaAppAbi,
+        logs: receipt.logs,
+        eventName: "MandateExecuted",
+        strict: true,
+      }).map((event) => [
+        event.logIndex.toString(),
+        {
+          kind: "MandateExecuted",
+          decoded: {
+            strategyHash: event.args.strategyHash,
+            maker: normalizeAddress(event.args.maker),
+            agent: normalizeAddress(event.args.agent),
+            amountIn: event.args.amountIn.toString(),
+            amountOut: event.args.amountOut.toString(),
+            usedInputAfter: event.args.usedInputAfter.toString(),
+          },
+        },
+      ]),
+    );
+    const balanceDeltas = await this.balanceDeltas(runtime, strategy, execution);
+    await this.ensureCanonical(runtime, BigInt(execution.block.number), execution.block.hash);
+    return assembleCanonicalReceiptEvidence({
+      strategy,
+      execution,
+      audit,
+      events: receipt.logs.map((log) => {
+        const event = decoded.get(log.logIndex.toString());
+        return {
+          logIndex: log.logIndex.toString(),
+          contract: normalizeAddress(log.address),
+          topic0: log.topics[0] ?? null,
+          topics: [...log.topics],
+          data: log.data,
+          kind: event?.kind ?? "RAW_LOG",
+          decoded: event?.decoded ?? {},
+          decoderVersion: 1,
+        };
+      }),
+      balanceDeltas,
+    });
   }
 
   async readExecution(input: { chainId: string; txHash: Hex }): Promise<ExecutionV1> {

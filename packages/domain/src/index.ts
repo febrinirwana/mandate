@@ -341,7 +341,7 @@ export const BalanceDeltaEvidenceV1Schema = z
     before: Uint256StringSchema,
     after: Uint256StringSchema,
     delta: SignedUint256StringSchema,
-    source: z.enum(["RPC_CALL", "EVENT_RECONSTRUCTION"]),
+    source: z.enum(["RPC_CALL", "EVENT_RECONSTRUCTION", "AQUA_RAW_BALANCE"]),
   })
   .superRefine((delta, context) => {
     if (BigInt(delta.beforeBlock.number) >= BigInt(delta.afterBlock.number)) {
