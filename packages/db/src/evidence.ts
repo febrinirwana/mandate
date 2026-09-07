@@ -1,4 +1,16 @@
+import { and, eq } from "drizzle-orm";
+
 import { CanonicalReceiptEvidenceV1Schema, type CanonicalReceiptEvidenceV1 } from "@mandate/domain";
+import type { DatabaseConnection } from "./index.js";
+import {
+  auditEvidence,
+  audits,
+  balanceDeltas,
+  evidenceInvalidations,
+  executionEvents,
+  executions,
+  strategies,
+} from "./schema.js";
 
 const sensitiveFieldNames = new Set([
   "apikey",
@@ -46,4 +58,142 @@ function inspectValue(value: unknown, seen: WeakSet<object>): void {
 export function assertPersistableEvidence(value: unknown): CanonicalReceiptEvidenceV1 {
   inspectValue(value, new WeakSet<object>());
   return CanonicalReceiptEvidenceV1Schema.parse(value);
+}
+
+export interface CanonicalEvidenceRepository {
+  persistCanonicalEvidence(input: CanonicalReceiptEvidenceV1): Promise<void>;
+  invalidateReorgedEvidence(input: ReorgInvalidationInput): Promise<void>;
+}
+
+export interface ReorgInvalidationInput {
+  chainId: string;
+  txHash: `0x${string}`;
+  replacedBlockHash: `0x${string}`;
+  canonicalBlockHash: `0x${string}` | null;
+  reason: "BLOCK_HASH_REPLACED" | "RECEIPT_DISAPPEARED";
+}
+
+export function createCanonicalEvidenceRepository(
+  db: DatabaseConnection["db"],
+): CanonicalEvidenceRepository {
+  return {
+    async persistCanonicalEvidence(input) {
+      const evidence = assertPersistableEvidence(input);
+      await db.transaction(async (tx) => {
+        await tx
+          .insert(strategies)
+          .values({
+            chainId: evidence.execution.chainId,
+            strategyHash: evidence.execution.strategyHash,
+            definition: evidence.strategy,
+          })
+          .onConflictDoNothing();
+        await tx
+          .insert(executions)
+          .values({
+            chainId: evidence.execution.chainId,
+            txHash: evidence.execution.txHash,
+            strategyHash: evidence.execution.strategyHash,
+            caller: evidence.execution.caller,
+            amountIn: evidence.execution.amountIn,
+            amountOut: evidence.execution.amountOut,
+            usedInputAfter: evidence.execution.usedInputAfter,
+            status: evidence.execution.status,
+            blockNumber: evidence.execution.block.number,
+            blockHash: evidence.execution.block.hash,
+          })
+          .onConflictDoNothing();
+        if (evidence.events.length > 0) {
+          await tx
+            .insert(executionEvents)
+            .values(
+              evidence.events.map((event) => ({
+                chainId: evidence.execution.chainId,
+                blockHash: evidence.execution.block.hash,
+                txHash: evidence.execution.txHash,
+                logIndex: event.logIndex,
+                contract: event.contract,
+                topic0: event.topic0,
+                topics: event.topics,
+                data: event.data,
+                kind: event.kind,
+                decoded: event.decoded,
+                decoderVersion: event.decoderVersion,
+              })),
+            )
+            .onConflictDoNothing();
+        }
+        if (evidence.balanceDeltas.length > 0) {
+          await tx
+            .insert(balanceDeltas)
+            .values(
+              evidence.balanceDeltas.map((delta) => ({
+                chainId: evidence.execution.chainId,
+                txHash: evidence.execution.txHash,
+                blockHash: evidence.execution.block.hash,
+                account: delta.account,
+                token: delta.token,
+                source: delta.source,
+                beforeBlockNumber: delta.beforeBlock.number,
+                beforeBlockHash: delta.beforeBlock.hash,
+                before: delta.before,
+                after: delta.after,
+                delta: delta.delta,
+              })),
+            )
+            .onConflictDoNothing();
+        }
+        await tx
+          .insert(audits)
+          .values({
+            chainId: evidence.audit.chainId,
+            txHash: evidence.audit.txHash,
+            blockHash: evidence.audit.block.hash,
+            auditVersion: evidence.audit.version,
+            result: evidence.audit.result,
+            checks: evidence.audit.checks,
+          })
+          .onConflictDoNothing();
+        await tx
+          .insert(auditEvidence)
+          .values(
+            evidence.audit.evidence.map((item, ordinal) => ({
+              chainId: evidence.audit.chainId,
+              txHash: evidence.audit.txHash,
+              blockHash: evidence.audit.block.hash,
+              auditVersion: evidence.audit.version,
+              ordinal,
+              provider: item.provider,
+              responseHash: item.responseHash,
+            })),
+          )
+          .onConflictDoNothing();
+      });
+    },
+    async invalidateReorgedEvidence(input) {
+      await db.transaction(async (tx) => {
+        await tx
+          .update(executions)
+          .set({ status: "REORGED" })
+          .where(
+            and(
+              eq(executions.chainId, input.chainId),
+              eq(executions.txHash, input.txHash),
+              eq(executions.blockHash, input.replacedBlockHash),
+            ),
+          );
+        await tx
+          .update(audits)
+          .set({ invalidatedAt: new Date(), invalidationReason: input.reason })
+          .where(
+            and(
+              eq(audits.chainId, input.chainId),
+              eq(audits.txHash, input.txHash),
+              eq(audits.blockHash, input.replacedBlockHash),
+            ),
+          );
+        await tx.insert(evidenceInvalidations).values(input).onConflictDoNothing();
+      });
+    },
+  };
 }

@@ -1,4 +1,4 @@
-import { drizzle } from "drizzle-orm/postgres-js";
+import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
 import * as schema from "./schema.js";
@@ -23,7 +23,12 @@ export function requireDatabaseUrl(value: string | undefined): string {
   return value;
 }
 
-export function createDatabase(databaseUrl = process.env["DATABASE_URL"]) {
+export interface DatabaseConnection {
+  db: PostgresJsDatabase<typeof schema>;
+  close: () => Promise<void>;
+}
+
+export function createDatabase(databaseUrl = process.env["DATABASE_URL"]): DatabaseConnection {
   const client = postgres(requireDatabaseUrl(databaseUrl), {
     prepare: false,
     max: 10,
