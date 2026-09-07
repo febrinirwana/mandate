@@ -302,6 +302,110 @@ export const ExecutionV1Schema = z.strictObject({
   status: z.enum(["CONFIRMED", "REVERTED", "REORGED"]),
 });
 
+const RawHexDataSchema = z.string().regex(/^0x(?:[0-9a-f]{2})*$/) as z.ZodType<`0x${string}`>;
+
+export const ExecutionEventEvidenceV1Schema = z
+  .strictObject({
+    logIndex: Uint256StringSchema,
+    contract: NonZeroAddressSchema,
+    topic0: Hash32Schema.nullable(),
+    topics: z.array(Hash32Schema).max(4),
+    data: RawHexDataSchema,
+    kind: z.string().min(1),
+    decoded: z.record(z.string().min(1), z.string().min(1)),
+    decoderVersion: z.int().positive(),
+  })
+  .superRefine((event, context) => {
+    if (event.topics.length === 0 && event.topic0 !== null) {
+      context.addIssue({
+        code: "custom",
+        message: "topic0 must be null when an event has no topics",
+        path: ["topic0"],
+      });
+    }
+    if (event.topics.length > 0 && event.topic0 !== event.topics[0]) {
+      context.addIssue({
+        code: "custom",
+        message: "topic0 must equal the first event topic",
+        path: ["topic0"],
+      });
+    }
+  });
+
+export const BalanceDeltaEvidenceV1Schema = z
+  .strictObject({
+    account: NonZeroAddressSchema,
+    token: NonZeroAddressSchema,
+    beforeBlock: BlockRefSchema,
+    afterBlock: BlockRefSchema,
+    before: Uint256StringSchema,
+    after: Uint256StringSchema,
+    delta: SignedUint256StringSchema,
+    source: z.enum(["RPC_CALL", "EVENT_RECONSTRUCTION"]),
+  })
+  .superRefine((delta, context) => {
+    if (BigInt(delta.beforeBlock.number) >= BigInt(delta.afterBlock.number)) {
+      context.addIssue({
+        code: "custom",
+        message: "beforeBlock must precede afterBlock",
+        path: ["beforeBlock"],
+      });
+    }
+    if (BigInt(delta.after) - BigInt(delta.before) !== BigInt(delta.delta)) {
+      context.addIssue({
+        code: "custom",
+        message: "delta must equal after minus before",
+        path: ["delta"],
+      });
+    }
+  });
+
+export const CanonicalReceiptEvidenceV1Schema = z
+  .strictObject({
+    version: z.literal(1),
+    strategy: StrategyV1Schema,
+    execution: ExecutionV1Schema,
+    audit: ReceiptAuditV1Schema,
+    events: z.array(ExecutionEventEvidenceV1Schema),
+    balanceDeltas: z.array(BalanceDeltaEvidenceV1Schema),
+  })
+  .superRefine((evidence, context) => {
+    if (evidence.execution.status !== "CONFIRMED") {
+      context.addIssue({
+        code: "custom",
+        message: "canonical evidence requires a confirmed execution",
+        path: ["execution", "status"],
+      });
+    }
+    const execution = evidence.execution;
+    const audit = evidence.audit;
+    if (
+      execution.chainId !== audit.chainId ||
+      execution.txHash !== audit.txHash ||
+      execution.strategyHash !== audit.strategyHash ||
+      execution.block.number !== audit.block.number ||
+      execution.block.hash !== audit.block.hash
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "execution and audit must share one chain, transaction, strategy, and block",
+        path: ["audit"],
+      });
+    }
+    evidence.balanceDeltas.forEach((delta, index) => {
+      if (
+        delta.afterBlock.number !== execution.block.number ||
+        delta.afterBlock.hash !== execution.block.hash
+      ) {
+        context.addIssue({
+          code: "custom",
+          message: "balance delta afterBlock must match the execution block",
+          path: ["balanceDeltas", index, "afterBlock"],
+        });
+      }
+    });
+  });
+
 const VenueRouteV1Schema = z.strictObject({
   provider: z.literal("1inch-classic-swap-v6.1"),
   chainId: z.literal("1"),
@@ -452,6 +556,7 @@ export const jsonSchemas = {
   receiptAuditV1: z.toJSONSchema(ReceiptAuditV1Schema),
   simulationRequestV1: z.toJSONSchema(SimulationRequestV1Schema),
   executionV1: z.toJSONSchema(ExecutionV1Schema),
+  canonicalReceiptEvidenceV1: z.toJSONSchema(CanonicalReceiptEvidenceV1Schema),
   deploymentManifestV1: z.toJSONSchema(DeploymentManifestV1Schema),
   venueManifestV1: z.toJSONSchema(VenueManifestV1Schema),
 } as const;
@@ -475,6 +580,9 @@ export type MandateSnapshotV1 = z.infer<typeof MandateSnapshotV1Schema>;
 export type ReceiptAuditV1 = z.infer<typeof ReceiptAuditV1Schema>;
 export type SimulationRequestV1 = z.infer<typeof SimulationRequestV1Schema>;
 export type ExecutionV1 = z.infer<typeof ExecutionV1Schema>;
+export type ExecutionEventEvidenceV1 = z.infer<typeof ExecutionEventEvidenceV1Schema>;
+export type BalanceDeltaEvidenceV1 = z.infer<typeof BalanceDeltaEvidenceV1Schema>;
+export type CanonicalReceiptEvidenceV1 = z.infer<typeof CanonicalReceiptEvidenceV1Schema>;
 export type DeploymentManifestV1 = z.infer<typeof DeploymentManifestV1Schema>;
 export type VenueManifestV1 = z.infer<typeof VenueManifestV1Schema>;
 export type SimulationV1 = z.infer<typeof SimulationV1Schema>;

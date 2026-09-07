@@ -3,13 +3,14 @@ import sepoliaManifest from "../../contracts/src/deployments/sepolia.json" with 
 
 import {
   AddressSchema,
+  CanonicalReceiptEvidenceV1Schema,
   DecimalStringSchema,
   DeploymentManifestV1Schema,
-  VenueManifestV1Schema,
   Hash32Schema,
   ReasonCodeSchema,
   ReceiptAuditV1Schema,
   StrategyV1Schema,
+  VenueManifestV1Schema,
   jsonSchemas,
 } from "../src/index.js";
 
@@ -229,6 +230,78 @@ describe("ReceiptAuditV1Schema", () => {
         ],
       }),
     ).toBeDefined();
+  });
+});
+
+describe("CanonicalReceiptEvidenceV1Schema", () => {
+  const validEvidence = {
+    version: 1,
+    strategy: validStrategy,
+    execution: {
+      version: 1,
+      chainId: "11155111",
+      txHash: hash("1"),
+      block: { number: "11634851", hash: hash("2") },
+      strategyHash: hash("3"),
+      caller: address("2"),
+      amountIn: "10",
+      amountOut: "20",
+      usedInputAfter: "10",
+      status: "CONFIRMED",
+    },
+    audit: {
+      version: 1,
+      result: "COMPLIANT",
+      chainId: "11155111",
+      txHash: hash("1"),
+      block: { number: "11634851", hash: hash("2") },
+      strategyHash: hash("3"),
+      checks: [],
+      evidence: [{ provider: "rpc-receipt", responseHash: hash("4") }],
+    },
+    events: [
+      {
+        logIndex: "0",
+        contract: address("8"),
+        topic0: hash("5"),
+        topics: [hash("5")],
+        data: "0x",
+        kind: "MandateExecuted",
+        decoded: { strategyHash: hash("3") },
+        decoderVersion: 1,
+      },
+    ],
+    balanceDeltas: [
+      {
+        account: address("1"),
+        token: address("6"),
+        beforeBlock: { number: "11634850", hash: hash("6") },
+        afterBlock: { number: "11634851", hash: hash("2") },
+        before: "10",
+        after: "0",
+        delta: "-10",
+        source: "RPC_CALL",
+      },
+    ],
+  } as const;
+
+  it("accepts a confirmed receipt bound to one strategy and one canonical block", () => {
+    expect(CanonicalReceiptEvidenceV1Schema.parse(validEvidence)).toEqual(validEvidence);
+  });
+
+  it("rejects inconsistent audit bindings and malformed raw event bytes", () => {
+    expect(
+      CanonicalReceiptEvidenceV1Schema.safeParse({
+        ...validEvidence,
+        audit: { ...validEvidence.audit, txHash: hash("9") },
+      }).success,
+    ).toBe(false);
+    expect(
+      CanonicalReceiptEvidenceV1Schema.safeParse({
+        ...validEvidence,
+        events: [{ ...validEvidence.events[0], data: "0x0" }],
+      }).success,
+    ).toBe(false);
   });
 });
 
