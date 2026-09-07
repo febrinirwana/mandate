@@ -13,22 +13,26 @@ const nonZeroAddress = (value: string) => value !== `0x${"0".repeat(40)}`;
 const nonZeroHash = (value: string) => value !== `0x${"0".repeat(64)}`;
 const nonZeroSelector = (value: string) => value !== "0x00000000";
 
-export const AddressSchema = z.string().regex(ADDRESS);
-export const Hash32Schema = z.string().regex(HASH32);
-export const SelectorSchema = z.string().regex(SELECTOR);
+export const AddressSchema = z.string().regex(ADDRESS) as z.ZodType<`0x${string}`>;
+export const Hash32Schema = z.string().regex(HASH32) as z.ZodType<`0x${string}`>;
+export const SelectorSchema = z.string().regex(SELECTOR) as z.ZodType<`0x${string}`>;
 export const DecimalStringSchema = z.string().regex(DECIMAL);
 export const PositiveDecimalStringSchema = DecimalStringSchema.refine((value) => value !== "0");
 export const Uint64StringSchema = DecimalStringSchema.refine(
-  (value) => BigInt(value) <= UINT64_MAX,
+  (value) => DECIMAL.test(value) && BigInt(value) <= UINT64_MAX,
 );
 export const Uint256StringSchema = DecimalStringSchema.refine(
-  (value) => BigInt(value) <= UINT256_MAX,
+  (value) => DECIMAL.test(value) && BigInt(value) <= UINT256_MAX,
 );
 export const PositiveUint256StringSchema = Uint256StringSchema.refine((value) => value !== "0");
 export const SignedUint256StringSchema = z
   .string()
   .regex(/^-?(?:0|[1-9][0-9]*)$/)
-  .refine((value) => BigInt(value.startsWith("-") ? value.slice(1) : value) <= UINT256_MAX);
+  .refine(
+    (value) =>
+      /^-?(?:0|[1-9][0-9]*)$/.test(value) &&
+      BigInt(value.startsWith("-") ? value.slice(1) : value) <= UINT256_MAX,
+  );
 
 const NonZeroAddressSchema = AddressSchema.refine(nonZeroAddress);
 const NonZeroHash32Schema = Hash32Schema.refine(nonZeroHash);
@@ -89,6 +93,9 @@ export const StrategyV1Schema = z
   });
 
 const reasonCodes = [
+  "INVALID_STRATEGY",
+  "ALREADY_ACTIVATED",
+  "MAKER_NOT_CALLER",
   "MANDATE_INACTIVE",
   "MANDATE_REVOKED",
   "MANDATE_NOT_STARTED",
@@ -111,9 +118,16 @@ const reasonCodes = [
   "SELECTOR_MISMATCH",
   "EXECUTION_DEADLINE_EXPIRED",
   "ROUTE_REVERTED",
+  "ROUTE_CALL_FAILED",
   "INPUT_NOT_FULLY_SPENT",
+  "INPUT_TRANSFER_MISMATCH",
   "OUTPUT_TOO_LOW",
   "ALLOWANCE_NOT_CLEARED",
+  "RESIDUAL_BALANCE",
+  "EVENT_UNDECODABLE",
+  "TRACE_UNAVAILABLE",
+  "REENTRANT_CALL",
+  "TOKEN_OPERATION_FAILED",
   "SIMULATION_STALE",
   "RECEIPT_NOT_CANONICAL",
 ] as const;
@@ -139,6 +153,7 @@ export const CheckV1Schema = z.strictObject({
 
 export const SimulationV1Schema = z.strictObject({
   version: z.literal(1),
+  id: NonZeroHash32Schema,
   result: SimulationResultSchema,
   reasons: z.array(ReasonCodeSchema),
   binding: SimulationBindingV1Schema,
@@ -255,7 +270,37 @@ export const DeploymentManifestV1Schema = z
     });
   });
 
-const HexBytesSchema = z.string().regex(/^0x(?:[0-9a-f]{2})+$/);
+export const HexBytesSchema = z.string().regex(/^0x(?:[0-9a-f]{2})+$/) as z.ZodType<`0x${string}`>;
+
+export const SimulationRequestV1Schema = z.strictObject({
+  chainId: ChainIdSchema,
+  mandateApp: NonZeroAddressSchema,
+  strategy: StrategyV1Schema,
+  amountIn: PositiveUint256StringSchema,
+  agentMinOut: Uint256StringSchema,
+  executionDeadline: Uint64StringSchema,
+  routeData: HexBytesSchema,
+  blockNumber: PositiveUint256StringSchema.optional(),
+  previous: z
+    .strictObject({
+      id: NonZeroHash32Schema,
+      binding: SimulationBindingV1Schema,
+    })
+    .optional(),
+});
+
+export const ExecutionV1Schema = z.strictObject({
+  version: z.literal(1),
+  chainId: ChainIdSchema,
+  txHash: NonZeroHash32Schema,
+  block: BlockRefSchema,
+  strategyHash: NonZeroHash32Schema,
+  caller: NonZeroAddressSchema,
+  amountIn: PositiveUint256StringSchema,
+  amountOut: PositiveUint256StringSchema,
+  usedInputAfter: PositiveUint256StringSchema,
+  status: z.enum(["CONFIRMED", "REVERTED", "REORGED"]),
+});
 
 const VenueRouteV1Schema = z.strictObject({
   provider: z.literal("1inch-classic-swap-v6.1"),
@@ -405,6 +450,8 @@ export const jsonSchemas = {
   checkV1: z.toJSONSchema(CheckV1Schema),
   mandateSnapshotV1: z.toJSONSchema(MandateSnapshotV1Schema),
   receiptAuditV1: z.toJSONSchema(ReceiptAuditV1Schema),
+  simulationRequestV1: z.toJSONSchema(SimulationRequestV1Schema),
+  executionV1: z.toJSONSchema(ExecutionV1Schema),
   deploymentManifestV1: z.toJSONSchema(DeploymentManifestV1Schema),
   venueManifestV1: z.toJSONSchema(VenueManifestV1Schema),
 } as const;
@@ -417,6 +464,7 @@ export type Selector = z.infer<typeof SelectorSchema>;
 export type Uint256String = z.infer<typeof Uint256StringSchema>;
 export type PositiveUint256String = z.infer<typeof PositiveUint256StringSchema>;
 export type Uint64String = z.infer<typeof Uint64StringSchema>;
+export type HexBytes = z.infer<typeof HexBytesSchema>;
 export type BlockRef = z.infer<typeof BlockRefSchema>;
 export type StrategyV1 = z.infer<typeof StrategyV1Schema>;
 export type ReasonCode = z.infer<typeof ReasonCodeSchema>;
@@ -425,6 +473,8 @@ export type SimulationBindingV1 = z.infer<typeof SimulationBindingV1Schema>;
 export type CheckV1 = z.infer<typeof CheckV1Schema>;
 export type MandateSnapshotV1 = z.infer<typeof MandateSnapshotV1Schema>;
 export type ReceiptAuditV1 = z.infer<typeof ReceiptAuditV1Schema>;
+export type SimulationRequestV1 = z.infer<typeof SimulationRequestV1Schema>;
+export type ExecutionV1 = z.infer<typeof ExecutionV1Schema>;
 export type DeploymentManifestV1 = z.infer<typeof DeploymentManifestV1Schema>;
 export type VenueManifestV1 = z.infer<typeof VenueManifestV1Schema>;
 export type SimulationV1 = z.infer<typeof SimulationV1Schema>;

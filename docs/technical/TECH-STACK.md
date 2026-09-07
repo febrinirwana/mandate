@@ -11,7 +11,7 @@
 | Wallet/RPC         | viem + wagmi                                                 | typed calldata, block-tagged reads, simulation, wallet state              |
 | API                | Hono on Node                                                 | small versioned boundary for agent and Bazantic clients                   |
 | Validation         | Zod + generated JSON Schema/OpenAPI                          | one trust-boundary schema per contract                                    |
-| Database           | PostgreSQL + Drizzle                                         | relational receipt/evidence provenance and migrations                     |
+| Database           | Supabase managed PostgreSQL + Drizzle                        | relational receipt/evidence provenance, reviewed migrations, managed ops  |
 | Contracts          | Solidity 0.8.30 + Foundry                                    | matches current Aqua compiler and supports focused unit/fork tests        |
 | Contract libraries | pinned 1inch Aqua source + OpenZeppelin-compatible utilities | reuse audited primitives; no copied partial interfaces without source pin |
 | Agent signer       | viem local account in isolated server process                | direct dedicated EOA without owner-key custody                            |
@@ -54,8 +54,8 @@ No generic `utils` package. Each invariant belongs to the domain that owns it.
 - Node.js active LTS, minimum 22; pin exact version.
 - pnpm through Corepack; exact `packageManager` value.
 - Solidity/Foundry compiler 0.8.30 for Aqua source compatibility.
-- PostgreSQL 16 or newer.
-- Docker only for local PostgreSQL.
+- Supabase PostgreSQL 17 for shared environments; local PostgreSQL remains optional for isolated tests.
+- Runtime queries use the transaction pooler with prepared statements disabled; migrations use the IPv4 session pooler.
 - Sepolia RPC with archival/block-tagged read support for the demo window.
 - A supported-chain archival RPC for the pinned settlement fork if needed.
 
@@ -115,6 +115,11 @@ Use SafeERC20 semantics and `forceApprove` where supported by the selected libra
 - Agent signer module exposes only `signAndSendMandateExecution(request)`; it does not expose a raw private key or arbitrary `sendTransaction`.
 - Browser never receives agent/server secret or owner private key.
 - Shared schemas generate OpenAPI, JSON Schema, and MCP tool definitions.
+
+Supabase is storage, not authority. Task 7 computes policy, simulation, and audit from
+block-bound chain reads; a database outage can make evidence unavailable but can never
+turn a `FAIL` or `UNKNOWN` into `PASS`. Drizzle owns typed persistence, Supabase CLI owns
+project linking, and reviewed migrations are applied over the session pooler.
 
 ## 7. Package interfaces
 

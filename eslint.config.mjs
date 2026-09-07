@@ -5,7 +5,7 @@ import tseslint from "typescript-eslint";
 
 const repoRoot = path.resolve(import.meta.dirname);
 
-const typedFiles = ["apps/web/**/*.{ts,tsx}", "packages/**/*.{ts,tsx}"];
+const typedFiles = ["apps/**/*.{ts,tsx}", "packages/**/*.{ts,tsx}"];
 
 export default tseslint.config(
   {

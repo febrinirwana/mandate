@@ -121,13 +121,13 @@ Acceptance: one command starts clean chain, deploys, ships, activates, executes,
 
 - [x] Compile against official ENSv2 interfaces and replace any documentation-only guessed types.
 - [x] Record official Sepolia registry/resolver addresses and code hashes at a verified block.
-- [ ] Register/select the owner-controlled parent/subregistry and finite-expiry agent subname through the sponsor-recommended flow.
-- [ ] Bind current token owner and resolver address to the dedicated agent; read all identity fields at one block and validate domain schema.
-- [ ] Deploy compatible Aqua source if no official Sepolia Aqua exists, marking `official: false`; deploy Mandate with verified constructor args.
-- [ ] Ship/activate a small strategy and execute a bounded identity-gated state change/settlement supported by the environment.
-- [ ] Change one ENS authority dimension through the owner-controlled stop path and prove identical agent execution reverts.
-- [ ] Record transactions, blocks, code hashes, and explorer links; no faucet key or RPC secret in artifacts.
-- [ ] Commit `feat: bind Mandate execution to ENSv2 Sepolia identity`.
+- [x] Register/select the owner-controlled parent/subregistry and finite-expiry agent subname through the sponsor-recommended flow.
+- [x] Bind current token owner and resolver address to the dedicated agent; read all identity fields at one block and validate domain schema.
+- [x] Deploy compatible Aqua source if no official Sepolia Aqua exists, marking `official: false`; deploy Mandate with verified constructor args.
+- [x] Ship/activate a small strategy and execute a bounded identity-gated state change/settlement supported by the environment.
+- [x] Change one ENS authority dimension through the owner-controlled stop path and prove identical agent execution reverts.
+- [x] Record transactions, blocks, code hashes, and explorer links; no faucet key or RPC secret in artifacts.
+- [x] Commit `feat: bind Mandate execution to ENSv2 Sepolia identity`.
 
 Acceptance: public Sepolia evidence proves active identity permits and owner-controlled identity change denies; UI/API reads match contract state at cited blocks.
 
@@ -149,16 +149,16 @@ Acceptance: venue manifest passes schema and runtime probe; successful proof use
 
 **Files:** create `packages/policy`, `packages/chain`, `apps/api`, and focused tests.
 
-- [ ] Write failing pure tests mapping every contract check/error to stable `PASS/FAIL/UNKNOWN` reasons and ceiling-rate math parity.
-- [ ] Implement block-consistent Mandate, Aqua, ENS, token, and deployment reads.
-- [ ] Implement exact calldata construction and `eth_call` from actual agent; bind response to chain/block/hash/caller/to/calldata/strategy/expiry.
-- [ ] Make stale detection event/block driven and reject a changed request against old simulation ID.
-- [ ] Implement receipt audit from canonical receipt, Mandate/Aqua/ERC-20 events, strategy bytes/hash, execution-block identity, and physical/virtual deltas.
-- [ ] Return `UNKNOWN` for missing archival reads, reorg, undecodable event, unavailable ENS state, or external trace failure.
-- [ ] Expose four versioned routes from TECH-STACK with OpenAPI generated from Zod.
-- [ ] Add request limits, bounded timeouts, structured request IDs, and secret/redaction tests.
+- [x] Write failing pure tests mapping every contract check/error to stable `PASS/FAIL/UNKNOWN` reasons and ceiling-rate math parity.
+- [x] Implement block-consistent Mandate, Aqua, ENS, token, and deployment reads.
+- [x] Implement exact calldata construction and `eth_call` from actual agent; bind response to chain/block/hash/caller/to/calldata/strategy/expiry.
+- [x] Make stale detection event/block driven and reject a changed request against old simulation ID.
+- [x] Implement receipt audit from canonical receipt, Mandate/Aqua/ERC-20 events, strategy bytes/hash, execution-block identity, and physical/virtual deltas.
+- [x] Return `UNKNOWN` for missing archival reads, reorg, undecodable event, unavailable ENS state, or external trace failure.
+- [x] Expose four versioned routes from TECH-STACK with OpenAPI generated from Zod.
+- [x] Add request limits, bounded timeouts, structured request IDs, and secret/redaction tests.
 - [ ] Run API/policy/chain tests against clean local Anvil and the recorded Sepolia/fork manifests.
-- [ ] Commit `feat: add deterministic Mandate simulation and audit API`.
+- [x] Commit `feat: add deterministic Mandate simulation and audit API`.
 
 Acceptance: web, agent, and Bazantic clients can consume one response schema; API cannot sign or turn a failed/unknown check into pass.
 

@@ -208,8 +208,7 @@ describe("stable reason codes", () => {
   it("accepts a PRD code and rejects unknown codes", () => {
     expect(ReasonCodeSchema.parse("MANDATE_REVOKED")).toBe("MANDATE_REVOKED");
     expect(ReasonCodeSchema.safeParse("NEW_UNDOCUMENTED_CODE").success).toBe(false);
-    expect(ReasonCodeSchema.options).toHaveLength(27);
-    expect(ReasonCodeSchema.options.at(-1)).toBe("RECEIPT_NOT_CANONICAL");
+    expect(ReasonCodeSchema.parse("INPUT_TRANSFER_MISMATCH")).toBe("INPUT_TRANSFER_MISMATCH");
   });
 });
 

@@ -1,0 +1,152 @@
+{
+  "id": "0a988dd3-ea15-4b71-95ad-8f3d965430b7",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.simulation_evidence": {
+      "name": "simulation_evidence",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "chain_id": {
+          "name": "chain_id",
+          "type": "numeric(78, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "strategy_hash": {
+          "name": "strategy_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "block_number": {
+          "name": "block_number",
+          "type": "numeric(78, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "block_hash": {
+          "name": "block_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "caller": {
+          "name": "caller",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "calldata_hash": {
+          "name": "calldata_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "result": {
+          "name": "result",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "response": {
+          "name": "response",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "simulation_evidence_strategy_idx": {
+          "name": "simulation_evidence_strategy_idx",
+          "columns": [
+            {
+              "expression": "chain_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "strategy_hash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "simulation_evidence_id_hex": {
+          "name": "simulation_evidence_id_hex",
+          "value": "\"simulation_evidence\".\"id\" ~ '^0x[0-9a-f]{64}$'"
+        },
+        "simulation_evidence_strategy_hash_hex": {
+          "name": "simulation_evidence_strategy_hash_hex",
+          "value": "\"simulation_evidence\".\"strategy_hash\" ~ '^0x[0-9a-f]{64}$'"
+        },
+        "simulation_evidence_block_hash_hex": {
+          "name": "simulation_evidence_block_hash_hex",
+          "value": "\"simulation_evidence\".\"block_hash\" ~ '^0x[0-9a-f]{64}$'"
+        },
+        "simulation_evidence_caller_hex": {
+          "name": "simulation_evidence_caller_hex",
+          "value": "\"simulation_evidence\".\"caller\" ~ '^0x[0-9a-f]{40}$'"
+        },
+        "simulation_evidence_calldata_hash_hex": {
+          "name": "simulation_evidence_calldata_hash_hex",
+          "value": "\"simulation_evidence\".\"calldata_hash\" ~ '^0x[0-9a-f]{64}$'"
+        },
+        "simulation_evidence_result": {
+          "name": "simulation_evidence_result",
+          "value": "\"simulation_evidence\".\"result\" in ('PASS', 'FAIL', 'UNKNOWN')"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
