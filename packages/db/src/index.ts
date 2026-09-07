@@ -36,4 +36,5 @@ export function createDatabase(databaseUrl = process.env["DATABASE_URL"]) {
   };
 }
 
+export * from "./evidence.js";
 export * from "./schema.js";
