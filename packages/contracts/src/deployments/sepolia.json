@@ -2,7 +2,7 @@
   "version": 1,
   "environment": "SEPOLIA",
   "chainId": "11155111",
-  "generatedAt": "2026-09-04T17:48:36.000Z",
+  "generatedAt": "2026-09-06T07:29:36.000Z",
   "contracts": [
     {
       "kind": "AQUA",
@@ -16,10 +16,10 @@
       "sourceRevision": "81c26e4619ce21556ab02b3284ee2685de21fb18",
       "sourceUrl": "https://github.com/1inch/aqua/tree/81c26e4619ce21556ab02b3284ee2685de21fb18",
       "verificationBlock": {
-        "number": "11634993",
-        "hash": "0xfa6aa87d51040cc664902d6ff5a11b0c1917c0deb0e3ce48651f3655e33fb338"
+        "number": "11645813",
+        "hash": "0xb32305bfd7b46e4b539c9dd831eaa31b4c5d23cd6d62c26354f92e22a1da70fb"
       },
-      "verifiedAt": "2026-09-04T17:48:36.000Z",
+      "verifiedAt": "2026-09-06T07:29:36.000Z",
       "probes": [
         {
           "method": "owner() ABI result bytes, SHA-256",
@@ -39,10 +39,10 @@
       "sourceRevision": "97a57293f3b4279d94b571e678edb53ce62638f4",
       "sourceUrl": "https://github.com/ensdomains/contracts-v2/tree/97a57293f3b4279d94b571e678edb53ce62638f4",
       "verificationBlock": {
-        "number": "11634993",
-        "hash": "0xfa6aa87d51040cc664902d6ff5a11b0c1917c0deb0e3ce48651f3655e33fb338"
+        "number": "11645813",
+        "hash": "0xb32305bfd7b46e4b539c9dd831eaa31b4c5d23cd6d62c26354f92e22a1da70fb"
       },
-      "verifiedAt": "2026-09-04T17:48:36.000Z",
+      "verifiedAt": "2026-09-06T07:29:36.000Z",
       "probes": [
         {
           "method": "getState(uint256) with label id 0 ABI result bytes, SHA-256",
@@ -52,7 +52,7 @@
     },
     {
       "kind": "ENS_RESOLVER",
-      "name": "ENSv2 PublicResolverV2",
+      "name": "ENSv2 PublicResolverV2 (not identity authority)",
       "enabled": false,
       "external": true,
       "official": true,
@@ -62,10 +62,10 @@
       "sourceRevision": "97a57293f3b4279d94b571e678edb53ce62638f4",
       "sourceUrl": "https://github.com/ensdomains/contracts-v2/tree/97a57293f3b4279d94b571e678edb53ce62638f4",
       "verificationBlock": {
-        "number": "11634993",
-        "hash": "0xfa6aa87d51040cc664902d6ff5a11b0c1917c0deb0e3ce48651f3655e33fb338"
+        "number": "11645813",
+        "hash": "0xb32305bfd7b46e4b539c9dd831eaa31b4c5d23cd6d62c26354f92e22a1da70fb"
       },
-      "verifiedAt": "2026-09-04T17:48:36.000Z",
+      "verifiedAt": "2026-09-06T07:29:36.000Z",
       "probes": [
         {
           "method": "addr(bytes32) with node 0 ABI result bytes, SHA-256",
