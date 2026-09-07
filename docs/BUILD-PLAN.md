@@ -157,7 +157,7 @@ Acceptance: venue manifest passes schema and runtime probe; successful proof use
 - [x] Return `UNKNOWN` for missing archival reads, reorg, undecodable event, unavailable ENS state, or external trace failure.
 - [x] Expose four versioned routes from TECH-STACK with OpenAPI generated from Zod.
 - [x] Add request limits, bounded timeouts, structured request IDs, and secret/redaction tests.
-- [ ] Run API/policy/chain tests against clean local Anvil and the recorded Sepolia/fork manifests.
+- [x] Run API/policy/chain tests against clean local Anvil and the recorded Sepolia/fork manifests.
 - [x] Commit `feat: add deterministic Mandate simulation and audit API`.
 
 Acceptance: web, agent, and Bazantic clients can consume one response schema; API cannot sign or turn a failed/unknown check into pass.
