@@ -79,6 +79,24 @@ async function send(
   }
 }
 
+export async function confirmSubmitted(transaction: WalletState): Promise<WalletState> {
+  if (transaction.kind !== "SUBMITTED") return transaction;
+  const wallet = provider();
+  if (!wallet) return { kind: "UNAVAILABLE" };
+  try {
+    const receipt = await wallet.request({
+      method: "eth_getTransactionReceipt",
+      params: [transaction.txHash],
+    });
+    if (!receipt || typeof receipt !== "object" || !("status" in receipt)) return transaction;
+    return receipt.status === "0x1"
+      ? { kind: "CONFIRMED", txHash: transaction.txHash }
+      : { kind: "REVERTED", message: "Transaction receipt status is reverted" };
+  } catch {
+    return transaction;
+  }
+}
+
 export async function readAquaAddress(mandateApp: Address): Promise<Address | null> {
   const wallet = provider();
   if (!wallet) return null;

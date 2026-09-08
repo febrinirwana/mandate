@@ -42,9 +42,12 @@ function contractStrategy(strategy: StrategyV1) {
   };
 }
 
+export function encodeStrategy(strategy: StrategyV1): Hex {
+  return encodeAbiParameters(strategyHashInputs, [contractStrategy(StrategyV1Schema.parse(strategy))]);
+}
+
 export function strategyHash(strategy: StrategyV1): Hex {
-  const exactStrategy = StrategyV1Schema.parse(strategy);
-  return keccak256(encodeAbiParameters(strategyHashInputs, [contractStrategy(exactStrategy)]));
+  return keccak256(encodeStrategy(strategy));
 }
 
 export function buildExecutionIntent(input: SimulationRequestV1): {
