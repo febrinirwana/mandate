@@ -42,18 +42,20 @@ Foundry dependencies must be pinned to commit hashes, including Aqua and ENSv2 c
 
 ## 3. Environment contract
 
-Create local `.env` files from the checked-in example after scaffold. Minimum server-only variables:
+Create the ignored root `.env` from `.env.example`. For a local PostgreSQL run, set:
 
 ```dotenv
 DATABASE_URL=postgresql://mandate:mandate@127.0.0.1:55432/mandate?sslmode=disable
 DATABASE_MIGRATION_URL=postgresql://mandate:mandate@127.0.0.1:55432/mandate?sslmode=disable
 SEPOLIA_RPC_URL=https://...
-SETTLEMENT_FORK_RPC_URL=https://...
-NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=...
+SEPOLIA_MANDATE_APP=0x...
+SEPOLIA_MANDATE_DEPLOYMENT_BLOCK=11648628
 ONEINCH_API_KEY=...
 BAZANTIC_API_KEY=...
-AGENT_KEYSTORE_PATH=...
-AGENT_KEYSTORE_PASSWORD=...
+API_PORT=3001
+WORKER_CONFIRMATION_DEPTH=4
+WORKER_BATCH_SIZE=25
+WORKER_POLL_INTERVAL_MS=15000
 ```
 
 Rules:
@@ -138,15 +140,24 @@ Operational constraints:
 
 ## 9. Running services
 
-Expected commands after implementation:
+Start local PostgreSQL only when not using the managed Supabase database:
 
 ```bash
-pnpm dev
-pnpm --filter @mandate/agent dev
-pnpm --filter @mandate/worker dev
+docker compose up -d --wait postgres
+pnpm --filter @mandate/db db:migrate
 ```
 
-A single `pnpm dev` may run web/API for local convenience. The signer process remains separately configured and can be disabled; public inspection and manual-agent simulation still work.
+From the repository root, run the web app, API, and receipt-confirmation worker in one terminal:
+
+```bash
+pnpm --parallel --filter @mandate/web --filter @mandate/api --filter @mandate/worker run dev
+```
+
+- Web: [http://localhost:3100](http://localhost:3100). Port 3100 is explicitly pinned in `apps/web/package.json`.
+- API: [http://localhost:3001/openapi.json](http://localhost:3001/openapi.json), configurable through `API_PORT`.
+- Worker: no HTTP port. It polls pending observed executions and commits evidence only after canonical-chain confirmation.
+
+The web surface currently renders clearly labeled synthetic demonstration data; it does not yet call the API. Use the API directly to test live Sepolia reads and receipt evidence.
 
 ## 10. Bazantic setup
 
