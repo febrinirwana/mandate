@@ -1,5 +1,17 @@
 # Mandate Smart-Contract Specification
 
+## Sepolia deployment
+
+| Field                  | Value                                                                                                                                                                      |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mandate app            | [`0x34bd1a513858f33c8929b93E892725F80c106576`](https://sepolia.etherscan.io/address/0x34bd1a513858f33c8929b93E892725F80c106576)                                            |
+| Chain                  | Sepolia (`11155111`)                                                                                                                                                       |
+| Deployment block       | `11648628`                                                                                                                                                                 |
+| Deployment transaction | [`0x1b07dce63c9bfd03eebbcb04affbbe4e7b9bad10bcd0913fdb5416dbfe67becc`](https://sepolia.etherscan.io/tx/0x1b07dce63c9bfd03eebbcb04affbbe4e7b9bad10bcd0913fdb5416dbfe67becc) |
+| Aqua                   | [`0x1111113CCf1426A8E30e2bfF5E005d929bF6a90a`](https://sepolia.etherscan.io/address/0x1111113CCf1426A8E30e2bfF5E005d929bF6a90a)                                            |
+
+This is the configured public runtime for the API and confirmation worker. The address belongs in the ignored `.env` as `SEPOLIA_MANDATE_APP`; it is not a secret.
+
 ## 1. Contract decision
 
 MVP deploys one non-upgradeable `MandateAquaApp`. It is a narrow exact-input executor, not a generic router. It binds one Aqua strategy hash to one treasury maker, one dedicated agent, one live ENSv2 identity, one pair, one venue target/selector, one rate floor, caps, and a time window.
