@@ -17,7 +17,8 @@ export function requireDatabaseUrl(value: string | undefined): string {
   if (!(["postgres:", "postgresql:"] as string[]).includes(url.protocol)) {
     throw new Error("DATABASE_URL must be a PostgreSQL URL");
   }
-  if (url.searchParams.get("sslmode") !== "require") {
+  const loopback = ["127.0.0.1", "localhost", "[::1]"].includes(url.hostname);
+  if (url.searchParams.get("sslmode") !== "require" && !loopback) {
     throw new Error("DATABASE_URL must require TLS");
   }
   return value;

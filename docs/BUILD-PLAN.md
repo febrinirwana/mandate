@@ -166,14 +166,14 @@ Acceptance: web, agent, and Bazantic clients can consume one response schema; AP
 
 **Files:** create `packages/db`, migrations, `apps/worker`, and PostgreSQL integration tests.
 
-- [ ] Implement ERD constraints and decimal-string/binary codecs; keep strategies/deployments append-only.
-- [ ] Write replay test: same receipt/events produce no duplicates.
-- [ ] Write reorg test: block hash replacement marks old execution/audit invalid and creates new canonical evidence.
-- [ ] Implement confirmation worker using configured depth and block-hash ancestry checks.
-- [ ] Commit receipt, events, deltas, and audit atomically; never expose partially updated compliant receipt.
-- [ ] Implement retention/redaction checks that reject secret-shaped fields and raw private/signed payloads.
-- [ ] Run migrations and integration tests against a fresh PostgreSQL container twice.
-- [ ] Commit `feat: persist canonical Mandate execution evidence`.
+- [x] Implement ERD constraints and decimal-string/binary codecs; keep strategies/deployments append-only.
+- [x] Write replay test: same receipt/events produce no duplicates.
+- [x] Write reorg test: block hash replacement marks old execution/audit invalid and creates new canonical evidence.
+- [x] Implement confirmation worker using configured depth and block-hash ancestry checks.
+- [x] Commit receipt, events, deltas, and audit atomically; never expose partially updated compliant receipt.
+- [x] Implement retention/redaction checks that reject secret-shaped fields and raw private/signed payloads.
+- [x] Run migrations and integration tests against a fresh PostgreSQL container twice.
+- [x] Commit `feat: persist canonical Mandate execution evidence`.
 
 Acceptance: database deletion permits chain reconstruction; replay is idempotent; reorg cannot leave a green stale audit.
 

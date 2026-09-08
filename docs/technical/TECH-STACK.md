@@ -153,6 +153,18 @@ All reads accept explicit chain and optional block reference. No hidden latest-b
 
 Repositories return domain values, not raw Drizzle rows. Canonical receipt, events, snapshots, and audit result commit atomically. Reorg invalidation is an explicit transaction.
 
+### `apps/worker`
+
+The worker polls observed Sepolia executions from PostgreSQL, verifies the stored block
+hash against the canonical block at the same height, and only then persists the full
+receipt evidence transaction. The inclusion block counts as confirmation one.
+
+- `WORKER_CONFIRMATION_DEPTH` defaults to `4`; allowed range `0..1024`.
+- `WORKER_BATCH_SIZE` defaults to `25`; allowed range `1..1000`.
+- `WORKER_POLL_INTERVAL_MS` defaults to `15000`; allowed range `100..3600000`.
+- RPC failures remain retryable and never persist a compliant audit.
+- The process exposes no HTTP, signing, wallet, or generic RPC interface.
+
 ## 8. API contracts
 
 Versioned routes:

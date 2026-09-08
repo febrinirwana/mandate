@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
 import type { ExecutionV1, ReceiptAuditV1, StrategyV1 } from "@mandate/domain";
+import { BlockNotFoundError, type PublicClient } from "viem";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   assembleCanonicalReceiptEvidence,
@@ -34,6 +35,7 @@ const execution = {
   chainId: "31337",
   txHash: hash("a"),
   block: { number: "2", hash: hash("b") },
+  transactionIndex: "0",
   strategyHash: hash("c"),
   caller: strategy.agent,
   amountIn: "10",
@@ -109,5 +111,37 @@ describe("MandateChainService.readCanonicalEvidence", () => {
     await expect(
       service.readCanonicalEvidence({ chainId: "31337", txHash: hash("a") }),
     ).rejects.toEqual(new ChainReadError("NOT_FOUND", "unsupported chain 31337"));
+  });
+});
+
+describe("MandateChainService worker block reads", () => {
+  it("returns canonical hashes and head numbers from the configured chain", async () => {
+    const client = {
+      getBlock: vi.fn().mockResolvedValue({ hash: hash("1") }),
+      getBlockNumber: vi.fn().mockResolvedValue(12n),
+    } as unknown as PublicClient;
+    const service = new MandateChainService([
+      { chainId: "31337", client, mandateApp: address("1") },
+    ]);
+
+    await expect(service.getBlockHash("31337", 10n)).resolves.toBe(hash("1"));
+    await expect(service.getBlockNumber("31337")).resolves.toBe(12n);
+  });
+
+  it("distinguishes a missing canonical block from an unavailable RPC", async () => {
+    const client = {
+      getBlock: vi
+        .fn()
+        .mockRejectedValueOnce(new BlockNotFoundError({ blockNumber: 10n }))
+        .mockRejectedValueOnce(new Error("transport failed")),
+    } as unknown as PublicClient;
+    const service = new MandateChainService([
+      { chainId: "31337", client, mandateApp: address("1") },
+    ]);
+
+    await expect(service.getBlockHash("31337", 10n)).resolves.toBeNull();
+    await expect(service.getBlockHash("31337", 10n)).rejects.toEqual(
+      new ChainReadError("UNAVAILABLE", "canonical block read is unavailable"),
+    );
   });
 });

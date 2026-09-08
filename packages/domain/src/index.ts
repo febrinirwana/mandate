@@ -294,6 +294,7 @@ export const ExecutionV1Schema = z.strictObject({
   chainId: ChainIdSchema,
   txHash: NonZeroHash32Schema,
   block: BlockRefSchema,
+  transactionIndex: Uint256StringSchema,
   strategyHash: NonZeroHash32Schema,
   caller: NonZeroAddressSchema,
   amountIn: PositiveUint256StringSchema,

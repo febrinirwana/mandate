@@ -242,6 +242,7 @@ describe("CanonicalReceiptEvidenceV1Schema", () => {
       chainId: "11155111",
       txHash: hash("1"),
       block: { number: "11634851", hash: hash("2") },
+      transactionIndex: "3",
       strategyHash: hash("3"),
       caller: address("2"),
       amountIn: "10",
@@ -300,6 +301,12 @@ describe("CanonicalReceiptEvidenceV1Schema", () => {
       CanonicalReceiptEvidenceV1Schema.safeParse({
         ...validEvidence,
         events: [{ ...validEvidence.events[0], data: "0x0" }],
+      }).success,
+    ).toBe(false);
+    expect(
+      CanonicalReceiptEvidenceV1Schema.safeParse({
+        ...validEvidence,
+        execution: { ...validEvidence.execution, transactionIndex: "03" },
       }).success,
     ).toBe(false);
   });

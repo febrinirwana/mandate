@@ -45,7 +45,8 @@ Foundry dependencies must be pinned to commit hashes, including Aqua and ENSv2 c
 Create local `.env` files from the checked-in example after scaffold. Minimum server-only variables:
 
 ```dotenv
-DATABASE_URL=postgresql://mandate:mandate@127.0.0.1:5432/mandate
+DATABASE_URL=postgresql://mandate:mandate@127.0.0.1:55432/mandate?sslmode=disable
+DATABASE_MIGRATION_URL=postgresql://mandate:mandate@127.0.0.1:55432/mandate?sslmode=disable
 SEPOLIA_RPC_URL=https://...
 SETTLEMENT_FORK_RPC_URL=https://...
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=...
@@ -68,9 +69,9 @@ Rules:
 After Task 1 creates Docker Compose:
 
 ```bash
-docker compose up -d postgres
-pnpm --filter @mandate/db migrate
-pnpm --filter @mandate/db test
+docker compose up -d --wait postgres
+pnpm --filter @mandate/db db:migrate
+TEST_DATABASE_URL=postgresql://mandate:mandate@127.0.0.1:55432/mandate?sslmode=disable pnpm --filter @mandate/db test
 ```
 
 Database is not an authority source. Dropping local data must not prevent reconstructing confirmed execution evidence from chain.

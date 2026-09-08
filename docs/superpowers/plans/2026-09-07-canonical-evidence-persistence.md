@@ -26,10 +26,12 @@
 ### Task 1: Define canonical evidence domain values
 
 **Files:**
+
 - Modify: `packages/domain/src/index.ts`
 - Modify: `packages/domain/test/domain.test.ts`
 
 **Interfaces:**
+
 - Produces `CanonicalReceiptEvidenceV1Schema`, `ExecutionEventEvidenceV1Schema`, `BalanceDeltaEvidenceV1Schema`, `AuditEvidenceRecordV1Schema`, `CanonicalReceiptEvidenceV1`, and `PersistableAuditResult` for `@mandate/chain` and `@mandate/db`.
 - Consumes existing `ExecutionV1Schema`, `ReceiptAuditV1Schema`, `StrategyV1Schema`, `BlockRefSchema`, `AddressSchema`, `Hash32Schema`, and decimal-string schemas.
 
@@ -41,8 +43,30 @@ const result = CanonicalReceiptEvidenceV1Schema.safeParse({
   execution: confirmedExecution,
   strategy,
   audit,
-  events: [{ logIndex: "0", contract: mandateApp, topic0, topics: [topic0], data: "0x", kind: "MandateExecuted", decoded: { strategyHash }, decoderVersion: 1 }],
-  balanceDeltas: [{ account: maker, token: tokenIn, beforeBlock, afterBlock, before: "10", after: "0", delta: "-10", source: "RPC_CALL" }],
+  events: [
+    {
+      logIndex: "0",
+      contract: mandateApp,
+      topic0,
+      topics: [topic0],
+      data: "0x",
+      kind: "MandateExecuted",
+      decoded: { strategyHash },
+      decoderVersion: 1,
+    },
+  ],
+  balanceDeltas: [
+    {
+      account: maker,
+      token: tokenIn,
+      beforeBlock,
+      afterBlock,
+      before: "10",
+      after: "0",
+      delta: "-10",
+      source: "RPC_CALL",
+    },
+  ],
 });
 expect(result.success).toBe(true);
 ```
@@ -73,8 +97,18 @@ Require `execution.status === "CONFIRMED"`, `execution.block === audit.block`, a
 - [ ] **Step 4: Add failing tests for inconsistent execution/audit binding and malformed public evidence**
 
 ```ts
-expect(() => CanonicalReceiptEvidenceV1Schema.parse({ ...valid, audit: { ...valid.audit, txHash: otherTxHash } })).toThrow();
-expect(() => CanonicalReceiptEvidenceV1Schema.parse({ ...valid, events: [{ ...valid.events[0], data: "0x0" }] })).toThrow();
+expect(() =>
+  CanonicalReceiptEvidenceV1Schema.parse({
+    ...valid,
+    audit: { ...valid.audit, txHash: otherTxHash },
+  }),
+).toThrow();
+expect(() =>
+  CanonicalReceiptEvidenceV1Schema.parse({
+    ...valid,
+    events: [{ ...valid.events[0], data: "0x0" }],
+  }),
+).toThrow();
 ```
 
 - [ ] **Step 5: Implement the smallest refinements that make the domain tests pass**
@@ -97,11 +131,13 @@ git commit -m "feat: define canonical receipt evidence"
 ### Task 2: Construct canonical evidence from block-bound chain reads
 
 **Files:**
+
 - Modify: `packages/chain/src/mandate.ts`
 - Modify: `packages/chain/src/index.ts`
 - Modify: `packages/chain/test/mandate.test.ts`
 
 **Interfaces:**
+
 - Consumes `CanonicalReceiptEvidenceV1Schema` and existing `MandateChainService` runtime configuration.
 - Produces `MandateChainService.readCanonicalEvidence({ chainId, txHash }): Promise<CanonicalReceiptEvidenceV1>`.
 - The worker calls this only after canonicality and confirmation checks.
@@ -113,7 +149,9 @@ const evidence = await service.readCanonicalEvidence({ chainId: "31337", txHash 
 expect(evidence.execution.status).toBe("CONFIRMED");
 expect(evidence.events).toHaveLength(1);
 expect(evidence.audit.block).toEqual(evidence.execution.block);
-expect(evidence.balanceDeltas.every((delta) => delta.beforeBlock.number !== delta.afterBlock.number)).toBe(true);
+expect(
+  evidence.balanceDeltas.every((delta) => delta.beforeBlock.number !== delta.afterBlock.number),
+).toBe(true);
 ```
 
 - [ ] **Step 2: Run the focused test and verify it fails because `readCanonicalEvidence` is absent**
@@ -138,8 +176,13 @@ If a required historical read is unavailable, return a schema-valid bundle whose
 - [ ] **Step 4: Add failing tests for noncanonical and undecodable receipts**
 
 ```ts
-await expect(service.readCanonicalEvidence({ chainId: "31337", txHash: reorgedTxHash })).rejects.toMatchObject({ kind: "UNAVAILABLE" });
-expect((await service.readCanonicalEvidence({ chainId: "31337", txHash: undecodableTxHash })).audit.result).toBe("UNKNOWN");
+await expect(
+  service.readCanonicalEvidence({ chainId: "31337", txHash: reorgedTxHash }),
+).rejects.toMatchObject({ kind: "UNAVAILABLE" });
+expect(
+  (await service.readCanonicalEvidence({ chainId: "31337", txHash: undecodableTxHash })).audit
+    .result,
+).toBe("UNKNOWN");
 ```
 
 - [ ] **Step 5: Implement only the error handling required by those tests**
@@ -162,6 +205,7 @@ git commit -m "feat: collect block-bound receipt evidence"
 ### Task 3: Add append-only Drizzle evidence schema and codecs
 
 **Files:**
+
 - Modify: `packages/db/src/schema.ts`
 - Create: `packages/db/src/evidence.ts`
 - Modify: `packages/db/src/index.ts`
@@ -169,6 +213,7 @@ git commit -m "feat: collect block-bound receipt evidence"
 - Modify: `packages/db/test/database.test.ts`
 
 **Interfaces:**
+
 - Produces `createCanonicalEvidenceRepository(database)` and `assertPersistableEvidence(value)`.
 - Consumes `CanonicalReceiptEvidenceV1` and Drizzle transaction API.
 - `apps/worker` depends only on the repository interface, never on tables directly.
@@ -176,8 +221,15 @@ git commit -m "feat: collect block-bound receipt evidence"
 - [ ] **Step 1: Write failing codec tests before schema implementation**
 
 ```ts
-expect(() => assertPersistableEvidence({ ...validEvidence, rawSignedTransaction: "0xdeadbeef" })).toThrow("sensitive evidence field");
-expect(() => assertPersistableEvidence({ ...validEvidence, evidence: [{ provider: "rpc", responseHash: rpcUrlWithCredentials }] })).toThrow();
+expect(() =>
+  assertPersistableEvidence({ ...validEvidence, rawSignedTransaction: "0xdeadbeef" }),
+).toThrow("sensitive evidence field");
+expect(() =>
+  assertPersistableEvidence({
+    ...validEvidence,
+    evidence: [{ provider: "rpc", responseHash: rpcUrlWithCredentials }],
+  }),
+).toThrow();
 ```
 
 - [ ] **Step 2: Run the focused database test and verify it fails because repository validation is absent**
@@ -191,9 +243,19 @@ Expected: failure references missing `assertPersistableEvidence`.
 Add `strategies`, `contract_deployments`, `executions`, `execution_events`, `balance_deltas`, `audits`, `audit_evidence`, and `evidence_invalidations`. Use `numeric(78,0)` for all chain integers, `text` with lowercase-hex check constraints for addresses/hashes, `jsonb` only for strict schema-validated decoded public event payloads, and unique indexes including:
 
 ```ts
-unique("execution_events_canonical_key").on(table.chainId, table.blockHash, table.txHash, table.logIndex)
-unique("audits_canonical_version_key").on(table.chainId, table.txHash, table.auditVersion, table.blockHash)
-unique("audit_evidence_ordinal_key").on(table.auditId, table.ordinal)
+unique("execution_events_canonical_key").on(
+  table.chainId,
+  table.blockHash,
+  table.txHash,
+  table.logIndex,
+);
+unique("audits_canonical_version_key").on(
+  table.chainId,
+  table.txHash,
+  table.auditVersion,
+  table.blockHash,
+);
+unique("audit_evidence_ordinal_key").on(table.auditId, table.ordinal);
 ```
 
 Use database `CHECK` constraints for statuses and nonnegative decimal columns. Use `onConflictDoNothing` for append-only strategy/deployment imports; no update path exists for either table.
@@ -216,7 +278,10 @@ export interface CanonicalEvidenceRepository {
     canonicalBlockHash: `0x${string}` | null;
     reason: "BLOCK_HASH_REPLACED" | "RECEIPT_DISAPPEARED";
   }): Promise<void>;
-  listPendingConfirmations(input: { chainId: string; limit: number }): Promise<readonly PendingExecution[]>;
+  listPendingConfirmations(input: {
+    chainId: string;
+    limit: number;
+  }): Promise<readonly PendingExecution[]>;
 }
 ```
 
@@ -238,12 +303,14 @@ git commit -m "feat: model append-only execution evidence"
 ### Task 4: Prove atomic replay and reorg persistence against PostgreSQL
 
 **Files:**
+
 - Create: `packages/db/test/canonical-evidence.integration.test.ts`
 - Create: `packages/db/test/support/postgres.ts`
 - Modify: `packages/db/package.json`
 - Modify: `docker-compose.yml`
 
 **Interfaces:**
+
 - Consumes `CanonicalEvidenceRepository` and the valid canonical-evidence fixture from Task 1.
 - Produces a repeatable PostgreSQL test command that starts with an empty test database and applies Drizzle migrations.
 
@@ -261,7 +328,7 @@ expect(await countRows("executions")).toBe(0);
 
 - [ ] **Step 2: Run the integration test against an empty local PostgreSQL database and verify red**
 
-Run: `docker compose up -d postgres && TEST_DATABASE_URL=postgresql://mandate:mandate@127.0.0.1:5432/mandate?sslmode=disable pnpm --filter @mandate/db test -- canonical-evidence.integration.test.ts`
+Run: `docker compose up -d postgres && TEST_DATABASE_URL=postgresql://mandate:mandate@127.0.0.1:55432/mandate?sslmode=disable pnpm --filter @mandate/db test -- canonical-evidence.integration.test.ts`
 
 Expected: tests fail because the repository transaction has not been implemented.
 
@@ -294,9 +361,9 @@ In one transaction, update only execution lifecycle fields to `REORGED`, insert 
 Run twice:
 
 ```bash
-docker compose down -v && docker compose up -d postgres
-DATABASE_MIGRATION_URL=postgresql://mandate:mandate@127.0.0.1:5432/mandate?sslmode=disable pnpm --filter @mandate/db db:migrate
-TEST_DATABASE_URL=postgresql://mandate:mandate@127.0.0.1:5432/mandate?sslmode=disable pnpm --filter @mandate/db test -- canonical-evidence.integration.test.ts
+docker compose down -v && docker compose up -d --wait postgres
+DATABASE_MIGRATION_URL=postgresql://mandate:mandate@127.0.0.1:55432/mandate?sslmode=disable pnpm --filter @mandate/db db:migrate
+TEST_DATABASE_URL=postgresql://mandate:mandate@127.0.0.1:55432/mandate?sslmode=disable pnpm --filter @mandate/db test -- canonical-evidence.integration.test.ts
 ```
 
 Expected both runs apply migrations to an empty database and pass replay, atomicity, secret rejection, and reorg cases.
@@ -311,6 +378,7 @@ git commit -m "test: prove canonical evidence replay and reorg safety"
 ### Task 5: Implement confirmation and ancestry worker
 
 **Files:**
+
 - Create: `apps/worker/package.json`
 - Create: `apps/worker/tsconfig.json`
 - Create: `apps/worker/src/index.ts`
@@ -321,6 +389,7 @@ git commit -m "test: prove canonical evidence replay and reorg safety"
 - Modify: `docs/BUILD-PLAN.md`
 
 **Interfaces:**
+
 - Consumes `MandateChainService.readCanonicalEvidence`, a `CanonicalEvidenceRepository`, and environment variables `WORKER_POLL_INTERVAL_MS`, `WORKER_CONFIRMATION_DEPTH`, `WORKER_BATCH_SIZE`.
 - Produces `ConfirmationWorker.runOnce(): Promise<WorkerRunResult>` and `startConfirmationWorker()`.
 
@@ -333,7 +402,9 @@ expect(repository.persistCanonicalEvidence).not.toHaveBeenCalled();
 
 chain.canonicalBlockHash.mockResolvedValue(replacementHash);
 await worker.runOnce();
-expect(repository.invalidateReorgedEvidence).toHaveBeenCalledWith(expect.objectContaining({ reason: "BLOCK_HASH_REPLACED" }));
+expect(repository.invalidateReorgedEvidence).toHaveBeenCalledWith(
+  expect.objectContaining({ reason: "BLOCK_HASH_REPLACED" }),
+);
 ```
 
 - [ ] **Step 2: Run focused worker tests and verify red**
@@ -381,9 +452,11 @@ git commit -m "feat: reconcile canonical Mandate evidence"
 ### Task 6: Release verification and delivery
 
 **Files:**
+
 - Modify only files needed to correct verification failures from Tasks 1–5.
 
 **Interfaces:**
+
 - Verifies the complete Task 8 persistence contract without changing public API semantics.
 
 - [ ] **Step 1: Run the fresh-PostgreSQL migration and integration proof twice**

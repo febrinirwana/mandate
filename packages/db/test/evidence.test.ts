@@ -32,6 +32,7 @@ const validEvidence = {
     chainId: "31337",
     txHash: hash("a"),
     block: { number: "2", hash: hash("b") },
+    transactionIndex: "0",
     strategyHash: hash("c"),
     caller: address("2"),
     amountIn: "10",

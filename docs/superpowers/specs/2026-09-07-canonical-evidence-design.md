@@ -19,7 +19,7 @@ The chain remains authoritative. PostgreSQL stores a versioned read/audit projec
 
 `@mandate/db` extends the existing `simulation_evidence` table with:
 
-- `executions`: one observed transaction per `(chain_id, tx_hash)`; mutable lifecycle fields are limited to confirmation status and derived confirmation count. It records strategy identity, sender, event amounts, canonical block reference, and transaction index.
+- `executions`: one observed transaction inclusion per `(chain_id, tx_hash, block_hash)`; mutable lifecycle fields are limited to confirmation status and derived confirmation count. It records strategy identity, sender, event amounts, canonical block reference, and transaction index.
 - `execution_events`: one decoded/raw receipt log per `(chain_id, block_hash, tx_hash, log_index)`. Raw topics/data are public-chain evidence; decoded payload is versioned and validated.
 - `balance_deltas`: immutable before/after observations for maker, agent, and Mandate app token balances. Its uniqueness key binds the execution, account, token, source, and observed block references.
 - `audits`: one immutable audit version per `(chain_id, tx_hash, audit_version, block_hash)`, with `COMPLIANT`, `NON_COMPLIANT`, or `UNKNOWN` result.

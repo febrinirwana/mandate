@@ -1,0 +1,2 @@
+ALTER TABLE "executions" ADD COLUMN "transaction_index" numeric(78, 0) DEFAULT '0' NOT NULL;--> statement-breakpoint
+ALTER TABLE "executions" ADD CONSTRAINT "executions_transaction_index_uint" CHECK ("executions"."transaction_index" >= 0);

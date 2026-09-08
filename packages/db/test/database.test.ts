@@ -14,4 +14,13 @@ describe("requireDatabaseUrl", () => {
       "DATABASE_URL is not configured",
     );
   });
+
+  it("allows plaintext PostgreSQL only on loopback for isolated integration tests", () => {
+    expect(
+      requireDatabaseUrl("postgresql://mandate:mandate@127.0.0.1:5432/mandate?sslmode=disable"),
+    ).toContain("127.0.0.1");
+    expect(() =>
+      requireDatabaseUrl("postgresql://postgres:secret@db.example.com/postgres?sslmode=disable"),
+    ).toThrow("DATABASE_URL must require TLS");
+  });
 });

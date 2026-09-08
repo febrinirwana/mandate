@@ -233,15 +233,15 @@ No signed transaction or private key material.
 | -------------------- | ------------- | ------------------------------------ |
 | `chain_id`           | numeric       | composite PK                         |
 | `tx_hash`            | bytea         | composite PK                         |
+| `block_hash`         | bytea         | composite PK, 32 bytes               |
 | strategy identity    | chain + hash  | FK strategies                        |
 | `caller`             | bytea         | actual sender                        |
 | `amount_in`          | numeric(78,0) | event value                          |
 | `amount_out`         | numeric(78,0) | event value                          |
 | `used_input_after`   | numeric(78,0) | event value                          |
 | `status`             | text          | SUBMITTED/CONFIRMED/REVERTED/REORGED |
-| `block_number`       | numeric       | nullable until mined                 |
-| `block_hash`         | bytea         | nullable until mined                 |
-| `transaction_index`  | integer       | canonical ordering                   |
+| `block_number`       | numeric       | exact inclusion height               |
+| `transaction_index`  | numeric       | exact canonical ordering             |
 | `confirmation_count` | integer       | derived at refresh                   |
 
 Submission is never sufficient for confirmed state.
@@ -269,7 +269,7 @@ Audit key: execution + `audit_version` + canonical block hash. Result is `COMPLI
 
 ## 5. Idempotency and transaction rules
 
-- Upsert submitted transaction by `(chain_id, tx_hash)`.
+- Upsert an observed transaction inclusion by `(chain_id, tx_hash, block_hash)`.
 - Receipt, decoded events, balance deltas, and audit commit in one database transaction.
 - Same canonical receipt replay produces identical keys and no duplicate events.
 - A block-hash change marks the prior execution/audit `REORGED`/invalid; new canonical evidence creates new rows.

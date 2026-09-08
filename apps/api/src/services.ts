@@ -1,5 +1,5 @@
 import { ChainReadError, MandateChainService, StaleSimulationError } from "@mandate/chain";
-import { createDatabase, simulationEvidence } from "@mandate/db";
+import { createCanonicalEvidenceRepository, createDatabase, simulationEvidence } from "@mandate/db";
 import { createPublicClient, http, type Address } from "viem";
 import { sepolia } from "viem/chains";
 
@@ -34,11 +34,29 @@ export function createProductionServices(): { services: ApiServices; close: () =
     { chainId: sepolia.id.toString(), client, mandateApp, deploymentBlock },
   ]);
   const database = createDatabase();
+  const evidence = createCanonicalEvidenceRepository(database.db);
 
   const services: ApiServices = {
     readMandate: (input) => translate(() => chain.readMandate(input)),
-    readExecution: (input) => translate(() => chain.readExecution(input)),
-    auditReceipt: (input) => translate(() => chain.auditReceipt(input)),
+    readExecution: (input) =>
+      translate(async () => {
+        const execution = await chain.readExecution(input);
+        if (execution.status === "CONFIRMED") {
+          await evidence.trackObservedExecution(execution);
+        }
+        return execution;
+      }),
+    auditReceipt: (input) =>
+      translate(async () => {
+        const [execution, audit] = await Promise.all([
+          chain.readExecution(input),
+          chain.auditReceipt(input),
+        ]);
+        if (execution.status === "CONFIRMED") {
+          await evidence.trackObservedExecution(execution);
+        }
+        return audit;
+      }),
     simulate: (input) =>
       translate(async () => {
         const simulation = await chain.simulate(input);

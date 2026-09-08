@@ -18,6 +18,7 @@ import {
 } from "@mandate/domain";
 import { evaluatePreflight } from "@mandate/policy";
 import {
+  BlockNotFoundError,
   decodeAbiParameters,
   decodeFunctionData,
   decodeErrorResult,
@@ -394,6 +395,25 @@ export class MandateChainService {
 
   constructor(runtimes: readonly ChainRuntime[]) {
     for (const runtime of runtimes) this.runtimes.set(runtime.chainId, runtime);
+  }
+
+  async getBlockHash(chainId: string, blockNumber: bigint): Promise<Hex | null> {
+    const runtime = this.runtime(chainId);
+    try {
+      return (await runtime.client.getBlock({ blockNumber })).hash;
+    } catch (error) {
+      if (error instanceof BlockNotFoundError) return null;
+      throw new ChainReadError("UNAVAILABLE", "canonical block read is unavailable");
+    }
+  }
+
+  async getBlockNumber(chainId: string): Promise<bigint> {
+    const runtime = this.runtime(chainId);
+    try {
+      return await runtime.client.getBlockNumber();
+    } catch {
+      throw new ChainReadError("UNAVAILABLE", "chain head is unavailable");
+    }
   }
 
   private runtime(chainId: string): ChainRuntime {
@@ -810,6 +830,7 @@ export class MandateChainService {
       chainId: input.chainId,
       txHash: input.txHash,
       block: { number: receipt.blockNumber.toString(), hash: receipt.blockHash },
+      transactionIndex: receipt.transactionIndex.toString(),
       strategyHash: args.strategyHash,
       caller: normalizeAddress(args.agent),
       amountIn: args.amountIn.toString(),

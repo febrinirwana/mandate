@@ -1,6 +1,11 @@
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 
-import { CanonicalReceiptEvidenceV1Schema, type CanonicalReceiptEvidenceV1 } from "@mandate/domain";
+import {
+  CanonicalReceiptEvidenceV1Schema,
+  ExecutionV1Schema,
+  type CanonicalReceiptEvidenceV1,
+  type ExecutionV1,
+} from "@mandate/domain";
 import type { DatabaseConnection } from "./index.js";
 import {
   auditEvidence,
@@ -61,8 +66,18 @@ export function assertPersistableEvidence(value: unknown): CanonicalReceiptEvide
 }
 
 export interface CanonicalEvidenceRepository {
+  trackObservedExecution(input: ExecutionV1): Promise<void>;
+  listPendingConfirmations(limit: number): Promise<readonly PendingExecution[]>;
+  updateConfirmations(input: PendingExecution, confirmations: number): Promise<void>;
   persistCanonicalEvidence(input: CanonicalReceiptEvidenceV1): Promise<void>;
   invalidateReorgedEvidence(input: ReorgInvalidationInput): Promise<void>;
+}
+
+export interface PendingExecution {
+  chainId: string;
+  txHash: `0x${string}`;
+  blockNumber: string;
+  blockHash: `0x${string}`;
 }
 
 export interface ReorgInvalidationInput {
@@ -77,6 +92,60 @@ export function createCanonicalEvidenceRepository(
   db: DatabaseConnection["db"],
 ): CanonicalEvidenceRepository {
   return {
+    async trackObservedExecution(input) {
+      const execution = ExecutionV1Schema.parse(input);
+      if (execution.status !== "CONFIRMED") {
+        throw new Error("only a canonical observed execution can be tracked");
+      }
+      await db
+        .insert(executions)
+        .values({
+          chainId: execution.chainId,
+          txHash: execution.txHash,
+          strategyHash: execution.strategyHash,
+          caller: execution.caller,
+          amountIn: execution.amountIn,
+          amountOut: execution.amountOut,
+          usedInputAfter: execution.usedInputAfter,
+          status: "SUBMITTED",
+          blockNumber: execution.block.number,
+          blockHash: execution.block.hash,
+          transactionIndex: execution.transactionIndex,
+        })
+        .onConflictDoNothing();
+    },
+    async listPendingConfirmations(limit) {
+      if (!Number.isInteger(limit) || limit < 1) {
+        throw new Error("limit must be a positive integer");
+      }
+      return db
+        .select({
+          chainId: executions.chainId,
+          txHash: executions.txHash,
+          blockNumber: executions.blockNumber,
+          blockHash: executions.blockHash,
+        })
+        .from(executions)
+        .where(eq(executions.status, "SUBMITTED"))
+        .orderBy(asc(executions.createdAt))
+        .limit(limit) as Promise<PendingExecution[]>;
+    },
+    async updateConfirmations(input, confirmations) {
+      if (!Number.isInteger(confirmations) || confirmations < 0) {
+        throw new Error("confirmations must be a nonnegative integer");
+      }
+      await db
+        .update(executions)
+        .set({ confirmationCount: confirmations })
+        .where(
+          and(
+            eq(executions.chainId, input.chainId),
+            eq(executions.txHash, input.txHash),
+            eq(executions.blockHash, input.blockHash),
+            eq(executions.status, "SUBMITTED"),
+          ),
+        );
+    },
     async persistCanonicalEvidence(input) {
       const evidence = assertPersistableEvidence(input);
       await db.transaction(async (tx) => {
@@ -101,8 +170,20 @@ export function createCanonicalEvidenceRepository(
             status: evidence.execution.status,
             blockNumber: evidence.execution.block.number,
             blockHash: evidence.execution.block.hash,
+            transactionIndex: evidence.execution.transactionIndex,
           })
           .onConflictDoNothing();
+        await tx
+          .update(executions)
+          .set({ status: "CONFIRMED" })
+          .where(
+            and(
+              eq(executions.chainId, evidence.execution.chainId),
+              eq(executions.txHash, evidence.execution.txHash),
+              eq(executions.blockHash, evidence.execution.block.hash),
+              eq(executions.status, "SUBMITTED"),
+            ),
+          );
         if (evidence.events.length > 0) {
           await tx
             .insert(executionEvents)
@@ -184,7 +265,10 @@ export function createCanonicalEvidenceRepository(
           );
         await tx
           .update(audits)
-          .set({ invalidatedAt: new Date(), invalidationReason: input.reason })
+          .set({
+            invalidatedAt: sql`coalesce(${audits.invalidatedAt}, now())`,
+            invalidationReason: input.reason,
+          })
           .where(
             and(
               eq(audits.chainId, input.chainId),

@@ -33,7 +33,7 @@ const rules = [
   ["mnemonic", /\b(?:mnemonic|seed phrase)\s*[:=]\s*["']?[a-z]+(?:\s+[a-z]+){11,23}/i],
   [
     "credential",
-    /\b(?:api[_-]?key|secret|token|password)\s*[:=]\s*["']?(?!replace_me|mandate\b|process\.env|\$\{)[A-Za-z0-9_+./=-]{16,}/i,
+    /\b(?:api[_-]?key|secret|token|password)\s*[:=]\s*(?:["'](?!replace_me|mandate\b|process\.env|\$\{)[A-Za-z0-9_+./=-]{16,}["']|(?!(?:replace_me|mandate\b|process\.env|\$\{))[A-Za-z0-9_+./=-]{16,}\s*$)/im,
   ],
 ];
 
