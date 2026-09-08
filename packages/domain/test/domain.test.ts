@@ -8,6 +8,7 @@ import {
   DeploymentManifestV1Schema,
   Hash32Schema,
   ReasonCodeSchema,
+  MandateSnapshotV1Schema,
   ReceiptAuditV1Schema,
   StrategyV1Schema,
   VenueManifestV1Schema,
@@ -230,6 +231,44 @@ describe("ReceiptAuditV1Schema", () => {
         ],
       }),
     ).toBeDefined();
+  });
+});
+
+describe("MandateSnapshotV1Schema", () => {
+  it("carries the exact immutable strategy required for public inspection", () => {
+    expect(
+      MandateSnapshotV1Schema.parse({
+        version: 1,
+        chainId: "11155111",
+        strategyHash: hash("a"),
+        block: { number: "11648628", hash: hash("b") },
+        strategy: validStrategy,
+        aqua: {
+          address: address("c"),
+          result: "PASS",
+          inputBalance: "1000",
+          outputBalance: "0",
+        },
+        physical: {
+          result: "PASS",
+          makerTokenIn: "1000",
+          makerTokenOut: "0",
+          agentTokenIn: "0",
+          agentTokenOut: "0",
+          appTokenIn: "0",
+          appTokenOut: "0",
+        },
+        state: { maker: validStrategy.maker, usedInput: "0", activated: true, revoked: false },
+        ens: {
+          status: "REGISTERED",
+          tokenId: "1",
+          owner: validStrategy.agent,
+          expiry: "1788626400",
+          address: validStrategy.agent,
+        },
+        result: "PASS",
+      }),
+    ).toMatchObject({ strategy: validStrategy });
   });
 });
 
