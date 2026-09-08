@@ -1,79 +1,51 @@
+import type { MandateSnapshotV1 } from "@mandate/domain";
+
 import { CopyValue } from "@/components/ui/copy-value";
 import { Stamp } from "@/components/ui/kit";
-import { DEMO } from "@/lib/demo";
+import { inspectionStatus, remainingInput } from "@/lib/mandate";
 
-/**
- * The ten-second answer, as a card: caps with live progress, window, venue,
- * output rule, and the strategy hash. Everything else on the page is detail
- * beneath this summary.
- */
-export function OrderSummary({ stopped = false }: { stopped?: boolean }) {
-  const perExecPct = Math.min(100, (500 / 1000) * 100);
-  const budgetPct = Math.min(100, (1250 / 5000) * 100);
+export function OrderSummary({ snapshot }: { snapshot: MandateSnapshotV1 }) {
+  const remaining = remainingInput(snapshot);
+  const status = inspectionStatus(snapshot);
+  const total = BigInt(snapshot.strategy.maxInputTotal);
+  const used = BigInt(snapshot.state.usedInput);
+  const usedPercent = total === 0n ? 0n : (used * 100n) / total;
 
   return (
     <aside className="border border-rule bg-raised p-6" aria-label="Mandate summary">
       <div className="flex items-center justify-between gap-4 border-b border-rule pb-4">
         <span className="ledger-label text-ink-3">The order at a glance</span>
-        <Stamp kind={stopped ? "REVOKED" : "ACTIVE"} />
+        <Stamp kind={status === "ACTIVE" ? "ACTIVE" : status === "UNKNOWN" ? "UNKNOWN" : "FAILED"} label={status} />
       </div>
-
       <dl className="mt-2">
         <div className="border-b border-rule py-4">
-          <div className="flex items-baseline justify-between gap-4">
-            <dt className="ledger-label text-ink-3">Per execution</dt>
-            <dd className="mono-data font-medium text-ink">500 / 1,000 USDC</dd>
-          </div>
-          <div
-            className="mt-2.5 h-[6px] w-full bg-recess"
-            role="img"
-            aria-label="Half of the per-execution cap used"
-          >
-            <div
-              className="h-full transition-all duration-700"
-              style={{
-                width: `${perExecPct}%`,
-                background: stopped ? "var(--revoked)" : "var(--accent)",
-              }}
-            />
-          </div>
+          <dt className="ledger-label text-ink-3">Who may act</dt>
+          <dd className="mono-data mt-1 break-all font-medium">{snapshot.strategy.agent}</dd>
+        </div>
+        <div className="border-b border-rule py-4">
+          <dt className="ledger-label text-ink-3">What can move</dt>
+          <dd className="mono-data mt-1 break-all">{snapshot.strategy.tokenIn} → {snapshot.strategy.tokenOut}</dd>
         </div>
         <div className="border-b border-rule py-4">
           <div className="flex items-baseline justify-between gap-4">
-            <dt className="ledger-label text-ink-3">Total budget</dt>
-            <dd className="mono-data font-medium text-ink">1,250 / 5,000 USDC</dd>
+            <dt className="ledger-label text-ink-3">Remaining cap</dt>
+            <dd className="mono-data text-right font-medium">{remaining} base units</dd>
           </div>
-          <div
-            className="mt-2.5 h-[6px] w-full bg-recess"
-            role="img"
-            aria-label="A quarter of the lifetime budget used"
-          >
-            <div
-              className="h-full transition-all duration-700"
-              style={{
-                width: `${budgetPct}%`,
-                background: stopped ? "var(--revoked)" : "var(--accent)",
-              }}
-            />
+          <div className="mt-2.5 h-[6px] w-full bg-recess" role="img" aria-label={`${usedPercent}% of total cap used`}>
+            <div className="h-full bg-accent" style={{ width: `${usedPercent}%` }} />
           </div>
         </div>
-        <div className="flex items-baseline justify-between gap-4 border-b border-rule py-4">
-          <dt className="ledger-label shrink-0 text-ink-3">Output</dt>
-          <dd className="mono-data text-right font-medium text-ink">treasury wallet only</dd>
+        <div className="border-b border-rule py-4">
+          <dt className="ledger-label text-ink-3">Expires</dt>
+          <dd className="mono-data mt-1">unix {snapshot.strategy.validUntil}</dd>
         </div>
-        <div className="flex items-baseline justify-between gap-4 border-b border-rule py-4">
-          <dt className="ledger-label shrink-0 text-ink-3">Expires</dt>
-          <dd className="mono-data text-right text-ink">04 Oct 2026 · 00:00 UTC</dd>
+        <div className="pt-4">
+          <dt className="ledger-label text-ink-3">Revoke path</dt>
+          <dd className="mono-data mt-1">owner calls MandateAquaApp.revoke(strategyHash)</dd>
         </div>
         <div className="pt-4">
           <dt className="ledger-label text-ink-3">Strategy</dt>
-          <dd className="mt-2">
-            <CopyValue
-              value={DEMO.strategyHash}
-              display="0x4a91f2c7…42f8e0b5d"
-              className="font-medium text-ink"
-            />
-          </dd>
+          <dd className="mt-2"><CopyValue value={snapshot.strategyHash} className="font-medium text-ink" /></dd>
         </div>
       </dl>
     </aside>

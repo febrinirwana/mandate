@@ -1,190 +1,97 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { ChevronRight, RefreshCw } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import type { Hex } from "viem";
+
 import { AquaBalances } from "@/components/mandate/aqua-balances";
+import { AuthorityHeader } from "@/components/mandate/authority-header";
 import { ConstraintLedger } from "@/components/mandate/constraint-ledger";
 import { FlowTrace } from "@/components/mandate/flow-trace";
 import { OrderSummary } from "@/components/mandate/order-summary";
 import { ReceiptPlate } from "@/components/mandate/receipt-plate";
-import { Revocation, type Path } from "@/components/mandate/revocation";
+import { Revocation } from "@/components/mandate/revocation";
 import { SectionHead } from "@/components/mandate/section-head";
 import { SimulationGate } from "@/components/mandate/simulation-gate";
 import { StrategyFields } from "@/components/mandate/strategy-fields";
-import { Button } from "@/components/ui/kit";
+import { Button, Stamp } from "@/components/ui/kit";
 import { CopyValue } from "@/components/ui/copy-value";
-import { Reveal } from "@/components/ui/reveal";
-import { Stamp } from "@/components/ui/kit";
-import { DEMO, DEMO_STRATEGY_HASH } from "@/lib/demo";
+import { readAudit, readExecution, readMandate, type ExecutionV1, type MandateSnapshotV1, type ReceiptAuditV1 } from "@/lib/api";
+import type { MandateRuntime } from "@/lib/runtime.server";
 
-/**
- * Full inspection surface, structured as numbered chapters: the ten-second
- * answer first (authority + summary card), then constraints, settlement,
- * simulation, evidence, and the stop paths. Demo mode: synthetic state,
- * real interactions, honest fail-closed handling for unknown hashes.
- */
-export function MandateInspector({ hash, resolved }: { hash: string; resolved: boolean }) {
-  const [revoked, setRevoked] = useState(false);
+type InspectionState =
+  | { kind: "LOADING" }
+  | { kind: "READY"; snapshot: MandateSnapshotV1 }
+  | { kind: "UNKNOWN"; reason: string };
 
-  const revoke = (path: Path) => {
-    if (path === "mandate") setRevoked(true);
-  };
+export function MandateInspector({ hash, runtime }: { hash: string; runtime: MandateRuntime | null }) {
+  const [state, setState] = useState<InspectionState>({ kind: "LOADING" });
+  const [stale, setStale] = useState(false);
+  const [txHash, setTxHash] = useState<Hex>();
+  const [execution, setExecution] = useState<ExecutionV1>();
+  const [audit, setAudit] = useState<ReceiptAuditV1>();
+  const [transactionState, setTransactionState] = useState<"SUBMITTED" | "REVERTED" | "REORGED">();
 
-  if (!resolved) {
-    return (
-      <div className="mx-auto max-w-[1440px] border-x border-rule px-6 py-24 lg:px-10">
-        <h1 className="display text-[clamp(2rem,4vw,3.25rem)]">UNKNOWN: mandate not resolved</h1>
-        <p className="lede mt-4 max-w-[60ch]">
-          This inspection route only resolves mandates this deployment knows. An unknown strategy
-          hash fails closed: no status, no assumptions, no cached green state.
-        </p>
-        <div className="mono-data mt-6">
-          <CopyValue value={hash || "unknown"} />
-        </div>
-        <div className="mt-8">
-          <Button onClick={() => (window.location.href = `/mandates/${DEMO_STRATEGY_HASH}`)}>
-            Open the demo mandate
-          </Button>
-        </div>
-      </div>
-    );
+  const refresh = useCallback(async () => {
+    setStale(false);
+    if (!runtime || !/^0x[0-9a-fA-F]{64}$/.test(hash)) {
+      setState({ kind: "UNKNOWN", reason: "Runtime configuration or strategy hash is invalid." });
+      return;
+    }
+    setState({ kind: "LOADING" });
+    const result = await readMandate(runtime.chainId, hash.toLowerCase());
+    if (result.kind === "READY") {
+      setState({ kind: "READY", snapshot: result.data });
+      return;
+    }
+    setState({ kind: "UNKNOWN", reason: result.kind === "NOT_FOUND" ? "No activated strategy was found for this hash." : "RPC/API state is unavailable or invalid. No green state is cached." });
+  }, [hash, runtime]);
+
+  const loadReceipt = useCallback(async (chainId: string, submittedHash: Hex) => {
+    const result = await readExecution(chainId, submittedHash);
+    if (result.kind !== "READY") return;
+    setExecution(result.data);
+    setTransactionState(result.data.status === "REORGED" ? "REORGED" : undefined);
+    const receiptAudit = await readAudit(chainId, submittedHash);
+    if (receiptAudit.kind === "READY") setAudit(receiptAudit.data);
+  }, []);
+
+  useEffect(() => { void refresh(); }, [refresh]);
+  useEffect(() => {
+    if (state.kind !== "READY") return;
+    const timer = window.setTimeout(() => setStale(true), 30_000);
+    return () => window.clearTimeout(timer);
+  }, [state]);
+  useEffect(() => {
+    if (!runtime || !txHash) return;
+    const timer = window.setTimeout(() => void loadReceipt(runtime.chainId, txHash), 1_000);
+    return () => window.clearTimeout(timer);
+  }, [loadReceipt, runtime, txHash]);
+
+  if (state.kind === "LOADING") {
+    return <div className="mx-auto max-w-[1440px] border-x border-rule px-6 py-24 lg:px-10" role="status"><p className="mono-data">Loading block-stamped mandate state…</p></div>;
+  }
+  if (state.kind === "UNKNOWN" || !runtime) {
+    return <div className="mx-auto max-w-[1440px] border-x border-rule px-6 py-24 lg:px-10"><Stamp kind="UNKNOWN" label="UNKNOWN" /><h1 className="display mt-5 text-[clamp(2rem,4vw,3.25rem)]">Mandate state unavailable</h1><p className="lede mt-4 max-w-[60ch]">{state.kind === "UNKNOWN" ? state.reason : "Runtime is not configured."}</p><CopyValue value={hash || "unknown"} className="mt-6" /><Button className="mt-8" onClick={() => void refresh()}><RefreshCw size={14} aria-hidden="true" />Refresh live state</Button></div>;
   }
 
+  const snapshot = state.snapshot;
   return (
     <div className="mx-auto max-w-[1440px] border-x border-rule px-6 py-10 lg:px-10 lg:py-14">
-      {/* breadcrumb */}
-      <nav aria-label="Breadcrumb" className="mono-data flex items-center gap-2 text-ink-3">
-        <Link href="/" className="link-quiet hover:text-ink">
-          mandates
-        </Link>
-        <ChevronRight size={12} strokeWidth={2.25} aria-hidden="true" />
-        <CopyValue value={hash} />
-      </nav>
-
-      {/* ------------------------------------------------ hero band */}
+      <nav aria-label="Breadcrumb" className="mono-data flex items-center gap-2 text-ink-3"><Link href="/" className="link-quiet hover:text-ink">mandates</Link><ChevronRight size={12} strokeWidth={2.25} aria-hidden="true" /><CopyValue value={snapshot.strategyHash} /></nav>
       <div className="mt-10 grid items-end gap-12 border-b border-rule pb-14 lg:grid-cols-[1.12fr_0.88fr]">
-        <div>
-          <div className="mono-data flex flex-wrap items-center gap-3">
-            <Stamp kind="EXPIRING" label="SAMPLE: synthetic demo state, not live chain data" />
-          </div>
-          <h1 className="display mt-5 break-all text-[clamp(2.5rem,5vw,4.25rem)]">
-            {DEMO.agent.ens}
-          </h1>
-          <p className="lede mt-5 max-w-[60ch]">
-            May convert USDC → WETH through 1inch Aggregation Router v6, capped per call and in
-            total, output pushed back to the treasury.
-          </p>
-          <div className="mono-data mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-ink-2">
-            <CopyValue value={DEMO.agent.address} />
-            <span className="text-ink-3" aria-hidden="true">
-              ·
-            </span>
-            <span>Sepolia</span>
-            <span className="text-ink-3" aria-hidden="true">
-              ·
-            </span>
-            <span>
-              verified at block{" "}
-              <span className="text-ink">
-                {DEMO.identity.verifiedAtBlock.toLocaleString("en-US")}
-              </span>
-            </span>
-          </div>
+        <div><AuthorityHeader snapshot={snapshot} sentence="The named agent may execute only this immutable token conversion. Treasury custody remains with the maker between actions." />
+          {stale && <p role="status" className="mono-data mt-4 text-unknown">UNKNOWN: this snapshot is stale. Refresh before relying on state.</p>}
+          <Button variant="ghost" className="mt-5" onClick={() => void refresh()}><RefreshCw size={14} aria-hidden="true" />Refresh block-stamped state</Button>
         </div>
-        <Reveal delay={0.06}>
-          <OrderSummary stopped={revoked} />
-        </Reveal>
+        <OrderSummary snapshot={snapshot} />
       </div>
-
-      {/* ------------------------------------------------ 01 constraints */}
-      <section className="mt-20" aria-label="Constraints">
-        <Reveal>
-          <SectionHead
-            num="01"
-            title="Constraints"
-            lede="What was approved, what is currently effective, and whether each still holds. The result column is recomputed from the mandate, not cached."
-          />
-        </Reveal>
-        <Reveal delay={0.05}>
-          <div className="mt-8">
-            <ConstraintLedger stopped={revoked} />
-          </div>
-        </Reveal>
-      </section>
-
-      {/* ------------------------------------------------ 02 settlement */}
-      <section className="mt-20" aria-label="Settlement">
-        <Reveal>
-          <SectionHead
-            num="02"
-            title="Settlement"
-            lede="Where value moves, and where it may never go: physical custody stays with the treasury; only the Aqua allowance lane moves."
-          />
-        </Reveal>
-        <div className="mt-8 grid gap-10 lg:grid-cols-[0.95fr_1.05fr]">
-          <Reveal>
-            <AquaBalances />
-          </Reveal>
-          <Reveal delay={0.06}>
-            <FlowTrace stopped={revoked} estimate={!revoked} />
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ------------------------------------------------ 03 simulation */}
-      <section id="simulate" className="mt-20" aria-label="Simulation">
-        <Reveal>
-          <SectionHead
-            num="03"
-            title="Simulation"
-            lede="Advisory by definition: the contract repeats every check at execution, so a pass here never authorizes by itself."
-          />
-        </Reveal>
-        <Reveal delay={0.05}>
-          <div className="mt-8">
-            <SimulationGate stopped={revoked} />
-          </div>
-        </Reveal>
-      </section>
-
-      {/* ------------------------------------------------ 04 evidence */}
-      <section className="mt-20" aria-label="Evidence">
-        <Reveal>
-          <SectionHead
-            num="04"
-            title="Evidence"
-            lede="The receipt is the only surface allowed to say CONFIRMED, and the exact fields are the machine truth behind every summary."
-          />
-        </Reveal>
-        <div className="mt-8 grid gap-10 lg:grid-cols-[1.05fr_0.95fr]">
-          <Reveal>
-            <div id="fields">
-              <ReceiptPlate />
-            </div>
-          </Reveal>
-          <Reveal delay={0.06}>
-            <StrategyFields />
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ------------------------------------------------ 05 stop authority */}
-      <section id="revoke" className="mt-20" aria-label="Stop authority">
-        <Reveal>
-          <SectionHead
-            num="05"
-            title="Stop authority"
-            lede="Three independent kill switches, each confirmed alone. Revoking any of them reverts execution onchain."
-            accent={revoked ? "revoked" : undefined}
-          />
-        </Reveal>
-        <Reveal delay={0.05}>
-          <div className="mt-8">
-            <Revocation revoked={revoked} onRevoke={revoke} />
-          </div>
-        </Reveal>
-      </section>
+      <section className="mt-20" aria-label="Constraints"><SectionHead num="01" title="Constraints" lede="Exact strategy values and current cap use come from the same block-stamped API response." /><div className="mt-8"><ConstraintLedger snapshot={snapshot} /></div></section>
+      <section className="mt-20" aria-label="Settlement"><SectionHead num="02" title="Settlement" lede="Physical ERC-20 balances and Aqua's virtual strategy lane are distinct ledgers." /><div className="mt-8 grid gap-10 lg:grid-cols-[0.95fr_1.05fr]"><AquaBalances snapshot={snapshot} /><FlowTrace snapshot={snapshot} execution={execution} /></div></section>
+      <section id="simulate" className="mt-20" aria-label="Simulation"><SectionHead num="03" title="Simulation" lede="Simulation is advisory. The exact agent wallet submits only a generated Mandate execute call after a current PASS." /><div className="mt-8"><SimulationGate snapshot={snapshot} runtime={runtime} onSubmitted={(submittedHash) => { setTxHash(submittedHash); setTransactionState("SUBMITTED"); }} /></div></section>
+      <section className="mt-20" aria-label="Evidence"><SectionHead num="04" title="Evidence" lede="Only canonical receipt evidence may say confirmed. Submitted remains submitted until the API verifies the receipt." /><div className="mt-8 grid gap-10 lg:grid-cols-[1.05fr_0.95fr]"><ReceiptPlate snapshot={snapshot} execution={execution} audit={audit} transactionState={transactionState} /><StrategyFields snapshot={snapshot} /></div></section>
+      <section id="revoke" className="mt-20" aria-label="Stop authority"><SectionHead num="05" title="Stop authority" lede="Mandate revoke, Aqua dock, and ENS identity change are independent owner stop paths." accent={snapshot.state.revoked ? "revoked" : undefined} /><div className="mt-8"><Revocation snapshot={snapshot} runtime={runtime} onSubmitted={() => window.setTimeout(() => void refresh(), 1_000)} /></div></section>
     </div>
   );
 }
