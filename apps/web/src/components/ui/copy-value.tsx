@@ -30,7 +30,7 @@ export function CopyValue({
       onClick={() => void copy()}
       title={value}
       aria-label={`Copy full value ${value}`}
-      className={`mono-data group inline-flex max-w-full items-center gap-1.5 text-ink-2 hover:text-ink ${className ?? ""}`}
+      className={`mono-data group inline-flex min-h-11 max-w-full items-center gap-1.5 text-ink-2 hover:text-ink ${className ?? ""}`}
     >
       <span className="truncate">{display ?? value}</span>
       <span className="grid h-4 w-4 shrink-0 place-items-center text-ink-3 transition-colors group-hover:text-accent">
