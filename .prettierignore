@@ -5,3 +5,4 @@ node_modules/
 reference/
 packages/db/drizzle/meta/
 supabase/.temp/
+pnpm-lock.yaml
