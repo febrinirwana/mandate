@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-
+import { MandateProviders } from "@/components/providers";
 const onest = localFont({
   src: [
     { path: "../../public/fonts/onest-400.woff2", weight: "400", style: "normal" },
@@ -34,7 +34,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
-      <body className={`${onest.variable} ${geistMono.variable}`}>{children}</body>
+      <body className={`${onest.variable} ${geistMono.variable}`}>
+        <MandateProviders>{children}</MandateProviders>
+      </body>
     </html>
   );
 }

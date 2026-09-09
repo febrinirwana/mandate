@@ -48,8 +48,9 @@ Create the ignored root `.env` from `.env.example`. For a local PostgreSQL run, 
 DATABASE_URL=postgresql://mandate:mandate@127.0.0.1:55432/mandate?sslmode=disable
 DATABASE_MIGRATION_URL=postgresql://mandate:mandate@127.0.0.1:55432/mandate?sslmode=disable
 SEPOLIA_RPC_URL=https://...
-SEPOLIA_MANDATE_APP=0x...
-SEPOLIA_MANDATE_DEPLOYMENT_BLOCK=11648628
+SEPOLIA_MANDATE_APP=0xffdefe2ebb164095b471e1f0b7ec492c8d26438f
+SEPOLIA_MANDATE_DEPLOYMENT_BLOCK=11668678
+SEPOLIA_VENUE_INPUT_RECIPIENT=0xee637a2cf3aa61a29339532941b80b41ffea88c7
 ONEINCH_API_KEY=...
 BAZANTIC_API_KEY=...
 API_PORT=3001
@@ -57,6 +58,25 @@ WORKER_CONFIRMATION_DEPTH=4
 WORKER_BATCH_SIZE=25
 WORKER_POLL_INTERVAL_MS=15000
 ```
+
+For the Next.js authority composer, create the ignored `apps/web/.env.local` with `MANDATE_CHAIN_ID=11155111`, the same `SEPOLIA_MANDATE_APP`, `MANDATE_API_ORIGIN`, `NEXT_PUBLIC_PRIVY_APP_ID`, and `MANDATE_SEPOLIA_FAUCET_AMOUNT=100`. Copy the checked-in `MANDATE_POLICY_PROFILE` from `.env.example`; it is a single-line JSON object generated from block-stamped reads of the agent identity, token metadata, and fixed route. These values are public, but the composer still fails closed when the profile is absent, malformed, or inconsistent with live chain state.
+
+### Sepolia smart-wallet gas sponsorship
+
+The owner receives test-only Sepolia USDC from the ENSv2 deployment, not real USDC and not ETH. The token reports symbol `USDC` and six decimals onchain. The output token reports symbol `DAI` and 18 decimals; the fixed venue is pre-funded with test-only DAI.
+
+The authority composer submits atomic batches through Privy's `useSmartWallets()` client. Configure its account-abstraction paymaster:
+
+1. Open the app in [Privy Dashboard](https://dashboard.privy.io/apps).
+2. Open **Wallet infrastructure → Advanced → Smart wallets** and select **Sepolia**.
+3. Keep **Alchemy Smart Wallets**, then use **Quick setup → Alchemy**.
+4. Select an Ethereum Sepolia Alchemy app and Gas Manager policy. Enter the requested endpoint key and policy ID, then save.
+5. Confirm the Sepolia smart-wallet entry has a non-empty **Paymaster URL**. The development bundler may remain the default public Pimlico endpoint unless quick setup replaces it.
+6. Return to `/issue` with a Privy smart wallet holding `0` Sepolia ETH and click **Fund 100 USDC**. Success means a sponsored Sepolia transaction hash appears and the canonical balance increases by exactly `100000000` raw units.
+
+Privy's separate **Fee sponsorship** page and its billing credits apply to native embedded-wallet transaction submission; they do not substitute for the paymaster used by this smart-wallet client. A Pimlico `AA21 didn't pay prefund` error with empty `paymasterAndData` means the Sepolia paymaster is absent or not being selected.
+
+Limit the Alchemy policy to Sepolia and this demo's smart wallet while validating the flow. For production, use policy rules or a server-approved sponsorship path that fail-closes and permits only the faucet, exact token approvals, Aqua ship/dock, Mandate activate, and Mandate revoke calls.
 
 Rules:
 
@@ -157,7 +177,7 @@ pnpm --parallel --filter @mandate/web --filter @mandate/api --filter @mandate/wo
 - API: [http://localhost:3001/openapi.json](http://localhost:3001/openapi.json), configurable through `API_PORT`.
 - Worker: no HTTP port. It polls pending observed executions and commits evidence only after canonical-chain confirmation.
 
-The web surface currently renders clearly labeled synthetic demonstration data; it does not yet call the API. Use the API directly to test live Sepolia reads and receipt evidence.
+The web surface uses same-origin typed API routes for mandate inspection, simulation, execution lookup, and receipt audit. It never treats unavailable or stale chain data as a green state.
 
 ## 10. Bazantic setup
 

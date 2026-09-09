@@ -176,7 +176,9 @@ suite("canonical evidence PostgreSQL integration", () => {
 
     await repository.trackObservedExecution(input.execution);
     await repository.trackObservedExecution(input.execution);
-    const [pending] = await repository.listPendingConfirmations(10);
+    const pending = (await repository.listPendingConfirmations(10)).find(
+      (candidate) => candidate.chainId === chainId && candidate.txHash === input.execution.txHash,
+    );
     expect(pending).toEqual({
       chainId,
       txHash: input.execution.txHash,

@@ -1,55 +1,81 @@
-import { TOKENS } from "@/lib/demo";
+import type { MandateSnapshotV1 } from "@mandate/domain";
 
-const PHYSICAL = [
-  { label: `${TOKENS.in.symbol} in treasury wallet`, value: "4,268.02" },
-  { label: `${TOKENS.out.symbol} in treasury wallet`, value: "1.884117" },
-  { label: `${TOKENS.in.symbol} at agent`, value: "0.00" },
-];
+import { CopyValue } from "@/components/ui/copy-value";
+import { Stamp } from "@/components/ui/kit";
 
-const VIRTUAL = [
-  { label: `${TOKENS.in.symbol} allowance left (Aqua)`, value: "3,750.00" },
-  { label: `${TOKENS.out.symbol} accumulated via strategy`, value: "0.611298" },
-];
+export function AquaBalances({ snapshot }: { snapshot: MandateSnapshotV1 }) {
+  const physical = [
+    { label: "tokenIn in treasury wallet", value: snapshot.physical.makerTokenIn },
+    { label: "tokenOut in treasury wallet", value: snapshot.physical.makerTokenOut },
+    { label: "tokenIn at agent", value: snapshot.physical.agentTokenIn },
+    { label: "tokenOut at agent", value: snapshot.physical.agentTokenOut },
+    {
+      label: "token balances at Mandate app",
+      value: `${snapshot.physical.appTokenIn} / ${snapshot.physical.appTokenOut}`,
+    },
+  ];
+  const virtual = [
+    { label: "tokenIn strategy allocation", value: snapshot.aqua.inputBalance },
+    { label: "tokenOut strategy allocation", value: snapshot.aqua.outputBalance },
+  ];
 
-/**
- * Aqua balances — physical custody vs the strategy's virtual allowance lane.
- * Two different ledgers; the distinction is the product.
- */
-export function AquaBalances() {
   return (
     <div>
-      <div className="flex items-baseline justify-between border-b border-rule pb-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-rule pb-3">
         <h3 className="text-[1.0625rem] font-medium tracking-[-0.01em]">Aqua balances</h3>
-        <span className="ledger-label text-ink-3">physical vs virtual</span>
+        <div className="flex items-center gap-2">
+          <Stamp
+            kind={
+              snapshot.aqua.result === "PASS" && snapshot.physical.result === "PASS"
+                ? "PASS"
+                : "UNKNOWN"
+            }
+            label={
+              snapshot.aqua.result === "PASS" && snapshot.physical.result === "PASS"
+                ? "BLOCK-STAMPED"
+                : "UNKNOWN"
+            }
+          />
+          <span className="ledger-label text-ink-3">physical vs virtual</span>
+        </div>
       </div>
       <div className="mt-4 grid gap-8 md:grid-cols-2">
         <dl>
-          <dt className="ledger-label text-ink-3">Physical: maker wallet</dt>
-          {PHYSICAL.map((r) => (
+          <dt className="ledger-label text-ink-3">
+            Physical: ERC-20 balances at block {snapshot.block.number}
+          </dt>
+          {physical.map((row) => (
             <div
-              key={r.label}
+              key={row.label}
               className="flex items-baseline justify-between gap-6 border-b border-rule py-2.5"
             >
-              <dd className="text-[0.875rem] text-ink-2">{r.label}</dd>
-              <dd className="mono-data text-ink">{r.value}</dd>
+              <dd className="text-[0.875rem] text-ink-2">{row.label}</dd>
+              <dd className="mono-data break-all text-right text-ink">
+                {snapshot.physical.result === "PASS" ? row.value : "UNKNOWN"}
+              </dd>
             </div>
           ))}
         </dl>
         <dl>
           <dt className="ledger-label text-ink-3">Virtual: Aqua strategy lane</dt>
-          {VIRTUAL.map((r) => (
+          {virtual.map((row) => (
             <div
-              key={r.label}
+              key={row.label}
               className="flex items-baseline justify-between gap-6 border-b border-rule py-2.5"
             >
-              <dd className="text-[0.875rem] text-ink-2">{r.label}</dd>
-              <dd className="mono-data text-ink">{r.value}</dd>
+              <dd className="text-[0.875rem] text-ink-2">{row.label}</dd>
+              <dd className="mono-data text-ink">
+                {snapshot.aqua.result === "PASS" ? row.value : "UNKNOWN"}
+              </dd>
             </div>
           ))}
-          <p className="mono-data mt-3 text-ink-3">
-            Virtual balances are per-maker/app/strategy accounting lanes at Aqua, never a second
-            token balance. Physical tokens stay in the treasury wallet between executions.
-          </p>
+          <div className="mono-data mt-3 text-ink-3">
+            <CopyValue value={snapshot.aqua.address} />
+            <p className="mt-2">
+              Virtual balances are per-maker/app/strategy accounting lanes. They are not a second
+              wallet balance.
+            </p>
+          </div>
         </dl>
       </div>
     </div>

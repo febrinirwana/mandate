@@ -338,7 +338,7 @@ async function readAqua(
   strategyHash: Hex,
   strategy: StrategyV1,
   blockNumber: bigint,
-): Promise<AquaObservation | { available: false }> {
+): Promise<AquaObservation | { available: false; address: Address }> {
   try {
     const aqua = await client.readContract({
       address: mandateApp,
@@ -358,10 +358,76 @@ async function readAqua(
       active: true,
       inputBalance: balances[0].toString(),
       outputBalance: balances[1].toString(),
-      address: aqua,
+      address: normalizeAddress(aqua),
     };
   } catch {
-    return { available: false };
+    return { available: false, address: zeroAddress };
+  }
+}
+
+async function readPhysicalBalances(
+  client: PublicClient,
+  mandateApp: Address,
+  strategy: StrategyV1,
+  blockNumber: bigint,
+) {
+  try {
+    const [makerTokenIn, makerTokenOut, agentTokenIn, agentTokenOut, appTokenIn, appTokenOut] =
+      await Promise.all([
+        client.readContract({
+          address: strategy.tokenIn,
+          abi: erc20Abi,
+          functionName: "balanceOf",
+          args: [strategy.maker],
+          blockNumber,
+        }),
+        client.readContract({
+          address: strategy.tokenOut,
+          abi: erc20Abi,
+          functionName: "balanceOf",
+          args: [strategy.maker],
+          blockNumber,
+        }),
+        client.readContract({
+          address: strategy.tokenIn,
+          abi: erc20Abi,
+          functionName: "balanceOf",
+          args: [strategy.agent],
+          blockNumber,
+        }),
+        client.readContract({
+          address: strategy.tokenOut,
+          abi: erc20Abi,
+          functionName: "balanceOf",
+          args: [strategy.agent],
+          blockNumber,
+        }),
+        client.readContract({
+          address: strategy.tokenIn,
+          abi: erc20Abi,
+          functionName: "balanceOf",
+          args: [mandateApp],
+          blockNumber,
+        }),
+        client.readContract({
+          address: strategy.tokenOut,
+          abi: erc20Abi,
+          functionName: "balanceOf",
+          args: [mandateApp],
+          blockNumber,
+        }),
+      ]);
+    return {
+      available: true as const,
+      makerTokenIn: makerTokenIn.toString(),
+      makerTokenOut: makerTokenOut.toString(),
+      agentTokenIn: agentTokenIn.toString(),
+      agentTokenOut: agentTokenOut.toString(),
+      appTokenIn: appTokenIn.toString(),
+      appTokenOut: appTokenOut.toString(),
+    };
+  } catch {
+    return { available: false as const };
   }
 }
 
@@ -483,7 +549,7 @@ export class MandateChainService {
     if (header.number === null || header.hash === null) {
       throw new ChainReadError("UNAVAILABLE", "chain block is unavailable");
     }
-    const [state, ens] = await Promise.all([
+    const [state, ens, aqua, physical] = await Promise.all([
       runtime.client.readContract({
         address: runtime.mandateApp,
         abi: mandateAquaAppAbi,
@@ -492,6 +558,8 @@ export class MandateChainService {
         blockNumber: header.number,
       }),
       readEns(runtime.client, strategy, header.number),
+      readAqua(runtime.client, runtime.mandateApp, input.strategyHash, strategy, header.number),
+      readPhysicalBalances(runtime.client, runtime.mandateApp, strategy, header.number),
     ]);
     await this.ensureCanonical(runtime, header.number, header.hash);
     const identityValid =
@@ -502,11 +570,43 @@ export class MandateChainService {
       ens.resolver === strategy.ensResolver &&
       ens.address === strategy.agent;
     const result =
-      !state[2] || state[3] ? "FAIL" : !ens.available ? "UNKNOWN" : identityValid ? "PASS" : "FAIL";
+      !state[2] || state[3]
+        ? "FAIL"
+        : !ens.available || !aqua.available || !physical.available
+          ? "UNKNOWN"
+          : identityValid
+            ? "PASS"
+            : "FAIL";
     return {
       version: 1,
       chainId: input.chainId,
       strategyHash: input.strategyHash,
+      strategy,
+      aqua: {
+        address: aqua.address,
+        result: aqua.available ? "PASS" : "UNKNOWN",
+        inputBalance: aqua.available ? aqua.inputBalance : "0",
+        outputBalance: aqua.available ? aqua.outputBalance : "0",
+      },
+      physical: physical.available
+        ? {
+            result: "PASS",
+            makerTokenIn: physical.makerTokenIn,
+            makerTokenOut: physical.makerTokenOut,
+            agentTokenIn: physical.agentTokenIn,
+            agentTokenOut: physical.agentTokenOut,
+            appTokenIn: physical.appTokenIn,
+            appTokenOut: physical.appTokenOut,
+          }
+        : {
+            result: "UNKNOWN",
+            makerTokenIn: "0",
+            makerTokenOut: "0",
+            agentTokenIn: "0",
+            agentTokenOut: "0",
+            appTokenIn: "0",
+            appTokenOut: "0",
+          },
       block: { number: header.number.toString(), hash: header.hash },
       state: {
         maker: normalizeAddress(state[0]),
@@ -577,7 +677,7 @@ export class MandateChainService {
     const evaluation = evaluatePreflight({
       strategy: input.strategy,
       mandate: {
-        maker: state[0],
+        maker: normalizeAddress(state[0]),
         usedInput: state[1].toString(),
         activated: state[2],
         revoked: state[3],

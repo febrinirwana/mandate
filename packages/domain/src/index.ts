@@ -169,6 +169,22 @@ export const MandateSnapshotV1Schema = z.strictObject({
   version: z.literal(1),
   chainId: ChainIdSchema,
   strategyHash: NonZeroHash32Schema,
+  strategy: StrategyV1Schema,
+  aqua: z.strictObject({
+    address: AddressSchema,
+    result: SimulationResultSchema,
+    inputBalance: Uint256StringSchema,
+    outputBalance: Uint256StringSchema,
+  }),
+  physical: z.strictObject({
+    result: SimulationResultSchema,
+    makerTokenIn: Uint256StringSchema,
+    makerTokenOut: Uint256StringSchema,
+    agentTokenIn: Uint256StringSchema,
+    agentTokenOut: Uint256StringSchema,
+    appTokenIn: Uint256StringSchema,
+    appTokenOut: Uint256StringSchema,
+  }),
   block: BlockRefSchema,
   state: z.strictObject({
     maker: NonZeroAddressSchema,
