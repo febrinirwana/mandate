@@ -11,12 +11,15 @@ export type SmartWalletCall = {
   value?: bigint;
 };
 
-type SmartWalletClient = {
+export type SmartWalletClient = {
   sendTransaction(input: { calls: SmartWalletCall[] }): Promise<`0x${string}`>;
 };
 
 const erc20Abi = parseAbi(["function approve(address spender,uint256 amount) returns (bool)"]);
-const aquaAbi = parseAbi(["function ship(address app,bytes strategy,address[] tokens,uint256[] amounts) returns (bytes32)"]);
+const mintableErc20Abi = parseAbi(["function mint(address account,uint256 amount)"]);
+const aquaAbi = parseAbi([
+  "function ship(address app,bytes strategy,address[] tokens,uint256[] amounts) returns (bytes32)",
+]);
 
 function activateArgs(strategy: StrategyV1) {
   return {
@@ -40,16 +43,67 @@ function activateArgs(strategy: StrategyV1) {
   };
 }
 
-export function buildAuthorityCalls(aqua: `0x${string}`, mandateApp: `0x${string}`, strategy: StrategyV1): SmartWalletCall[] {
+export function buildDemoFaucetCall(
+  token: `0x${string}`,
+  recipient: `0x${string}`,
+  amount: bigint,
+): SmartWalletCall {
+  return {
+    to: token,
+    data: encodeFunctionData({
+      abi: mintableErc20Abi,
+      functionName: "mint",
+      args: [recipient, amount],
+    }),
+  };
+}
+
+export function buildAuthorityCalls(
+  aqua: `0x${string}`,
+  mandateApp: `0x${string}`,
+  strategy: StrategyV1,
+): SmartWalletCall[] {
   return [
-    { to: strategy.tokenIn, data: encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [aqua, BigInt(strategy.maxInputTotal)] }) },
-    { to: strategy.tokenOut, data: encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [aqua, 0n] }) },
-    { to: aqua, data: encodeFunctionData({ abi: aquaAbi, functionName: "ship", args: [mandateApp, encodeStrategy(strategy), [strategy.tokenIn, strategy.tokenOut], [BigInt(strategy.maxInputTotal), 0n]] }) },
-    { to: mandateApp, data: encodeFunctionData({ abi: mandateAquaAppAbi, functionName: "activate", args: [activateArgs(strategy)] }) },
+    {
+      to: strategy.tokenIn,
+      data: encodeFunctionData({
+        abi: erc20Abi,
+        functionName: "approve",
+        args: [aqua, BigInt(strategy.maxInputTotal)],
+      }),
+    },
+    {
+      to: strategy.tokenOut,
+      data: encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [aqua, 0n] }),
+    },
+    {
+      to: aqua,
+      data: encodeFunctionData({
+        abi: aquaAbi,
+        functionName: "ship",
+        args: [
+          mandateApp,
+          encodeStrategy(strategy),
+          [strategy.tokenIn, strategy.tokenOut],
+          [BigInt(strategy.maxInputTotal), 0n],
+        ],
+      }),
+    },
+    {
+      to: mandateApp,
+      data: encodeFunctionData({
+        abi: mandateAquaAppAbi,
+        functionName: "activate",
+        args: [activateArgs(strategy)],
+      }),
+    },
   ];
 }
 
-export async function submitSmartWalletCalls(client: SmartWalletClient | undefined, calls: SmartWalletCall[]): Promise<WalletState> {
+export async function submitSmartWalletCalls(
+  client: SmartWalletClient | undefined,
+  calls: SmartWalletCall[],
+): Promise<WalletState> {
   if (!client) return { kind: "UNAVAILABLE" };
   try {
     return { kind: "SUBMITTED", txHash: await client.sendTransaction({ calls }) };

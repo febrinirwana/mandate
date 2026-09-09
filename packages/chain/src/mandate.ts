@@ -589,7 +589,15 @@ export class MandateChainService {
         outputBalance: aqua.available ? aqua.outputBalance : "0",
       },
       physical: physical.available
-        ? { result: "PASS", ...physical }
+        ? {
+            result: "PASS",
+            makerTokenIn: physical.makerTokenIn,
+            makerTokenOut: physical.makerTokenOut,
+            agentTokenIn: physical.agentTokenIn,
+            agentTokenOut: physical.agentTokenOut,
+            appTokenIn: physical.appTokenIn,
+            appTokenOut: physical.appTokenOut,
+          }
         : {
             result: "UNKNOWN",
             makerTokenIn: "0",
@@ -669,7 +677,7 @@ export class MandateChainService {
     const evaluation = evaluatePreflight({
       strategy: input.strategy,
       mandate: {
-        maker: state[0],
+        maker: normalizeAddress(state[0]),
         usedInput: state[1].toString(),
         activated: state[2],
         revoked: state[3],

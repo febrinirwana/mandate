@@ -1,4 +1,11 @@
-import { AddressSchema, Hash32Schema, SelectorSchema, StrategyV1Schema, type Address, type StrategyV1 } from "@mandate/domain";
+import {
+  AddressSchema,
+  Hash32Schema,
+  SelectorSchema,
+  StrategyV1Schema,
+  type Address,
+  type StrategyV1,
+} from "@mandate/domain";
 import { parseUnits } from "viem";
 
 export type PolicyProfileV1 = {
@@ -10,7 +17,9 @@ export type PolicyProfileV1 = {
 };
 
 function record(value: unknown): Record<string, unknown> | undefined {
-  return typeof value === "object" && value !== null && !Array.isArray(value) ? value as Record<string, unknown> : undefined;
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
 }
 
 function exactKeys(value: Record<string, unknown>, keys: string[]): boolean {
@@ -19,14 +28,23 @@ function exactKeys(value: Record<string, unknown>, keys: string[]): boolean {
 }
 
 function parseAddress(value: unknown): Address | undefined {
-  const parsed = typeof value === "string" ? AddressSchema.safeParse(value.toLowerCase()) : undefined;
+  const parsed =
+    typeof value === "string" ? AddressSchema.safeParse(value.toLowerCase()) : undefined;
   return parsed?.success ? parsed.data : undefined;
 }
 
 function parseToken(value: unknown): PolicyProfileV1["tokenIn"] | undefined {
   const token = record(value);
   const address = token && parseAddress(token.address);
-  return token && exactKeys(token, ["address", "decimals", "symbol"]) && address && typeof token.symbol === "string" && token.symbol.length > 0 && typeof token.decimals === "number" && Number.isInteger(token.decimals) && token.decimals >= 0 && token.decimals <= 255
+  return token &&
+    exactKeys(token, ["address", "decimals", "symbol"]) &&
+    address &&
+    typeof token.symbol === "string" &&
+    token.symbol.length > 0 &&
+    typeof token.decimals === "number" &&
+    Number.isInteger(token.decimals) &&
+    token.decimals >= 0 &&
+    token.decimals <= 255
     ? { address, decimals: token.decimals, symbol: token.symbol }
     : undefined;
 }
@@ -40,12 +58,40 @@ export function parsePolicyProfile(value: string | undefined): PolicyProfileV1 |
     const agentAddress = agent && parseAddress(agent.address);
     const registry = ens && parseAddress(ens.registry);
     const resolver = ens && parseAddress(ens.resolver);
-    const node = ens && typeof ens.node === "string" ? Hash32Schema.safeParse(ens.node.toLowerCase()) : undefined;
+    const node =
+      ens && typeof ens.node === "string"
+        ? Hash32Schema.safeParse(ens.node.toLowerCase())
+        : undefined;
     const target = route && parseAddress(route.target);
-    const selector = route && typeof route.selector === "string" ? SelectorSchema.safeParse(route.selector.toLowerCase()) : undefined;
+    const selector =
+      route && typeof route.selector === "string"
+        ? SelectorSchema.safeParse(route.selector.toLowerCase())
+        : undefined;
     const tokenIn = parseToken(profile?.tokenIn);
     const tokenOut = parseToken(profile?.tokenOut);
-    if (!profile || !agent || !ens || !route || !exactKeys(profile, ["agent", "ens", "route", "tokenIn", "tokenOut"]) || !exactKeys(agent, ["address", "name"]) || !exactKeys(ens, ["label", "node", "registry", "resolver"]) || !exactKeys(route, ["selector", "target"]) || !agentAddress || typeof agent.name !== "string" || !agent.name.trim() || !registry || !resolver || !node?.success || typeof ens.label !== "string" || !ens.label.trim() || !target || !selector?.success || !tokenIn || !tokenOut) return undefined;
+    if (
+      !profile ||
+      !agent ||
+      !ens ||
+      !route ||
+      !exactKeys(profile, ["agent", "ens", "route", "tokenIn", "tokenOut"]) ||
+      !exactKeys(agent, ["address", "name"]) ||
+      !exactKeys(ens, ["label", "node", "registry", "resolver"]) ||
+      !exactKeys(route, ["selector", "target"]) ||
+      !agentAddress ||
+      typeof agent.name !== "string" ||
+      !agent.name.trim() ||
+      !registry ||
+      !resolver ||
+      !node?.success ||
+      typeof ens.label !== "string" ||
+      !ens.label.trim() ||
+      !target ||
+      !selector?.success ||
+      !tokenIn ||
+      !tokenOut
+    )
+      return undefined;
     return {
       agent: { address: agentAddress, name: agent.name },
       ens: { label: ens.label, node: node.data, registry, resolver },
@@ -72,6 +118,7 @@ type PolicyCompilationContext = {
   maker: Address;
   validAfter: string;
   salt: `0x${string}`;
+  maxMandateDuration?: string;
 };
 
 const DECIMAL = /^(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$/;
@@ -90,7 +137,11 @@ function decimalFraction(value: string): [bigint, bigint] {
   return [numerator, denominator];
 }
 
-function minimumRate(value: string, inputDecimals: number, outputDecimals: number): [string, string] {
+function minimumRate(
+  value: string,
+  inputDecimals: number,
+  outputDecimals: number,
+): [string, string] {
   let [numerator, denominator] = decimalFraction(value);
   numerator *= 10n ** BigInt(outputDecimals);
   denominator *= 10n ** BigInt(inputDecimals);
@@ -100,7 +151,8 @@ function minimumRate(value: string, inputDecimals: number, outputDecimals: numbe
 
 function unixSeconds(value: string): string {
   const milliseconds = Date.parse(value);
-  if (Number.isNaN(milliseconds) || milliseconds % 1000 !== 0) throw new Error("expiry must be a whole-second ISO timestamp");
+  if (Number.isNaN(milliseconds) || milliseconds % 1000 !== 0)
+    throw new Error("expiry must be a whole-second ISO timestamp");
   return String(milliseconds / 1000);
 }
 
@@ -110,11 +162,13 @@ export function compilePolicy(
   context: PolicyCompilationContext,
 ): StrategyV1 {
   if (draft.version !== 1) throw new Error("unsupported policy version");
-  if (draft.agent !== profile.agent.name) throw new Error("agent is not in the trusted policy profile");
+  if (draft.agent !== profile.agent.name)
+    throw new Error("agent is not in the trusted policy profile");
   if (draft.tokenIn !== profile.tokenIn.symbol || draft.tokenOut !== profile.tokenOut.symbol) {
     throw new Error("asset pair is not in the trusted policy profile");
   }
-  if (!DECIMAL.test(draft.maxInput) || draft.maxInput === "0") throw new Error("maximum spend must be positive");
+  if (!DECIMAL.test(draft.maxInput) || draft.maxInput === "0")
+    throw new Error("maximum spend must be positive");
 
   const maxInputTotal = parseUnits(draft.maxInput, profile.tokenIn.decimals).toString();
   const [minRateNumerator, minRateDenominator] = minimumRate(
@@ -122,8 +176,12 @@ export function compilePolicy(
     profile.tokenIn.decimals,
     profile.tokenOut.decimals,
   );
-  const validUntil = unixSeconds(draft.expiresAt);
-
+  const validAfter = BigInt(context.validAfter);
+  const validUntil = BigInt(unixSeconds(draft.expiresAt));
+  if (validUntil <= validAfter) throw new Error("expiry must follow valid-after");
+  if (context.maxMandateDuration && validUntil - validAfter > BigInt(context.maxMandateDuration)) {
+    throw new Error("expiry exceeds the Mandate duration limit");
+  }
   return StrategyV1Schema.parse({
     version: 1,
     maker: context.maker.toLowerCase(),
@@ -140,8 +198,8 @@ export function compilePolicy(
     minRateDenominator,
     maxInputPerCall: maxInputTotal,
     maxInputTotal,
-    validAfter: context.validAfter,
-    validUntil,
+    validAfter: validAfter.toString(),
+    validUntil: validUntil.toString(),
     salt: context.salt.toLowerCase(),
   });
 }

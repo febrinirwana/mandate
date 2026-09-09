@@ -22,11 +22,22 @@ contract SepoliaScriptsTest is Test {
 
     function testDeploySepoliaRejectsMismatchedOfficialAquaCode() public {
         vm.chainId(11_155_111);
+        vm.setEnv("SEPOLIA_VENUE_INPUT_RECIPIENT", "0xf48DBc49B23669e8B08fC6c08e0aB61cf7301466");
         vm.etch(0x1111113CCf1426A8E30e2bfF5E005d929bF6a90a, hex"6000");
 
         DeploySepolia script = new DeploySepolia();
 
         vm.expectRevert(abi.encodeWithSelector(DeploySepolia.AquaCodeHashMismatch.selector, keccak256(hex"6000")));
+        script.run();
+    }
+
+    function testDeploySepoliaRejectsZeroInputRecipient() public {
+        vm.chainId(11_155_111);
+        vm.setEnv("SEPOLIA_VENUE_INPUT_RECIPIENT", "0x0000000000000000000000000000000000000000");
+
+        DeploySepolia script = new DeploySepolia();
+
+        vm.expectRevert(DeploySepolia.InvalidInputRecipient.selector);
         script.run();
     }
 

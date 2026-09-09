@@ -10,7 +10,7 @@ export async function GET() {
   const readiness = await checkPolicyReadiness({
     mandateApp: runtime.mandateApp,
     profile: runtime.policyProfile,
-    rpcUrl: process.env.SEPOLIA_RPC_URL,
+    rpcUrl: process.env.MANDATE_LOCAL_RPC_URL ?? process.env.SEPOLIA_RPC_URL,
   });
   return NextResponse.json(readiness, { status: readiness.kind === "UNAVAILABLE" ? 503 : 200 });
 }
