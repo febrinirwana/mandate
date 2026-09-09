@@ -3,7 +3,7 @@
 import { usePrivy } from "@privy-io/react-auth";
 import { useSmartWallets } from "@privy-io/react-auth/smart-wallets";
 import { ArrowRight, ChevronDown, LockKeyhole, Sparkles } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { keccak256, stringToHex } from "viem";
 
 import { Button } from "@/components/ui/kit";
@@ -18,6 +18,13 @@ type ProposalState =
   | { kind: "CLARIFICATION"; message: string }
   | { kind: "UNAVAILABLE" };
 
+type ReadinessState =
+  | { kind: "IDLE" }
+  | { kind: "LOADING" }
+  | { kind: "READY" }
+  | { kind: "BLOCKED"; reason: string }
+  | { kind: "UNAVAILABLE" };
+
 
 export function AuthorityComposer({ runtime }: { runtime: MandateRuntime }) {
   const { authenticated, login, ready } = usePrivy();
@@ -27,6 +34,27 @@ export function AuthorityComposer({ runtime }: { runtime: MandateRuntime }) {
   const [proposalState, setProposalState] = useState<ProposalState>({ kind: "IDLE" });
   const [validAfter, setValidAfter] = useState("");
   const [salt, setSalt] = useState<`0x${string}`>();
+
+  const [readiness, setReadiness] = useState<ReadinessState>({ kind: "IDLE" });
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!runtime.policyProfile) return undefined;
+
+    setReadiness({ kind: "LOADING" });
+    void fetch("/api/policy-readiness")
+      .then(async (response) => {
+        const result = await response.json() as ReadinessState;
+        if (!cancelled) setReadiness(result.kind === "READY" || result.kind === "BLOCKED" ? result : { kind: "UNAVAILABLE" });
+      })
+      .catch(() => {
+        if (!cancelled) setReadiness({ kind: "UNAVAILABLE" });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [runtime.policyProfile]);
 
   const maker = client?.account.address?.toLowerCase() as `0x${string}` | undefined;
   const strategy = useMemo(() => {
@@ -104,7 +132,7 @@ export function AuthorityComposer({ runtime }: { runtime: MandateRuntime }) {
         <p className="ledger-label text-ink-3">Reviewable authority</p>
         {draft ? <><div className="mt-5 border border-rule bg-paper p-5"><p className="ledger-label text-accent">Proposed · not authorized</p><h2 className="mt-4 text-[1.65rem] leading-[1.08] tracking-[-0.03em]">{draft.agent} may convert up to {draft.maxInput} {draft.tokenIn} into {draft.tokenOut}.</h2><dl className="mt-7 grid gap-4 border-t border-rule pt-5"><div className="flex justify-between gap-4"><dt className="ledger-label text-ink-3">Price floor</dt><dd className="mono-data text-right">{draft.minRate} {draft.tokenOut} / {draft.tokenIn}</dd></div><div className="flex justify-between gap-4"><dt className="ledger-label text-ink-3">Expires</dt><dd className="mono-data text-right">{new Date(draft.expiresAt).toLocaleString()}</dd></div><div className="flex justify-between gap-4"><dt className="ledger-label text-ink-3">Destination</dt><dd className="mono-data text-right">Owner smart wallet only</dd></div></dl></div>
           {strategy && hash ? <details className="group mt-5 border-y border-rule"><summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 py-3 text-[0.9375rem] font-medium">Exact onchain authority<ChevronDown size={16} className="transition-transform group-open:rotate-180" aria-hidden="true" /></summary><div className="space-y-3 border-t border-rule py-4"><CopyValue value={hash} /><p className="mono-data break-all text-[0.6875rem] leading-5 text-ink-2">{strategy.tokenIn} → {strategy.tokenOut}<br />{strategy.swapTarget} · {strategy.swapSelector}<br />max {strategy.maxInputTotal} base units · valid until {strategy.validUntil}</p></div></details> : <p role="status" className="mono-data mt-5 text-revoked">This draft does not match the trusted authority profile. Adjust the highlighted policy terms.</p>}</> : <div className="mt-5 border border-dashed border-rule p-5"><p className="text-[1.125rem] font-medium">Your authority will appear here.</p><p className="mono-data mt-3 leading-5 text-ink-2">AI drafts a proposal. You edit it. Mandate compiles the immutable onchain boundary.</p></div>}
-        <div className="mt-8 border-t border-rule pt-5"><p className="mono-data leading-5 text-ink-2"><LockKeyhole className="mr-2 inline" size={14} aria-hidden="true" />No custody transfer. Simulation and receipt confirmation are required before an authority becomes active.</p>{!authenticated ? <Button className="mt-5 w-full" onClick={() => login()} disabled={!ready}>Create secure wallet<ArrowRight size={16} aria-hidden="true" /></Button> : <Button className="mt-5 w-full" disabled>Simulation required before authorization</Button>}</div>
+        <div className="mt-8 border-t border-rule pt-5"><p className="mono-data leading-5 text-ink-2"><LockKeyhole className="mr-2 inline" size={14} aria-hidden="true" />No custody transfer. Simulation and receipt confirmation are required before an authority becomes active.</p>{readiness.kind === "LOADING" && <p role="status" className="mono-data mt-4 text-ink-2">Checking live Sepolia identity and venue bindings…</p>}{readiness.kind === "BLOCKED" && <p role="status" className="mono-data mt-4 text-revoked">{readiness.reason}</p>}{readiness.kind === "UNAVAILABLE" && <p role="status" className="mono-data mt-4 text-revoked">Live authority checks are unavailable. No transaction can be prepared.</p>}{readiness.kind === "READY" && <p role="status" className="mono-data mt-4 text-accent">Live Sepolia bindings verified. Run the current simulation before authorizing.</p>}{!authenticated ? <Button className="mt-5 w-full" onClick={() => login()} disabled={!ready}>Create secure wallet<ArrowRight size={16} aria-hidden="true" /></Button> : !maker ? <Button className="mt-5 w-full" disabled>Preparing secure wallet…</Button> : readiness.kind !== "READY" ? <Button className="mt-5 w-full" disabled>Authority checks required</Button> : <Button className="mt-5 w-full" disabled>Simulation required before authorization</Button>}</div>
       </aside>
     </main>
   </div>;

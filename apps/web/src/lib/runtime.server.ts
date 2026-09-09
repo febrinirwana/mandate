@@ -1,4 +1,3 @@
-import "server-only";
 
 import { AddressSchema, PositiveUint256StringSchema } from "@mandate/domain";
 import { parsePolicyProfile, type PolicyProfileV1 } from "@/lib/policy";
