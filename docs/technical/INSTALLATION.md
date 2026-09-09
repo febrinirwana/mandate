@@ -58,6 +58,8 @@ WORKER_BATCH_SIZE=25
 WORKER_POLL_INTERVAL_MS=15000
 ```
 
+For the Next.js authority composer, create the ignored `apps/web/.env.local` with `MANDATE_CHAIN_ID=11155111`, the same `SEPOLIA_MANDATE_APP`, `MANDATE_API_ORIGIN`, and `NEXT_PUBLIC_PRIVY_APP_ID`. `MANDATE_POLICY_PROFILE` is a JSON object containing the verified agent name/address, ENS registry/resolver/label/node, supported input/output token symbols/addresses/decimals, and audited route target/selector. These are public onchain values but must be sourced from a verified deployment record; the composer fails closed when the profile is absent or malformed. `POLICY_AI_ENDPOINT`, `POLICY_AI_API_KEY`, and `POLICY_AI_MODEL` configure optional server-side structured policy drafting and must not be exposed with `NEXT_PUBLIC_`.
+
 Rules:
 
 - `SEPOLIA_RPC_URL` and API credentials are server-only unless a separate public RPC variable is deliberately added.
