@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { compilePolicy, type PolicyDraftV1, type PolicyProfileV1 } from "../src/lib/policy";
+import { compilePolicy, parsePolicyProfile, type PolicyDraftV1, type PolicyProfileV1 } from "../src/lib/policy";
 
 const address = (digit: string): `0x${string}` => `0x${digit.repeat(40)}`;
 const hash = (digit: string): `0x${string}` => `0x${digit.repeat(64)}`;
@@ -64,5 +64,13 @@ describe("policy compiler", () => {
 
   it("refuses an asset pair outside the trusted policy profile", () => {
     expect(() => compilePolicy({ ...draft, tokenIn: "ETH" }, profile, { maker: address("1"), validAfter: "1700000000", salt: hash("a") })).toThrow();
+  });
+});
+
+describe("policy profile configuration", () => {
+  it("accepts only a complete strict profile", () => {
+    expect(parsePolicyProfile(JSON.stringify(profile))).toEqual(profile);
+    expect(parsePolicyProfile(JSON.stringify({ ...profile, unsafe: true }))).toBeUndefined();
+    expect(parsePolicyProfile(JSON.stringify({ ...profile, route: { ...profile.route, selector: "0x00" } }))).toBeUndefined();
   });
 });

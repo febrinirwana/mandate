@@ -1,10 +1,12 @@
 import "server-only";
 
 import { AddressSchema, PositiveUint256StringSchema } from "@mandate/domain";
-
+import { parsePolicyProfile, type PolicyProfileV1 } from "@/lib/policy";
 export type MandateRuntime = {
   chainId: string;
   mandateApp: `0x${string}`;
+  policyProfile?: PolicyProfileV1;
+  privyEnabled: boolean;
 };
 
 export function runtimeConfig(): MandateRuntime | null {
@@ -18,7 +20,12 @@ export function runtimeConfig(): MandateRuntime | null {
   const exactChainId = PositiveUint256StringSchema.safeParse(chainId);
   if (!exactChainId.success) return null;
 
-  return { chainId: exactChainId.data, mandateApp: parsed.data };
+  return {
+    chainId: exactChainId.data,
+    mandateApp: parsed.data,
+    policyProfile: parsePolicyProfile(process.env["MANDATE_POLICY_PROFILE"]),
+    privyEnabled: Boolean(process.env["NEXT_PUBLIC_PRIVY_APP_ID"]),
+  };
 }
 
 export function apiOrigin(): string {

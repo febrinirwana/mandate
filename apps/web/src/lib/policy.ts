@@ -1,4 +1,4 @@
-import { StrategyV1Schema, type Address, type StrategyV1 } from "@mandate/domain";
+import { AddressSchema, Hash32Schema, SelectorSchema, StrategyV1Schema, type Address, type StrategyV1 } from "@mandate/domain";
 import { parseUnits } from "viem";
 
 export type PolicyProfileV1 = {
@@ -8,6 +8,55 @@ export type PolicyProfileV1 = {
   tokenOut: { symbol: string; address: Address; decimals: number };
   route: { target: Address; selector: `0x${string}` };
 };
+
+function record(value: unknown): Record<string, unknown> | undefined {
+  return typeof value === "object" && value !== null && !Array.isArray(value) ? value as Record<string, unknown> : undefined;
+}
+
+function exactKeys(value: Record<string, unknown>, keys: string[]): boolean {
+  const actual = Object.keys(value).sort();
+  return actual.length === keys.length && actual.every((key, index) => key === keys[index]);
+}
+
+function parseAddress(value: unknown): Address | undefined {
+  const parsed = typeof value === "string" ? AddressSchema.safeParse(value.toLowerCase()) : undefined;
+  return parsed?.success ? parsed.data : undefined;
+}
+
+function parseToken(value: unknown): PolicyProfileV1["tokenIn"] | undefined {
+  const token = record(value);
+  const address = token && parseAddress(token.address);
+  return token && exactKeys(token, ["address", "decimals", "symbol"]) && address && typeof token.symbol === "string" && token.symbol.length > 0 && typeof token.decimals === "number" && Number.isInteger(token.decimals) && token.decimals >= 0 && token.decimals <= 255
+    ? { address, decimals: token.decimals, symbol: token.symbol }
+    : undefined;
+}
+
+export function parsePolicyProfile(value: string | undefined): PolicyProfileV1 | undefined {
+  try {
+    const profile = record(value ? JSON.parse(value) : undefined);
+    const agent = profile && record(profile.agent);
+    const ens = profile && record(profile.ens);
+    const route = profile && record(profile.route);
+    const agentAddress = agent && parseAddress(agent.address);
+    const registry = ens && parseAddress(ens.registry);
+    const resolver = ens && parseAddress(ens.resolver);
+    const node = ens && typeof ens.node === "string" ? Hash32Schema.safeParse(ens.node.toLowerCase()) : undefined;
+    const target = route && parseAddress(route.target);
+    const selector = route && typeof route.selector === "string" ? SelectorSchema.safeParse(route.selector.toLowerCase()) : undefined;
+    const tokenIn = parseToken(profile?.tokenIn);
+    const tokenOut = parseToken(profile?.tokenOut);
+    if (!profile || !agent || !ens || !route || !exactKeys(profile, ["agent", "ens", "route", "tokenIn", "tokenOut"]) || !exactKeys(agent, ["address", "name"]) || !exactKeys(ens, ["label", "node", "registry", "resolver"]) || !exactKeys(route, ["selector", "target"]) || !agentAddress || typeof agent.name !== "string" || !agent.name.trim() || !registry || !resolver || !node?.success || typeof ens.label !== "string" || !ens.label.trim() || !target || !selector?.success || !tokenIn || !tokenOut) return undefined;
+    return {
+      agent: { address: agentAddress, name: agent.name },
+      ens: { label: ens.label, node: node.data, registry, resolver },
+      route: { selector: selector.data, target },
+      tokenIn,
+      tokenOut,
+    };
+  } catch {
+    return undefined;
+  }
+}
 
 export type PolicyDraftV1 = {
   version: 1;
