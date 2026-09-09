@@ -1,12 +1,6 @@
 import type { MandateSnapshotV1, SimulationRequestV1, StrategyV1 } from "@mandate/domain";
 import { mandateAquaAppAbi } from "@mandate/contracts/mandate-aqua-app";
-import {
-  decodeFunctionResult,
-  encodeFunctionData,
-  parseAbi,
-  type Address,
-  type Hex,
-} from "viem";
+import { decodeFunctionResult, encodeFunctionData, parseAbi, type Address, type Hex } from "viem";
 
 import { buildExecutionIntent, encodeStrategy } from "@/lib/mandate";
 
@@ -64,7 +58,8 @@ async function send(
     const actualChain = typeof chain === "string" ? BigInt(chain).toString() : "unknown";
     if (actualChain !== expectedChainId) return { kind: "WRONG_CHAIN", actual: actualChain };
     if (!account) return { kind: "UNAVAILABLE" };
-    if (account !== expectedAccount.toLowerCase()) return { kind: "WRONG_ACCOUNT", actual: account };
+    if (account !== expectedAccount.toLowerCase())
+      return { kind: "WRONG_ACCOUNT", actual: account };
     const hash = await wallet.request({
       method: "eth_sendTransaction",
       params: [{ from: account, to, data, value: "0x0" }],
@@ -102,9 +97,16 @@ export async function readAquaAddress(mandateApp: Address): Promise<Address | nu
   if (!wallet) return null;
   try {
     const data = encodeFunctionData({ abi: mandateAquaAppAbi, functionName: "AQUA" });
-    const result = await wallet.request({ method: "eth_call", params: [{ to: mandateApp, data }, "latest"] });
+    const result = await wallet.request({
+      method: "eth_call",
+      params: [{ to: mandateApp, data }, "latest"],
+    });
     if (typeof result !== "string") return null;
-    return decodeFunctionResult({ abi: mandateAquaAppAbi, functionName: "AQUA", data: result as Hex });
+    return decodeFunctionResult({
+      abi: mandateAquaAppAbi,
+      functionName: "AQUA",
+      data: result as Hex,
+    });
   } catch {
     return null;
   }
@@ -149,7 +151,12 @@ export function shipStrategy(
   );
 }
 
-export function activateStrategy(chainId: string, owner: Address, mandateApp: Address, strategy: StrategyV1) {
+export function activateStrategy(
+  chainId: string,
+  owner: Address,
+  mandateApp: Address,
+  strategy: StrategyV1,
+) {
   return send(
     chainId,
     owner,
@@ -157,32 +164,39 @@ export function activateStrategy(chainId: string, owner: Address, mandateApp: Ad
     encodeFunctionData({
       abi: mandateAquaAppAbi,
       functionName: "activate",
-      args: [{
-        maker: strategy.maker,
-        agent: strategy.agent,
-        ensRegistry: strategy.ensRegistry,
-        ensResolver: strategy.ensResolver,
-        ensLabel: strategy.ensLabel,
-        ensNode: strategy.ensNode,
-        tokenIn: strategy.tokenIn,
-        tokenOut: strategy.tokenOut,
-        swapTarget: strategy.swapTarget,
-        swapSelector: strategy.swapSelector,
-        minRateNumerator: BigInt(strategy.minRateNumerator),
-        minRateDenominator: BigInt(strategy.minRateDenominator),
-        maxInputPerCall: BigInt(strategy.maxInputPerCall),
-        maxInputTotal: BigInt(strategy.maxInputTotal),
-        validAfter: BigInt(strategy.validAfter),
-        validUntil: BigInt(strategy.validUntil),
-        salt: strategy.salt,
-      }],
+      args: [
+        {
+          maker: strategy.maker,
+          agent: strategy.agent,
+          ensRegistry: strategy.ensRegistry,
+          ensResolver: strategy.ensResolver,
+          ensLabel: strategy.ensLabel,
+          ensNode: strategy.ensNode,
+          tokenIn: strategy.tokenIn,
+          tokenOut: strategy.tokenOut,
+          swapTarget: strategy.swapTarget,
+          swapSelector: strategy.swapSelector,
+          minRateNumerator: BigInt(strategy.minRateNumerator),
+          minRateDenominator: BigInt(strategy.minRateDenominator),
+          maxInputPerCall: BigInt(strategy.maxInputPerCall),
+          maxInputTotal: BigInt(strategy.maxInputTotal),
+          validAfter: BigInt(strategy.validAfter),
+          validUntil: BigInt(strategy.validUntil),
+          salt: strategy.salt,
+        },
+      ],
     }),
   );
 }
 
 export function submitExecution(request: SimulationRequestV1): Promise<WalletState> {
   const intent = buildExecutionIntent(request);
-  return send(intent.request.chainId, intent.request.strategy.agent, intent.request.mandateApp, intent.calldata);
+  return send(
+    intent.request.chainId,
+    intent.request.strategy.agent,
+    intent.request.mandateApp,
+    intent.calldata,
+  );
 }
 
 export function revokeMandate(
@@ -193,7 +207,11 @@ export function revokeMandate(
     snapshot.chainId,
     snapshot.strategy.maker,
     mandateApp,
-    encodeFunctionData({ abi: mandateAquaAppAbi, functionName: "revoke", args: [snapshot.strategyHash] }),
+    encodeFunctionData({
+      abi: mandateAquaAppAbi,
+      functionName: "revoke",
+      args: [snapshot.strategyHash],
+    }),
   );
 }
 
@@ -208,7 +226,11 @@ export function dockStrategy(
     encodeFunctionData({
       abi: aquaAbi,
       functionName: "dock",
-      args: [mandateApp, snapshot.strategyHash, [snapshot.strategy.tokenIn, snapshot.strategy.tokenOut]],
+      args: [
+        mandateApp,
+        snapshot.strategyHash,
+        [snapshot.strategy.tokenIn, snapshot.strategy.tokenOut],
+      ],
     }),
   );
 }

@@ -377,8 +377,21 @@ describe("DeploymentManifestV1Schema", () => {
     ).toBe(false);
   });
 
-  it("admits the checked-in Sepolia deployment evidence", () => {
-    expect(DeploymentManifestV1Schema.parse(sepoliaManifest).contracts).toHaveLength(3);
+  it("admits the checked-in Sepolia authority runtime evidence", () => {
+    const manifest = DeploymentManifestV1Schema.parse(sepoliaManifest);
+    expect(manifest.contracts.map(({ kind }) => kind)).toEqual([
+      "AQUA",
+      "ENS_REGISTRY",
+      "ENS_RESOLVER",
+      "ENS_REGISTRY",
+      "ENS_RESOLVER",
+      "MANDATE_APP",
+      "SWAP_TARGET",
+    ]);
+    expect(manifest.tokens.map(({ symbol, decimals }) => ({ symbol, decimals }))).toEqual([
+      { symbol: "USDC", decimals: 6 },
+      { symbol: "DAI", decimals: 18 },
+    ]);
   });
 
   it("exports generated JSON Schema inputs", () => {

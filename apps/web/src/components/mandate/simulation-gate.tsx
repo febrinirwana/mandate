@@ -1,6 +1,10 @@
 "use client";
 
-import { SimulationRequestV1Schema, type MandateSnapshotV1, type SimulationV1 } from "@mandate/domain";
+import {
+  SimulationRequestV1Schema,
+  type MandateSnapshotV1,
+  type SimulationV1,
+} from "@mandate/domain";
 import { Activity, Send } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { Hex } from "viem";
@@ -25,7 +29,9 @@ export function SimulationGate({
   const [deadline, setDeadline] = useState("2000000000");
   const [routeData, setRouteData] = useState<string>(snapshot.strategy.swapSelector);
   const [simulation, setSimulation] = useState<SimulationV1>();
-  const [requestState, setRequestState] = useState<"IDLE" | "LOADING" | "OUTAGE" | "INVALID">("IDLE");
+  const [requestState, setRequestState] = useState<"IDLE" | "LOADING" | "OUTAGE" | "INVALID">(
+    "IDLE",
+  );
   const [walletState, setWalletState] = useState<WalletState>({ kind: "IDLE" });
 
   useEffect(() => {
@@ -42,20 +48,22 @@ export function SimulationGate({
     executionDeadline: deadline,
     routeData,
   });
-  const current = simulation && request.success ? isSimulationCurrent(simulation.binding, request.data) : false;
-  const walletText = walletState.kind === "SUBMITTED"
-    ? `SUBMITTED: ${walletState.txHash}. Awaiting canonical receipt.`
-    : walletState.kind === "REJECTED"
-      ? "Wallet rejected: validated intent and completed setup steps are preserved."
-      : walletState.kind === "WRONG_CHAIN"
-        ? `Wrong chain: ${walletState.actual}.`
-        : walletState.kind === "WRONG_ACCOUNT"
-          ? `Wrong account: ${walletState.actual}.`
-          : walletState.kind === "UNAVAILABLE"
-            ? "Wallet unavailable."
-            : walletState.kind === "REVERTED"
-              ? `REVERTED: ${walletState.message}`
-              : "";
+  const current =
+    simulation && request.success ? isSimulationCurrent(simulation.binding, request.data) : false;
+  const walletText =
+    walletState.kind === "SUBMITTED"
+      ? `SUBMITTED: ${walletState.txHash}. Awaiting canonical receipt.`
+      : walletState.kind === "REJECTED"
+        ? "Wallet rejected: validated intent and completed setup steps are preserved."
+        : walletState.kind === "WRONG_CHAIN"
+          ? `Wrong chain: ${walletState.actual}.`
+          : walletState.kind === "WRONG_ACCOUNT"
+            ? `Wrong account: ${walletState.actual}.`
+            : walletState.kind === "UNAVAILABLE"
+              ? "Wallet unavailable."
+              : walletState.kind === "REVERTED"
+                ? `REVERTED: ${walletState.message}`
+                : "";
 
   const run = async () => {
     if (!request.success) {
@@ -91,35 +99,110 @@ export function SimulationGate({
         </Button>
       </div>
       <p className="mt-3 text-[0.875rem] leading-relaxed text-ink-2">
-        PASS is simulation-only and advisory. It is bound to the exact agent, strategy, calldata, state block, and deadline below. Any change invalidates it.
+        PASS is simulation-only and advisory. It is bound to the exact agent, strategy, calldata,
+        state block, and deadline below. Any change invalidates it.
       </p>
       <div className="mt-5 grid gap-4 md:grid-cols-2">
-        <label className="grid gap-1.5"><span className="ledger-label text-ink-3">amountIn base units</span><input aria-label="amountIn base units" className="mono-data min-h-11 border border-rule bg-raised px-3" value={amountIn} onChange={(event) => setAmountIn(event.target.value)} /></label>
-        <label className="grid gap-1.5"><span className="ledger-label text-ink-3">agentMinOut base units</span><input aria-label="agentMinOut base units" className="mono-data min-h-11 border border-rule bg-raised px-3" value={agentMinOut} onChange={(event) => setAgentMinOut(event.target.value)} /></label>
-        <label className="grid gap-1.5"><span className="ledger-label text-ink-3">execution deadline unix seconds</span><input aria-label="execution deadline unix seconds" className="mono-data min-h-11 border border-rule bg-raised px-3" value={deadline} onChange={(event) => setDeadline(event.target.value)} /></label>
-        <label className="grid gap-1.5"><span className="ledger-label text-ink-3">route calldata</span><input aria-label="route calldata" className="mono-data min-h-11 border border-rule bg-raised px-3" value={routeData} onChange={(event) => setRouteData(event.target.value)} /></label>
+        <label className="grid gap-1.5">
+          <span className="ledger-label text-ink-3">amountIn base units</span>
+          <input
+            aria-label="amountIn base units"
+            className="mono-data min-h-11 border border-rule bg-raised px-3"
+            value={amountIn}
+            onChange={(event) => setAmountIn(event.target.value)}
+          />
+        </label>
+        <label className="grid gap-1.5">
+          <span className="ledger-label text-ink-3">agentMinOut base units</span>
+          <input
+            aria-label="agentMinOut base units"
+            className="mono-data min-h-11 border border-rule bg-raised px-3"
+            value={agentMinOut}
+            onChange={(event) => setAgentMinOut(event.target.value)}
+          />
+        </label>
+        <label className="grid gap-1.5">
+          <span className="ledger-label text-ink-3">execution deadline unix seconds</span>
+          <input
+            aria-label="execution deadline unix seconds"
+            className="mono-data min-h-11 border border-rule bg-raised px-3"
+            value={deadline}
+            onChange={(event) => setDeadline(event.target.value)}
+          />
+        </label>
+        <label className="grid gap-1.5">
+          <span className="ledger-label text-ink-3">route calldata</span>
+          <input
+            aria-label="route calldata"
+            className="mono-data min-h-11 border border-rule bg-raised px-3"
+            value={routeData}
+            onChange={(event) => setRouteData(event.target.value)}
+          />
+        </label>
       </div>
-      {requestState === "INVALID" && <p role="status" className="mono-data mt-4 text-unknown">INVALID: exact StrategyV1 or execution fields are malformed. No simulation was sent.</p>}
-      {requestState === "OUTAGE" && <p role="status" className="mono-data mt-4 text-unknown">UNKNOWN: simulation service or RPC unavailable. Do not submit.</p>}
+      {requestState === "INVALID" && (
+        <p role="status" className="mono-data mt-4 text-unknown">
+          INVALID: exact StrategyV1 or execution fields are malformed. No simulation was sent.
+        </p>
+      )}
+      {requestState === "OUTAGE" && (
+        <p role="status" className="mono-data mt-4 text-unknown">
+          UNKNOWN: simulation service or RPC unavailable. Do not submit.
+        </p>
+      )}
       {simulation && (
         <div className="mt-5 border-y border-rule py-4" aria-live="polite">
-          <p className="mono-data font-medium" style={{ color: simulation.result === "PASS" ? "var(--accent)" : simulation.result === "FAIL" ? "var(--revoked)" : "var(--unknown)" }}>
-            {simulation.result} {simulation.result === "PASS" ? "· SIMULATION ONLY" : "· DO NOT SUBMIT"}
+          <p
+            className="mono-data font-medium"
+            style={{
+              color:
+                simulation.result === "PASS"
+                  ? "var(--accent)"
+                  : simulation.result === "FAIL"
+                    ? "var(--revoked)"
+                    : "var(--unknown)",
+            }}
+          >
+            {simulation.result}{" "}
+            {simulation.result === "PASS" ? "· SIMULATION ONLY" : "· DO NOT SUBMIT"}
           </p>
-          <p className="mono-data mt-2 break-all text-ink-2">block {simulation.binding.blockNumber} · {simulation.binding.blockHash} · expires {simulation.binding.expiresAt}</p>
+          <p className="mono-data mt-2 break-all text-ink-2">
+            block {simulation.binding.blockNumber} · {simulation.binding.blockHash} · expires{" "}
+            {simulation.binding.expiresAt}
+          </p>
           <ul className="mt-3 space-y-2">
-            {simulation.checks.map((check, index) => <li key={`${check.code}-${index}`} className="mono-data flex justify-between gap-3"><span>{check.code}</span><span>{check.result}</span></li>)}
+            {simulation.checks.map((check, index) => (
+              <li key={`${check.code}-${index}`} className="mono-data flex justify-between gap-3">
+                <span>{check.code}</span>
+                <span>{check.result}</span>
+              </li>
+            ))}
           </ul>
-          <p className="mono-data mt-3 text-ink-2">expected maker movement: {simulation.expectedMovement.makerTokenInDelta} input · +{simulation.expectedMovement.makerTokenOutMinimumDelta} output minimum · agent {simulation.expectedMovement.agentTokenDelta}</p>
+          <p className="mono-data mt-3 text-ink-2">
+            expected maker movement: {simulation.expectedMovement.makerTokenInDelta} input · +
+            {simulation.expectedMovement.makerTokenOutMinimumDelta} output minimum · agent{" "}
+            {simulation.expectedMovement.agentTokenDelta}
+          </p>
         </div>
       )}
       <div className="mt-5 flex flex-wrap items-center gap-3">
-        <Button onClick={() => void execute()} disabled={!simulation || simulation.result !== "PASS" || !current}>
+        <Button
+          onClick={() => void execute()}
+          disabled={!simulation || simulation.result !== "PASS" || !current}
+        >
           <Send size={14} strokeWidth={2.5} aria-hidden="true" />
           Execute from dedicated agent wallet
         </Button>
-        {!current && simulation && <span className="mono-data text-unknown">STALE: intent or state binding changed. Simulate again.</span>}
-        {walletText && <p role="status" className="mono-data text-ink-2">{walletText}</p>}
+        {!current && simulation && (
+          <span className="mono-data text-unknown">
+            STALE: intent or state binding changed. Simulate again.
+          </span>
+        )}
+        {walletText && (
+          <p role="status" className="mono-data text-ink-2">
+            {walletText}
+          </p>
+        )}
       </div>
     </div>
   );

@@ -14,7 +14,7 @@
   "dependencies": {
     "@mandate/contracts": "workspace:*",
     "@mandate/domain": "workspace:*",
-    "@privy-io/react-auth": "^3.40.0",
+    "@privy-io/react-auth": "^3.41.0",
     "@radix-ui/react-dialog": "^1.1.23",
     "@radix-ui/react-tooltip": "^1.2.16",
     "clsx": "2.1.1",

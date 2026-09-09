@@ -15,7 +15,10 @@ export function OrderSummary({ snapshot }: { snapshot: MandateSnapshotV1 }) {
     <aside className="border border-rule bg-raised p-6" aria-label="Mandate summary">
       <div className="flex items-center justify-between gap-4 border-b border-rule pb-4">
         <span className="ledger-label text-ink-3">The order at a glance</span>
-        <Stamp kind={status === "ACTIVE" ? "ACTIVE" : status === "UNKNOWN" ? "UNKNOWN" : "FAILED"} label={status} />
+        <Stamp
+          kind={status === "ACTIVE" ? "ACTIVE" : status === "UNKNOWN" ? "UNKNOWN" : "FAILED"}
+          label={status}
+        />
       </div>
       <dl className="mt-2">
         <div className="border-b border-rule py-4">
@@ -24,14 +27,20 @@ export function OrderSummary({ snapshot }: { snapshot: MandateSnapshotV1 }) {
         </div>
         <div className="border-b border-rule py-4">
           <dt className="ledger-label text-ink-3">What can move</dt>
-          <dd className="mono-data mt-1 break-all">{snapshot.strategy.tokenIn} → {snapshot.strategy.tokenOut}</dd>
+          <dd className="mono-data mt-1 break-all">
+            {snapshot.strategy.tokenIn} → {snapshot.strategy.tokenOut}
+          </dd>
         </div>
         <div className="border-b border-rule py-4">
           <div className="flex items-baseline justify-between gap-4">
             <dt className="ledger-label text-ink-3">Remaining cap</dt>
             <dd className="mono-data text-right font-medium">{remaining} base units</dd>
           </div>
-          <div className="mt-2.5 h-[6px] w-full bg-recess" role="img" aria-label={`${usedPercent}% of total cap used`}>
+          <div
+            className="mt-2.5 h-[6px] w-full bg-recess"
+            role="img"
+            aria-label={`${usedPercent}% of total cap used`}
+          >
             <div className="h-full bg-accent" style={{ width: `${usedPercent}%` }} />
           </div>
         </div>
@@ -45,7 +54,9 @@ export function OrderSummary({ snapshot }: { snapshot: MandateSnapshotV1 }) {
         </div>
         <div className="pt-4">
           <dt className="ledger-label text-ink-3">Strategy</dt>
-          <dd className="mt-2"><CopyValue value={snapshot.strategyHash} className="font-medium text-ink" /></dd>
+          <dd className="mt-2">
+            <CopyValue value={snapshot.strategyHash} className="font-medium text-ink" />
+          </dd>
         </div>
       </dl>
     </aside>

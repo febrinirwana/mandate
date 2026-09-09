@@ -6,11 +6,12 @@ import { Check, ChevronDown, LockKeyhole } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { keccak256, stringToHex } from "viem";
 
-import { Button } from "@/components/ui/kit";
-import { CopyValue } from "@/components/ui/copy-value";
-import { LocalIssuance } from "@/components/mandate/local-issuance";
+import { readMandate } from "@/lib/api";
 import { DemoFaucet } from "@/components/mandate/demo-faucet";
-import { strategyHash } from "@/lib/mandate";
+import { LocalIssuance } from "@/components/mandate/local-issuance";
+import { CopyValue } from "@/components/ui/copy-value";
+import { Button, ButtonLink } from "@/components/ui/kit";
+import { isIssuedAuthority, strategyHash } from "@/lib/mandate";
 import { compilePolicy, type PolicyProfileV1 } from "@/lib/policy";
 import type { PolicyReadiness } from "@/lib/policy-readiness";
 import { buildAuthorityCalls, submitSmartWalletCalls } from "@/lib/privy-wallet";
@@ -22,6 +23,8 @@ const newSalt = () => keccak256(stringToHex(crypto.randomUUID()));
 function walletMessage(state: WalletState): string | undefined {
   if (state.kind === "SUBMITTED")
     return `SUBMITTED: ${state.txHash}. Awaiting canonical receipt; this is not confirmed.`;
+  if (state.kind === "CONFIRMED")
+    return "CONFIRMED: the exact authority is active in canonical Sepolia state.";
   if (state.kind === "REJECTED")
     return "Wallet rejected. The reviewed StrategyV1 and completed checks remain available for retry.";
   if (state.kind === "REVERTED") return `REVERTED: ${state.message}`;
@@ -89,7 +92,12 @@ function IssuanceForm({
     Boolean(
       strategy && fundingBalance !== undefined && fundingBalance >= BigInt(strategy.maxInputTotal),
     );
-  const canAuthorize = readiness.kind === "READY" && Boolean(strategy && client) && hasFunding;
+  const canAuthorize =
+    readiness.kind === "READY" &&
+    Boolean(strategy && client) &&
+    hasFunding &&
+    walletState.kind !== "SUBMITTED" &&
+    walletState.kind !== "CONFIRMED";
   const authorize = async () => {
     if (!strategy || readiness.kind !== "READY") return;
     setWalletState(
@@ -99,6 +107,23 @@ function IssuanceForm({
       ),
     );
   };
+  const submittedTxHash = walletState.kind === "SUBMITTED" ? walletState.txHash : undefined;
+  useEffect(() => {
+    if (!hash || !submittedTxHash) return;
+    let cancelled = false;
+    const confirm = async () => {
+      const result = await readMandate(runtime.chainId, hash);
+      if (!cancelled && result.kind === "READY" && isIssuedAuthority(result.data, hash)) {
+        setWalletState({ kind: "CONFIRMED", txHash: submittedTxHash });
+      }
+    };
+    void confirm();
+    const timer = window.setInterval(() => void confirm(), 2_500);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [hash, runtime.chainId, submittedTxHash]);
   const message = walletMessage(walletState);
 
   return (
@@ -222,12 +247,21 @@ function IssuanceForm({
               )}
               <Button className="mt-4" onClick={() => void authorize()} disabled={!canAuthorize}>
                 <LockKeyhole size={15} aria-hidden="true" />
-                Authorize exact four-call batch
+                {walletState.kind === "CONFIRMED"
+                  ? "Authority active"
+                  : walletState.kind === "SUBMITTED"
+                    ? "Awaiting canonical state"
+                    : "Authorize exact four-call batch"}
               </Button>
               {message && (
                 <p role="status" className="mono-data mt-3 text-ink-2">
                   {message}
                 </p>
+              )}
+              {walletState.kind === "CONFIRMED" && hash && (
+                <ButtonLink className="mt-4" href={`/mandates/${hash}`} arrow>
+                  Inspect active authority
+                </ButtonLink>
               )}
             </li>
           </ol>
@@ -238,7 +272,13 @@ function IssuanceForm({
           {strategy && hash ? (
             <>
               <div className="mt-5 border border-rule bg-paper p-5">
-                <p className="ledger-label text-accent">Review required · not authorized</p>
+                <p
+                  className={`ledger-label ${walletState.kind === "CONFIRMED" ? "text-confirmed" : "text-accent"}`}
+                >
+                  {walletState.kind === "CONFIRMED"
+                    ? "Confirmed · authority active"
+                    : "Review required · not authorized"}
+                </p>
                 <h2 className="mt-4 text-[1.65rem] leading-[1.08] tracking-[-0.03em]">
                   {profile.agent.name} may convert up to {maxInput} {profile.tokenIn.symbol} into{" "}
                   {profile.tokenOut.symbol}.

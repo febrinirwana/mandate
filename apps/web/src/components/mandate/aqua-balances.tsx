@@ -9,7 +9,10 @@ export function AquaBalances({ snapshot }: { snapshot: MandateSnapshotV1 }) {
     { label: "tokenOut in treasury wallet", value: snapshot.physical.makerTokenOut },
     { label: "tokenIn at agent", value: snapshot.physical.agentTokenIn },
     { label: "tokenOut at agent", value: snapshot.physical.agentTokenOut },
-    { label: "token balances at Mandate app", value: `${snapshot.physical.appTokenIn} / ${snapshot.physical.appTokenOut}` },
+    {
+      label: "token balances at Mandate app",
+      value: `${snapshot.physical.appTokenIn} / ${snapshot.physical.appTokenOut}`,
+    },
   ];
   const virtual = [
     { label: "tokenIn strategy allocation", value: snapshot.aqua.inputBalance },
@@ -21,31 +24,57 @@ export function AquaBalances({ snapshot }: { snapshot: MandateSnapshotV1 }) {
       <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-rule pb-3">
         <h3 className="text-[1.0625rem] font-medium tracking-[-0.01em]">Aqua balances</h3>
         <div className="flex items-center gap-2">
-          <Stamp kind={snapshot.aqua.result === "PASS" && snapshot.physical.result === "PASS" ? "PASS" : "UNKNOWN"} label={snapshot.aqua.result === "PASS" && snapshot.physical.result === "PASS" ? "BLOCK-STAMPED" : "UNKNOWN"} />
+          <Stamp
+            kind={
+              snapshot.aqua.result === "PASS" && snapshot.physical.result === "PASS"
+                ? "PASS"
+                : "UNKNOWN"
+            }
+            label={
+              snapshot.aqua.result === "PASS" && snapshot.physical.result === "PASS"
+                ? "BLOCK-STAMPED"
+                : "UNKNOWN"
+            }
+          />
           <span className="ledger-label text-ink-3">physical vs virtual</span>
         </div>
       </div>
       <div className="mt-4 grid gap-8 md:grid-cols-2">
         <dl>
-          <dt className="ledger-label text-ink-3">Physical: ERC-20 balances at block {snapshot.block.number}</dt>
+          <dt className="ledger-label text-ink-3">
+            Physical: ERC-20 balances at block {snapshot.block.number}
+          </dt>
           {physical.map((row) => (
-            <div key={row.label} className="flex items-baseline justify-between gap-6 border-b border-rule py-2.5">
+            <div
+              key={row.label}
+              className="flex items-baseline justify-between gap-6 border-b border-rule py-2.5"
+            >
               <dd className="text-[0.875rem] text-ink-2">{row.label}</dd>
-              <dd className="mono-data break-all text-right text-ink">{snapshot.physical.result === "PASS" ? row.value : "UNKNOWN"}</dd>
+              <dd className="mono-data break-all text-right text-ink">
+                {snapshot.physical.result === "PASS" ? row.value : "UNKNOWN"}
+              </dd>
             </div>
           ))}
         </dl>
         <dl>
           <dt className="ledger-label text-ink-3">Virtual: Aqua strategy lane</dt>
           {virtual.map((row) => (
-            <div key={row.label} className="flex items-baseline justify-between gap-6 border-b border-rule py-2.5">
+            <div
+              key={row.label}
+              className="flex items-baseline justify-between gap-6 border-b border-rule py-2.5"
+            >
               <dd className="text-[0.875rem] text-ink-2">{row.label}</dd>
-              <dd className="mono-data text-ink">{snapshot.aqua.result === "PASS" ? row.value : "UNKNOWN"}</dd>
+              <dd className="mono-data text-ink">
+                {snapshot.aqua.result === "PASS" ? row.value : "UNKNOWN"}
+              </dd>
             </div>
           ))}
           <div className="mono-data mt-3 text-ink-3">
             <CopyValue value={snapshot.aqua.address} />
-            <p className="mt-2">Virtual balances are per-maker/app/strategy accounting lanes. They are not a second wallet balance.</p>
+            <p className="mt-2">
+              Virtual balances are per-maker/app/strategy accounting lanes. They are not a second
+              wallet balance.
+            </p>
           </div>
         </dl>
       </div>

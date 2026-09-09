@@ -32,7 +32,7 @@ const configuration = parseWorkerConfiguration(process.env);
 const mandateAppValue = requiredEnvironment("SEPOLIA_MANDATE_APP");
 if (!isAddress(mandateAppValue)) throw new Error("SEPOLIA_MANDATE_APP must be an address");
 const mandateApp = mandateAppValue.toLowerCase() as Address;
-const deploymentBlock = BigInt(process.env["SEPOLIA_MANDATE_DEPLOYMENT_BLOCK"] ?? "11648628");
+const deploymentBlock = BigInt(requiredEnvironment("SEPOLIA_MANDATE_DEPLOYMENT_BLOCK"));
 const client = createPublicClient({
   chain: sepolia,
   transport: http(requiredEnvironment("SEPOLIA_RPC_URL")),

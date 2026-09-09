@@ -54,13 +54,19 @@ export function ConstraintLedger({ snapshot }: { snapshot: MandateSnapshotV1 }) 
         <tbody>
           {rows.map((row) => (
             <tr key={row.constraint} className="border-b border-rule align-top">
-              <th scope="row" className="py-4 pr-5 text-[0.9375rem] font-medium">{row.constraint}</th>
+              <th scope="row" className="py-4 pr-5 text-[0.9375rem] font-medium">
+                {row.constraint}
+              </th>
               <td className="mono-data max-w-[22rem] break-all py-4 pr-5">{row.approved}</td>
               <td className="mono-data max-w-[22rem] break-all py-4 pr-5 text-ink-2">
-                {row.effective}<span className="mt-1 block text-ink-3">{row.detail}</span>
+                {row.effective}
+                <span className="mt-1 block text-ink-3">{row.detail}</span>
               </td>
               <td className="py-4 text-right">
-                <Stamp kind={status === "ACTIVE" ? "PASS" : status === "UNKNOWN" ? "UNKNOWN" : "FAILED"} label={status === "ACTIVE" ? "ENFORCED" : status} />
+                <Stamp
+                  kind={status === "ACTIVE" ? "PASS" : status === "UNKNOWN" ? "UNKNOWN" : "FAILED"}
+                  label={status === "ACTIVE" ? "ENFORCED" : status}
+                />
               </td>
             </tr>
           ))}

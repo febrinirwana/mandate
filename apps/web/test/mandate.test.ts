@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildExecutionIntent,
   inspectionStatus,
+  isIssuedAuthority,
   isSimulationCurrent,
   remainingInput,
 } from "../src/lib/mandate";
@@ -66,6 +67,15 @@ describe("inspection state", () => {
     expect(inspectionStatus({ ...snapshot, state: { ...snapshot.state, revoked: true } })).toBe(
       "REVOKED",
     );
+  });
+
+  it("recognizes only the exact active passing authority as issued", () => {
+    expect(isIssuedAuthority(snapshot, hash("a"))).toBe(true);
+    expect(isIssuedAuthority(snapshot, hash("b"))).toBe(false);
+    expect(isIssuedAuthority({ ...snapshot, result: "UNKNOWN" }, hash("a"))).toBe(false);
+    expect(
+      isIssuedAuthority({ ...snapshot, state: { ...snapshot.state, revoked: true } }, hash("a")),
+    ).toBe(false);
   });
 
   it("invalidates a simulation when any bound execution input changes", () => {

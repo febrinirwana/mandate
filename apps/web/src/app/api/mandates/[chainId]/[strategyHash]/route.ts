@@ -5,5 +5,8 @@ export async function GET(
   { params }: { params: Promise<{ chainId: string; strategyHash: string }> },
 ) {
   const { chainId, strategyHash } = await params;
-  return proxyMandateApi(request, `/v1/mandates/${encodeURIComponent(chainId)}/${encodeURIComponent(strategyHash)}`);
+  return proxyMandateApi(
+    request,
+    `/v1/mandates/${encodeURIComponent(chainId)}/${encodeURIComponent(strategyHash)}`,
+  );
 }

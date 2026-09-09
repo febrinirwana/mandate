@@ -8,6 +8,8 @@ const configured = [
   "MANDATE_POLICY_PROFILE",
   "MANDATE_SEPOLIA_FAUCET_AMOUNT",
   "NEXT_PUBLIC_PRIVY_APP_ID",
+  "MANDATE_LOCAL_RPC_URL",
+  "MANDATE_LOCAL_POLICY_PROFILE",
 ] as const;
 const saved = Object.fromEntries(configured.map((key) => [key, process.env[key]]));
 const address = (digit: string): `0x${string}` => `0x${digit.repeat(40)}`;
@@ -45,6 +47,13 @@ describe("web runtime", () => {
 
     configure("31337");
     expect(runtimeConfig()?.demoFaucetAmount).toBeUndefined();
+  });
+  it("ignores a stale local profile when local RPC mode is inactive", () => {
+    configure();
+    delete process.env.MANDATE_LOCAL_RPC_URL;
+    process.env.MANDATE_LOCAL_POLICY_PROFILE = "stale-local-profile";
+
+    expect(runtimeConfig()?.policyProfile?.agent.name).toBe("Nova");
   });
 
   it("rejects a malformed faucet amount", () => {

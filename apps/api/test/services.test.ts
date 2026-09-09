@@ -20,4 +20,13 @@ describe("runtimeConfiguration", () => {
       deploymentBlock: "0",
     });
   });
+
+  it("requires an explicit Sepolia deployment block", () => {
+    expect(() =>
+      runtimeConfiguration({
+        SEPOLIA_RPC_URL: "https://ethereum-sepolia-rpc.publicnode.com",
+        SEPOLIA_MANDATE_APP: address,
+      }),
+    ).toThrow("SEPOLIA_MANDATE_DEPLOYMENT_BLOCK is not configured");
+  });
 });

@@ -36,10 +36,17 @@ contract DeploySepolia is Script {
 
     function run() external returns (IAqua aqua, MandateAquaApp app, SepoliaExactInputVenue venue) {
         if (block.chainid != SEPOLIA_CHAIN_ID) revert WrongChain(block.chainid);
-        address inputRecipient = vm.envAddress("SEPOLIA_VENUE_INPUT_RECIPIENT");
-        if (inputRecipient == address(0)) revert InvalidInputRecipient();
+        return _deploy(
+            vm.envAddress("SEPOLIA_VENUE_INPUT_RECIPIENT"),
+            vm.envOr("SEPOLIA_MAX_MANDATE_DURATION", uint256(DEFAULT_MAX_MANDATE_DURATION))
+        );
+    }
 
-        uint256 configuredDuration = vm.envOr("SEPOLIA_MAX_MANDATE_DURATION", uint256(DEFAULT_MAX_MANDATE_DURATION));
+    function _deploy(address inputRecipient, uint256 configuredDuration)
+        internal
+        returns (IAqua aqua, MandateAquaApp app, SepoliaExactInputVenue venue)
+    {
+        if (inputRecipient == address(0)) revert InvalidInputRecipient();
         if (configuredDuration == 0 || configuredDuration > MAX_MANDATE_DURATION) {
             revert InvalidMaxMandateDuration(configuredDuration);
         }

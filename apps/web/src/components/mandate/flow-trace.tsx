@@ -2,7 +2,14 @@ import type { ExecutionV1, MandateSnapshotV1 } from "@mandate/domain";
 
 import { Stamp } from "@/components/ui/kit";
 
-const STEPS = ["Agent call", "ENS check", "Mandate check", "Aqua pull", "Fixed swap", "Aqua push"] as const;
+const STEPS = [
+  "Agent call",
+  "ENS check",
+  "Mandate check",
+  "Aqua pull",
+  "Fixed swap",
+  "Aqua push",
+] as const;
 
 export function FlowTrace({
   snapshot,
@@ -19,12 +26,25 @@ export function FlowTrace({
     <div>
       <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-rule pb-3">
         <h3 className="text-[1.0625rem] font-medium tracking-[-0.01em]">Flow trace</h3>
-        <Stamp kind={confirmed ? "CONFIRMED" : reorged ? "UNKNOWN" : blocked ? "FAILED" : "UNKNOWN"} label={confirmed ? "RECONSTRUCTED" : reorged ? "REORGED" : blocked ? "BLOCKED" : "AWAITING RECEIPT"} />
+        <Stamp
+          kind={confirmed ? "CONFIRMED" : reorged ? "UNKNOWN" : blocked ? "FAILED" : "UNKNOWN"}
+          label={
+            confirmed
+              ? "RECONSTRUCTED"
+              : reorged
+                ? "REORGED"
+                : blocked
+                  ? "BLOCKED"
+                  : "AWAITING RECEIPT"
+          }
+        />
       </div>
       <ol className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {STEPS.map((step, index) => (
           <li key={step} className="flex min-h-11 items-center gap-3 border-b border-rule py-2">
-            <span className="mono-data grid h-6 w-6 shrink-0 place-items-center rounded-full border border-rule">{String(index + 1).padStart(2, "0")}</span>
+            <span className="mono-data grid h-6 w-6 shrink-0 place-items-center rounded-full border border-rule">
+              {String(index + 1).padStart(2, "0")}
+            </span>
             <span className="text-[0.875rem]">{step}</span>
           </li>
         ))}

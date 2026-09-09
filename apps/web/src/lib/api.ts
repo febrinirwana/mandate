@@ -24,7 +24,10 @@ async function response(path: string, init?: RequestInit): Promise<Response | nu
   }
 }
 
-export async function readMandate(chainId: string, strategyHash: string): Promise<ApiState<MandateSnapshotV1>> {
+export async function readMandate(
+  chainId: string,
+  strategyHash: string,
+): Promise<ApiState<MandateSnapshotV1>> {
   const value = await response(`/api/mandates/${chainId}/${strategyHash}`);
   if (!value) return { kind: "OUTAGE" };
   if (value.status === 404) return { kind: "NOT_FOUND" };
@@ -44,7 +47,10 @@ export async function simulate(requestBody: SimulationRequestV1): Promise<ApiSta
   return parsed.success ? { kind: "READY", data: parsed.data } : { kind: "INVALID_RESPONSE" };
 }
 
-export async function readExecution(chainId: string, txHash: string): Promise<ApiState<ExecutionV1>> {
+export async function readExecution(
+  chainId: string,
+  txHash: string,
+): Promise<ApiState<ExecutionV1>> {
   const value = await response(`/api/executions/${chainId}/${txHash}`);
   if (!value) return { kind: "OUTAGE" };
   if (value.status === 404) return { kind: "NOT_FOUND" };
@@ -53,7 +59,10 @@ export async function readExecution(chainId: string, txHash: string): Promise<Ap
   return parsed.success ? { kind: "READY", data: parsed.data } : { kind: "INVALID_RESPONSE" };
 }
 
-export async function readAudit(chainId: string, txHash: string): Promise<ApiState<ReceiptAuditV1>> {
+export async function readAudit(
+  chainId: string,
+  txHash: string,
+): Promise<ApiState<ReceiptAuditV1>> {
   const value = await response(`/api/receipts/${chainId}/${txHash}/audit`);
   if (!value) return { kind: "OUTAGE" };
   if (value.status === 404) return { kind: "NOT_FOUND" };

@@ -14,7 +14,8 @@ const strategyHashInputs = (() => {
   const entry = mandateAquaAppAbi.find(
     (candidate) => candidate.type === "function" && candidate.name === "strategyHash",
   );
-  if (!entry || entry.type !== "function") throw new Error("Mandate ABI does not expose strategyHash");
+  if (!entry || entry.type !== "function")
+    throw new Error("Mandate ABI does not expose strategyHash");
   return entry.inputs;
 })();
 
@@ -43,7 +44,9 @@ function contractStrategy(strategy: StrategyV1) {
 }
 
 export function encodeStrategy(strategy: StrategyV1): Hex {
-  return encodeAbiParameters(strategyHashInputs, [contractStrategy(StrategyV1Schema.parse(strategy))]);
+  return encodeAbiParameters(strategyHashInputs, [
+    contractStrategy(StrategyV1Schema.parse(strategy)),
+  ]);
 }
 
 export function strategyHash(strategy: StrategyV1): Hex {
@@ -90,9 +93,23 @@ export function isSimulationCurrent(
   );
 }
 
+export function isIssuedAuthority(
+  snapshot: MandateSnapshotV1,
+  expectedStrategyHash: string,
+): boolean {
+  const exactSnapshot = MandateSnapshotV1Schema.parse(snapshot);
+  return (
+    exactSnapshot.strategyHash === expectedStrategyHash.toLowerCase() &&
+    exactSnapshot.state.activated &&
+    !exactSnapshot.state.revoked &&
+    exactSnapshot.result === "PASS"
+  );
+}
+
 export function remainingInput(snapshot: MandateSnapshotV1): string {
   const exactSnapshot = MandateSnapshotV1Schema.parse(snapshot);
-  const remaining = BigInt(exactSnapshot.strategy.maxInputTotal) - BigInt(exactSnapshot.state.usedInput);
+  const remaining =
+    BigInt(exactSnapshot.strategy.maxInputTotal) - BigInt(exactSnapshot.state.usedInput);
   return (remaining > 0n ? remaining : 0n).toString();
 }
 

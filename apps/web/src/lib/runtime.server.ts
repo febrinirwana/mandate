@@ -21,8 +21,9 @@ export function runtimeConfig(): MandateRuntime | null {
   const exactChainId = PositiveUint256StringSchema.safeParse(chainId);
   if (!exactChainId.success) return null;
 
+  const local = Boolean(process.env["MANDATE_LOCAL_RPC_URL"]);
   const policyProfile = parsePolicyProfile(
-    process.env["MANDATE_LOCAL_POLICY_PROFILE"] ?? process.env["MANDATE_POLICY_PROFILE"],
+    local ? process.env["MANDATE_LOCAL_POLICY_PROFILE"] : process.env["MANDATE_POLICY_PROFILE"],
   );
   const configuredFaucetAmount = process.env["MANDATE_SEPOLIA_FAUCET_AMOUNT"];
   const demoFaucetAmount =
@@ -35,7 +36,7 @@ export function runtimeConfig(): MandateRuntime | null {
   return {
     chainId: exactChainId.data,
     mandateApp: parsed.data,
-    local: Boolean(process.env["MANDATE_LOCAL_RPC_URL"]),
+    local,
     policyProfile,
     demoFaucetAmount,
     privyEnabled: Boolean(process.env["NEXT_PUBLIC_PRIVY_APP_ID"]),

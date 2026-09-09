@@ -44,7 +44,7 @@ export function runtimeConfiguration(environment: Environment = process.env): Ru
     chainId: sepolia.id.toString(),
     rpcUrl: requiredEnvironment("SEPOLIA_RPC_URL", environment),
     mandateApp,
-    deploymentBlock: environment["SEPOLIA_MANDATE_DEPLOYMENT_BLOCK"] ?? "11648628",
+    deploymentBlock: requiredEnvironment("SEPOLIA_MANDATE_DEPLOYMENT_BLOCK", environment),
   };
 }
 
@@ -77,7 +77,10 @@ function localChain(configuration: RuntimeConfiguration): Chain {
 export function createProductionServices(): { services: ApiServices; close: () => Promise<void> } {
   const configuration = runtimeConfiguration();
   const chainDefinition = configuration.local ? localChain(configuration) : sepolia;
-  const client = createPublicClient({ chain: chainDefinition, transport: http(configuration.rpcUrl) });
+  const client = createPublicClient({
+    chain: chainDefinition,
+    transport: http(configuration.rpcUrl),
+  });
   const chain = new MandateChainService([
     {
       chainId: configuration.chainId,

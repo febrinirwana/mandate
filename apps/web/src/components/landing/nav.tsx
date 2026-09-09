@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 
-
 export function Nav() {
   return (
     <header className="sticky top-0 z-50 border-b border-rule bg-paper/90 backdrop-blur-md">

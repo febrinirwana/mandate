@@ -34,7 +34,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
-      <body className={`${onest.variable} ${geistMono.variable}`}><MandateProviders>{children}</MandateProviders></body>
+      <body className={`${onest.variable} ${geistMono.variable}`}>
+        <MandateProviders>{children}</MandateProviders>
+      </body>
     </html>
   );
 }

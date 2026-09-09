@@ -22,14 +22,31 @@ export function ReceiptPlate({
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rule pb-3">
         <h3 className="text-[1.0625rem] font-medium tracking-[-0.01em]">Receipt</h3>
-        <Stamp kind={confirmed ? "CONFIRMED" : status === "SUBMITTED" ? "EXPIRING" : status === "REORGED" ? "UNKNOWN" : status === "REVERTED" ? "FAILED" : "UNKNOWN"} label={confirmed ? "CONFIRMED" : status} />
+        <Stamp
+          kind={
+            confirmed
+              ? "CONFIRMED"
+              : status === "SUBMITTED"
+                ? "EXPIRING"
+                : status === "REORGED"
+                  ? "UNKNOWN"
+                  : status === "REVERTED"
+                    ? "FAILED"
+                    : "UNKNOWN"
+          }
+          label={confirmed ? "CONFIRMED" : status}
+        />
       </div>
       {execution ? (
         <dl className="mt-4 grid gap-x-10 md:grid-cols-2">
-          <Row label="Transaction"><CopyValue value={execution.txHash} /></Row>
+          <Row label="Transaction">
+            <CopyValue value={execution.txHash} />
+          </Row>
           <Row label="Execution state">{execution.status}</Row>
           <Row label="Block">{execution.block.number}</Row>
-          <Row label="Caller"><CopyValue value={execution.caller} /></Row>
+          <Row label="Caller">
+            <CopyValue value={execution.caller} />
+          </Row>
           <Row label="Input">{execution.amountIn} base units</Row>
           <Row label="Output">{execution.amountOut} base units</Row>
           <Row label="Used after">{execution.usedInputAfter} base units</Row>
@@ -37,11 +54,14 @@ export function ReceiptPlate({
         </dl>
       ) : (
         <p className="mono-data mt-4 text-ink-2">
-          {status === "SUBMITTED" ? "SUBMITTED: waiting for a canonical receipt. Submitted is not confirmed." : "No canonical MandateExecuted receipt has been loaded for this strategy."}
+          {status === "SUBMITTED"
+            ? "SUBMITTED: waiting for a canonical receipt. Submitted is not confirmed."
+            : "No canonical MandateExecuted receipt has been loaded for this strategy."}
         </p>
       )}
       <p className="mono-data mt-5 border-t border-rule pt-4 text-ink-3">
-        Audit compares receipt events and block-bound evidence to strategy {snapshot.strategyHash}. Reorged, reverted, or missing evidence never becomes compliant.
+        Audit compares receipt events and block-bound evidence to strategy {snapshot.strategyHash}.
+        Reorged, reverted, or missing evidence never becomes compliant.
       </p>
     </div>
   );

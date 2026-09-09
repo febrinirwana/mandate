@@ -51,10 +51,20 @@ Probe transport was `https://ethereum-sepolia-rpc.publicnode.com`. JSON-RPC retu
 
 `packages/contracts/src/deployments/sepolia.json` records the machine-readable evidence. Probe `resultHash` values are SHA-256 over raw ABI result bytes; runtime `codeHash` values are EVM account code hashes.
 
-## Open gates
+### Current Sepolia authority runtime
+
+The kickoff rows above remain the provenance record for official dependencies. The current Mandate-owned runtime was verified at block [`11668681`](https://sepolia.etherscan.io/block/11668681), hash `0x2c893855f099ecdf5e9daad091863a1d6edbd57279cc7bb0a01dfcd6f1099aa7`:
+
+- `MandateAquaApp`: [`0xFfDEfE2eBB164095b471e1F0B7EC492c8D26438F`](https://sepolia.etherscan.io/address/0xFfDEfE2eBB164095b471e1F0B7EC492c8D26438F), bound to official Sepolia Aqua;
+- fixed test-only USDC-to-DAI venue: [`0x6690118e223948eE6dabF09e089247854bCcD369`](https://sepolia.etherscan.io/address/0x6690118e223948eE6dabF09e089247854bCcD369);
+- venue input recipient: Privy smart wallet [`0xee637a2cf3aa61a29339532941b80b41ffea88c7`](https://sepolia.etherscan.io/address/0xee637a2cf3aa61a29339532941b80b41ffea88c7).
+
+The venue is explicitly non-official and exists only for Sepolia integration proof. It does not replace the separate pinned-mainnet-fork proof against real 1inch liquidity.
+
+## Kickoff gates and current disposition
 
 - The current canonical SwapVM router `0x111111338c5091e8440b67b168bae16a668ac0de` has no Sepolia runtime code. Do not claim it as a Sepolia venue.
 - 1inch Classic v6.1 does not advertise Sepolia. The safe proof topology is official ENSv2 + Aqua on Sepolia and the same Mandate settlement path against real 1inch liquidity on a pinned mainnet fork, with every test venue visibly labeled.
-- `ONEINCH_API_KEY`, `BAZANTIC_API_KEY`, `SEPOLIA_RPC_URL`, and `SETTLEMENT_FORK_RPC_URL` were unavailable at kickoff. Live API and paid Recipe proof remain blocked on credentials, not on contract/domain work.
+- `ONEINCH_API_KEY`, `BAZANTIC_API_KEY`, `SEPOLIA_RPC_URL`, and `SETTLEMENT_FORK_RPC_URL` were unavailable at kickoff. The current Sepolia runtime and 1inch proof are complete; paid Bazantic Recipe proof remains credential-dependent.
 - Bazantic public onboarding is application/private-beta oriented and may take up to two business days. Apply immediately; never replace the paid live flow with a mock.
-- Select the actual per-account Permissioned Resolver only after creating the ENS identity. The public resolver row is evidence of the official deployment, not authority for a future strategy.
+- The account-specific Permissioned Resolver is now selected and recorded in the deployment manifest. The public resolver row remains dependency provenance, not strategy authority.
