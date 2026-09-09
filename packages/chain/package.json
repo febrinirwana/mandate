@@ -1,0 +1,30 @@
+{
+  "name": "@mandate/chain",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./ens": "./src/ens.ts",
+    "./mandate": "./src/mandate.ts",
+    "./route": "./src/route.ts"
+  },
+  "scripts": {
+    "capture:route": "node scripts/capture-route.mjs",
+    "lint": "eslint src test scripts",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@mandate/contracts": "workspace:*",
+    "@mandate/domain": "workspace:*",
+    "@mandate/policy": "workspace:*",
+    "viem": "2.56.3",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "typescript": "5.9.3",
+    "vitest": "5.0.0"
+  }
+}

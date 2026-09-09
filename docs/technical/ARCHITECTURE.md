@@ -72,18 +72,18 @@ gas only]
 
 ## 3. Deployable units
 
-| Unit | Responsibility | Explicitly does not do |
-|---|---|---|
-| `apps/web` | issuance, inspection, simulation display, wallet handoff, receipt UI, revocation | hold keys or decide trades |
-| `apps/api` | typed reads, simulation orchestration, receipt audit, Bazantic endpoint | authorize execution or sign owner actions |
-| `apps/agent` | optional demo decision loop and dedicated signer process | access owner key or arbitrary contracts |
-| `apps/worker` | confirmed receipt ingestion, reorg reconciliation, audit jobs | infer compliance from submitted tx |
-| `packages/domain` | schemas, values, IDs, reason codes | perform I/O |
-| `packages/chain` | viem clients, ENS/Aqua/Mandate reads, calldata, simulation, receipt decode | retain private keys |
-| `packages/policy` | pure preflight mirror and explanations | replace onchain checks |
-| `packages/db` | migrations, repositories, transactions | become authority source |
-| `contracts` | MandateAquaApp and exact Foundry tests | route discovery or offchain identity |
-| `skill` | public agent instructions for safe simulation/execution | expose internal secrets |
+| Unit              | Responsibility                                                                   | Explicitly does not do                    |
+| ----------------- | -------------------------------------------------------------------------------- | ----------------------------------------- |
+| `apps/web`        | issuance, inspection, simulation display, wallet handoff, receipt UI, revocation | hold keys or decide trades                |
+| `apps/api`        | typed reads, simulation orchestration, receipt audit, Bazantic endpoint          | authorize execution or sign owner actions |
+| `apps/agent`      | optional demo decision loop and dedicated signer process                         | access owner key or arbitrary contracts   |
+| `apps/worker`     | confirmed receipt ingestion, reorg reconciliation, audit jobs                    | infer compliance from submitted tx        |
+| `packages/domain` | schemas, values, IDs, reason codes                                               | perform I/O                               |
+| `packages/chain`  | viem clients, ENS/Aqua/Mandate reads, calldata, simulation, receipt decode       | retain private keys                       |
+| `packages/policy` | pure preflight mirror and explanations                                           | replace onchain checks                    |
+| `packages/db`     | migrations, repositories, transactions                                           | become authority source                   |
+| `contracts`       | MandateAquaApp and exact Foundry tests                                           | route discovery or offchain identity      |
+| `skill`           | public agent instructions for safe simulation/execution                          | expose internal secrets                   |
 
 Web, API, worker, and agent may run in one development process. The signer boundary remains a separate module/process interface so browser and API handlers cannot read key material.
 
@@ -210,16 +210,16 @@ Audit result is `COMPLIANT` only when canonical evidence proves every required r
 
 ## 9. Data authority and caching
 
-| Data | Authority | Cache rule |
-|---|---|---|
-| mandate active/revoked/used | Mandate contract at block | invalidate on event/new block |
-| strategy token balances | Aqua contract at block | never infer from physical wallet balance |
-| physical token balances | ERC-20 at block | block-tagged only |
-| agent name status/owner/expiry | ENSv2 registry at block | must refresh before simulation/execution |
-| resolved address | selected ENSv2 resolver at block | must equal stored agent |
-| route quote | venue/1inch response | expires independently; not authority |
-| receipt | canonical RPC block/receipt | confirmed then reorg monitored |
-| explanation | deterministic renderer | regenerated from versioned values |
+| Data                           | Authority                        | Cache rule                               |
+| ------------------------------ | -------------------------------- | ---------------------------------------- |
+| mandate active/revoked/used    | Mandate contract at block        | invalidate on event/new block            |
+| strategy token balances        | Aqua contract at block           | never infer from physical wallet balance |
+| physical token balances        | ERC-20 at block                  | block-tagged only                        |
+| agent name status/owner/expiry | ENSv2 registry at block          | must refresh before simulation/execution |
+| resolved address               | selected ENSv2 resolver at block | must equal stored agent                  |
+| route quote                    | venue/1inch response             | expires independently; not authority     |
+| receipt                        | canonical RPC block/receipt      | confirmed then reorg monitored           |
+| explanation                    | deterministic renderer           | regenerated from versioned values        |
 
 The database is a read model. Contract reads at an explicit block own current truth.
 
@@ -267,17 +267,17 @@ A deterministic fixture venue may exist only in unit tests and is labeled as suc
 
 ## 12. Failure containment
 
-| Failure | Behavior |
-|---|---|
-| ENS read reverts or returns inactive | execution reverts; simulation `UNKNOWN` or `FAIL` by known state |
-| agent key compromised | attacker limited to one strategy and remaining caps; owner revokes/docks/ENS-stops |
-| route reverts | whole transaction reverts; no use/custody change |
-| output below floor | whole transaction reverts |
-| input not fully spent or allowance remains | whole transaction reverts |
-| Aqua push fails | external route and pull revert atomically |
-| receipt reorged | mark audit non-canonical and regenerate after confirmation |
-| API/Bazantic unavailable | direct onchain execution remains possible; no false receipt claim |
-| owner key compromised | outside Mandate containment; owner controls approvals and all stop paths |
+| Failure                                    | Behavior                                                                           |
+| ------------------------------------------ | ---------------------------------------------------------------------------------- |
+| ENS read reverts or returns inactive       | execution reverts; simulation `UNKNOWN` or `FAIL` by known state                   |
+| agent key compromised                      | attacker limited to one strategy and remaining caps; owner revokes/docks/ENS-stops |
+| route reverts                              | whole transaction reverts; no use/custody change                                   |
+| output below floor                         | whole transaction reverts                                                          |
+| input not fully spent or allowance remains | whole transaction reverts                                                          |
+| Aqua push fails                            | external route and pull revert atomically                                          |
+| receipt reorged                            | mark audit non-canonical and regenerate after confirmation                         |
+| API/Bazantic unavailable                   | direct onchain execution remains possible; no false receipt claim                  |
+| owner key compromised                      | outside Mandate containment; owner controls approvals and all stop paths           |
 
 ## 13. Threat model
 

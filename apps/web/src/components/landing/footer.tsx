@@ -4,7 +4,10 @@ const COLS: { title: string; links: { label: string; href: string; external?: bo
   {
     title: "Product",
     links: [
-      { label: "Inspect demo mandate", href: "/mandates/0x4a91f2c7d6b3e580a9c1d47fb0e2f53618d7c4a9e5b2f08371c6d9a42f8e0b5d" },
+      {
+        label: "Inspect demo mandate",
+        href: "/mandates/0x4a91f2c7d6b3e580a9c1d47fb0e2f53618d7c4a9e5b2f08371c6d9a42f8e0b5d",
+      },
       { label: "How a mandate works", href: "/#how" },
       { label: "Invariants", href: "/#invariants" },
     ],
@@ -20,8 +23,14 @@ const COLS: { title: string; links: { label: string; href: string; external?: bo
   {
     title: "Evidence",
     links: [
-      { label: "Strategy fields", href: "/mandates/0x4a91f2c7d6b3e580a9c1d47fb0e2f53618d7c4a9e5b2f08371c6d9a42f8e0b5d#fields" },
-      { label: "Receipt plate", href: "/mandates/0x4a91f2c7d6b3e580a9c1d47fb0e2f53618d7c4a9e5b2f08371c6d9a42f8e0b5d#receipt" },
+      {
+        label: "Strategy fields",
+        href: "/mandates/0x4a91f2c7d6b3e580a9c1d47fb0e2f53618d7c4a9e5b2f08371c6d9a42f8e0b5d#fields",
+      },
+      {
+        label: "Receipt plate",
+        href: "/mandates/0x4a91f2c7d6b3e580a9c1d47fb0e2f53618d7c4a9e5b2f08371c6d9a42f8e0b5d#receipt",
+      },
     ],
   },
 ];
@@ -30,7 +39,10 @@ export function Footer() {
   return (
     <footer style={{ background: "var(--ink)", color: "var(--paper)" }}>
       <div className="mx-auto max-w-[1440px] px-6 pt-16 lg:px-10">
-        <div className="grid gap-10 border-b pb-12 pt-2 sm:grid-cols-2 lg:grid-cols-[1.2fr_repeat(3,0.6fr)]" style={{ borderColor: "rgb(255 255 255 / 0.12)" }}>
+        <div
+          className="grid gap-10 border-b pb-12 pt-2 sm:grid-cols-2 lg:grid-cols-[1.2fr_repeat(3,0.6fr)]"
+          style={{ borderColor: "rgb(255 255 255 / 0.12)" }}
+        >
           <div>
             <Image
               src="/mandate-logo-ivory.png"
@@ -67,7 +79,10 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="mono-data flex flex-wrap items-center justify-between gap-3 border-t py-6" style={{ borderColor: "rgb(255 255 255 / 0.12)", color: "rgb(255 255 255 / 0.45)" }}>
+        <div
+          className="mono-data flex flex-wrap items-center justify-between gap-3 border-t py-6"
+          style={{ borderColor: "rgb(255 255 255 / 0.12)", color: "rgb(255 255 255 / 0.45)" }}
+        >
           <span>Built for ETHOnline 2026 · 1inch Aqua track</span>
           <span>Sample data throughout · unknown fails closed</span>
           <span>© 2026 Mandate</span>

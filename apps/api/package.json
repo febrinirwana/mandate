@@ -1,0 +1,30 @@
+{
+  "name": "@mandate/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "lint": "eslint src test",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@hono/node-server": "2.1.1",
+    "@hono/zod-openapi": "1.6.3",
+    "@mandate/chain": "workspace:*",
+    "@mandate/db": "workspace:*",
+    "@mandate/domain": "workspace:*",
+    "@mandate/policy": "workspace:*",
+    "hono": "4.13.7",
+    "viem": "2.56.3",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "tsx": "4.23.13",
+    "typescript": "5.9.3",
+    "vitest": "5.0.0"
+  }
+}

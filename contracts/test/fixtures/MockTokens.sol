@@ -45,6 +45,20 @@ contract MockFalseReturnToken is MockERC20 {
     }
 }
 
+contract MockBalanceMutationToken is MockERC20 {
+    address public mutationRecipient;
+    constructor() MockERC20("Mutation Token", "MUTATE") {}
+
+    function setMutationRecipient(address recipient) external {
+        mutationRecipient = recipient;
+    }
+
+    function _update(address from, address to, uint256 value) internal virtual override {
+        super._update(from, to, value);
+        if (from != address(0) && to == mutationRecipient) _mint(to, 1);
+    }
+}
+
 contract MockReentrantToken is MockERC20 {
     address public callback;
     bytes public callbackData;

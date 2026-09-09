@@ -18,7 +18,10 @@ export function SectionHead({
   right?: ReactNode;
 }) {
   return (
-    <div className="border-t-2 pt-5" style={{ borderColor: accent ? "var(--revoked)" : "var(--ink)" }}>
+    <div
+      className="border-t-2 pt-5"
+      style={{ borderColor: accent ? "var(--revoked)" : "var(--ink)" }}
+    >
       <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2">
         <div className="flex items-baseline gap-5">
           <span

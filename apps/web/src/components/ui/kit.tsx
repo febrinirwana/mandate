@@ -1,19 +1,37 @@
 import { ArrowUpRight } from "lucide-react";
-import type { AnchorHTMLAttributes, ButtonHTMLAttributes, CSSProperties, ReactNode, Ref } from "react";
+import type {
+  AnchorHTMLAttributes,
+  ButtonHTMLAttributes,
+  CSSProperties,
+  ReactNode,
+  Ref,
+} from "react";
 import { STAMP_STYLE, type StampKind } from "@/lib/demo";
 
 /* ---------------------------------------------------------------- */
 /* State stamp — a printed mark: dot, label, tinted ground.          */
 /* ----------------------------------------------------------------- */
 
-export function Stamp({ kind, label, className }: { kind: StampKind; label?: string; className?: string }) {
+export function Stamp({
+  kind,
+  label,
+  className,
+}: {
+  kind: StampKind;
+  label?: string;
+  className?: string;
+}) {
   const s = STAMP_STYLE[kind];
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-[2px] px-1.5 py-0.5 ${className ?? ""}`}
       style={{ background: s.soft, color: s.color }}
     >
-      <span className="h-[5px] w-[5px] rounded-full" style={{ background: s.color }} aria-hidden="true" />
+      <span
+        className="h-[5px] w-[5px] rounded-full"
+        style={{ background: s.color }}
+        aria-hidden="true"
+      />
       <span className="ledger-label" style={{ fontSize: "0.625rem" }}>
         {label ?? kind}
       </span>
@@ -55,7 +73,10 @@ export function ButtonLink({
     <a className={`${BASE} ${VARIANT[variant]} ${className ?? ""}`} {...rest}>
       {children}
       {arrow && (
-        <span className="grid h-5 w-5 place-items-center rounded-[3px] bg-white/20" aria-hidden="true">
+        <span
+          className="grid h-5 w-5 place-items-center rounded-[3px] bg-white/20"
+          aria-hidden="true"
+        >
           <ArrowUpRight size={12} strokeWidth={2.5} />
         </span>
       )}
@@ -73,10 +94,18 @@ export function Button({
   ...rest
 }: ButtonProps & ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <button ref={ref} style={style} className={`${BASE} ${VARIANT[variant]} ${className ?? ""}`} {...rest}>
+    <button
+      ref={ref}
+      style={style}
+      className={`${BASE} ${VARIANT[variant]} ${className ?? ""}`}
+      {...rest}
+    >
       {children}
       {arrow && (
-        <span className="grid h-5 w-5 place-items-center rounded-[3px] bg-white/20" aria-hidden="true">
+        <span
+          className="grid h-5 w-5 place-items-center rounded-[3px] bg-white/20"
+          aria-hidden="true"
+        >
           <ArrowUpRight size={12} strokeWidth={2.5} />
         </span>
       )}

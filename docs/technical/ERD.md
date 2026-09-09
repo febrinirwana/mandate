@@ -73,60 +73,60 @@ External identity references:
 
 ### `chains`
 
-| Column | Type | Constraint |
-|---|---|---|
-| `chain_id` | `numeric(78,0)` | primary key |
-| `name` | `text` | not null |
-| `confirmation_depth` | `integer` | non-negative |
-| `enabled` | `boolean` | not null |
+| Column               | Type            | Constraint   |
+| -------------------- | --------------- | ------------ |
+| `chain_id`           | `numeric(78,0)` | primary key  |
+| `name`               | `text`          | not null     |
+| `confirmation_depth` | `integer`       | non-negative |
+| `enabled`            | `boolean`       | not null     |
 
 ### `contract_deployments`
 
-| Column | Type | Constraint |
-|---|---|---|
-| `id` | `uuid` | primary key |
-| `chain_id` | numeric | FK chains |
-| `kind` | text | `AQUA`, `MANDATE_APP`, `ENS_REGISTRY`, `ENS_RESOLVER`, `SWAP_TARGET` |
-| `address` | bytea | 20 bytes |
-| `code_hash` | bytea | 32 bytes |
-| `source_revision` | text | not null |
-| `official` | boolean | distinguishes sponsor vs self-deployed |
-| `verified_at_block` | numeric | not null |
-| `verified_at_hash` | bytea | 32 bytes |
+| Column              | Type    | Constraint                                                           |
+| ------------------- | ------- | -------------------------------------------------------------------- |
+| `id`                | `uuid`  | primary key                                                          |
+| `chain_id`          | numeric | FK chains                                                            |
+| `kind`              | text    | `AQUA`, `MANDATE_APP`, `ENS_REGISTRY`, `ENS_RESOLVER`, `SWAP_TARGET` |
+| `address`           | bytea   | 20 bytes                                                             |
+| `code_hash`         | bytea   | 32 bytes                                                             |
+| `source_revision`   | text    | not null                                                             |
+| `official`          | boolean | distinguishes sponsor vs self-deployed                               |
+| `verified_at_block` | numeric | not null                                                             |
+| `verified_at_hash`  | bytea   | 32 bytes                                                             |
 
 Unique `(chain_id, kind, address, code_hash)`.
 
 ### `tokens`
 
-| Column | Type | Constraint |
-|---|---|---|
-| `chain_id` | numeric | FK chains |
-| `address` | bytea | composite PK |
-| `decimals` | smallint | 0–255, verified |
-| `symbol` | text | display only |
-| `behavior_profile` | text | `STANDARD` or explicit unsupported reason |
-| `code_hash` | bytea | 32 bytes |
+| Column             | Type     | Constraint                                |
+| ------------------ | -------- | ----------------------------------------- |
+| `chain_id`         | numeric  | FK chains                                 |
+| `address`          | bytea    | composite PK                              |
+| `decimals`         | smallint | 0–255, verified                           |
+| `symbol`           | text     | display only                              |
+| `behavior_profile` | text     | `STANDARD` or explicit unsupported reason |
+| `code_hash`        | bytea    | 32 bytes                                  |
 
 ### `treasuries`
 
-| Column | Type | Constraint |
-|---|---|---|
-| `id` | uuid | primary key |
-| `chain_id` | numeric | FK chains |
-| `address` | bytea | unique per chain |
-| `label` | text | optional display label |
+| Column     | Type    | Constraint             |
+| ---------- | ------- | ---------------------- |
+| `id`       | uuid    | primary key            |
+| `chain_id` | numeric | FK chains              |
+| `address`  | bytea   | unique per chain       |
+| `label`    | text    | optional display label |
 
 No owner secrets or wallet session tokens.
 
 ### `agents`
 
-| Column | Type | Constraint |
-|---|---|---|
-| `id` | uuid | primary key |
-| `chain_id` | numeric | FK chains |
-| `address` | bytea | unique per chain |
-| `custody_mode` | text | `MANUAL_EOA` or `SERVER_KEYSTORE` |
-| `created_at` | timestamptz | not null |
+| Column         | Type        | Constraint                        |
+| -------------- | ----------- | --------------------------------- |
+| `id`           | uuid        | primary key                       |
+| `chain_id`     | numeric     | FK chains                         |
+| `address`      | bytea       | unique per chain                  |
+| `custody_mode` | text        | `MANUAL_EOA` or `SERVER_KEYSTORE` |
+| `created_at`   | timestamptz | not null                          |
 
 Never store private key, mnemonic, raw keystore password, or signed transaction payload in this table.
 
@@ -134,64 +134,64 @@ Never store private key, mnemonic, raw keystore password, or signed transaction 
 
 Immutable identity binding used by a strategy:
 
-| Column | Type | Constraint |
-|---|---|---|
-| `id` | uuid | primary key |
-| `chain_id` | numeric | FK chains |
-| `registry_address` | bytea | not null |
-| `resolver_address` | bytea | not null |
-| `label` | text | normalized subname label only |
-| `label_id` | numeric | derived exact uint256 labelhash |
-| `node` | bytea | 32-byte full-name node |
-| `display_name` | text | untrusted full-name display |
+| Column             | Type    | Constraint                      |
+| ------------------ | ------- | ------------------------------- |
+| `id`               | uuid    | primary key                     |
+| `chain_id`         | numeric | FK chains                       |
+| `registry_address` | bytea   | not null                        |
+| `resolver_address` | bytea   | not null                        |
+| `label`            | text    | normalized subname label only   |
+| `label_id`         | numeric | derived exact uint256 labelhash |
+| `node`             | bytea   | 32-byte full-name node          |
+| `display_name`     | text    | untrusted full-name display     |
 
 Unique `(chain_id, registry_address, label, resolver_address, node)`; `label_id` must equal the deterministic hash of `label`.
 
 ### `strategies`
 
-| Column | Type | Constraint |
-|---|---|---|
-| `chain_id` | numeric | composite PK |
-| `strategy_hash` | bytea | composite PK, 32 bytes |
-| `maker_address` | bytea | FK treasury identity |
-| `agent_address` | bytea | FK agent identity |
-| `ens_identity_id` | uuid | FK ens_identities |
-| `mandate_app` | bytea | 20 bytes |
-| `aqua_address` | bytea | 20 bytes |
-| `token_in` | bytea | FK tokens |
-| `token_out` | bytea | FK tokens, differs from input |
-| `swap_target` | bytea | verified deployment |
-| `swap_selector` | bytea | 4 bytes |
-| `min_rate_numerator` | numeric(78,0) | positive |
-| `min_rate_denominator` | numeric(78,0) | positive |
-| `max_input_per_call` | numeric(78,0) | positive |
-| `max_input_total` | numeric(78,0) | >= per call |
-| `valid_after` | numeric(78,0) | uint64 range |
-| `valid_until` | numeric(78,0) | greater than valid after |
-| `salt` | bytea | 32 bytes |
-| `strategy_bytes` | bytea | exact ABI encoding |
-| `shipped_tx_hash` | bytea | 32 bytes |
-| `activated_tx_hash` | bytea | 32 bytes |
+| Column                 | Type          | Constraint                    |
+| ---------------------- | ------------- | ----------------------------- |
+| `chain_id`             | numeric       | composite PK                  |
+| `strategy_hash`        | bytea         | composite PK, 32 bytes        |
+| `maker_address`        | bytea         | FK treasury identity          |
+| `agent_address`        | bytea         | FK agent identity             |
+| `ens_identity_id`      | uuid          | FK ens_identities             |
+| `mandate_app`          | bytea         | 20 bytes                      |
+| `aqua_address`         | bytea         | 20 bytes                      |
+| `token_in`             | bytea         | FK tokens                     |
+| `token_out`            | bytea         | FK tokens, differs from input |
+| `swap_target`          | bytea         | verified deployment           |
+| `swap_selector`        | bytea         | 4 bytes                       |
+| `min_rate_numerator`   | numeric(78,0) | positive                      |
+| `min_rate_denominator` | numeric(78,0) | positive                      |
+| `max_input_per_call`   | numeric(78,0) | positive                      |
+| `max_input_total`      | numeric(78,0) | >= per call                   |
+| `valid_after`          | numeric(78,0) | uint64 range                  |
+| `valid_until`          | numeric(78,0) | greater than valid after      |
+| `salt`                 | bytea         | 32 bytes                      |
+| `strategy_bytes`       | bytea         | exact ABI encoding            |
+| `shipped_tx_hash`      | bytea         | 32 bytes                      |
+| `activated_tx_hash`    | bytea         | 32 bytes                      |
 
 Strategy rows never update. Corrected provenance creates a superseding record/audit annotation; policy change creates a new hash.
 
 ### `mandate_state_snapshots`
 
-| Column | Type | Constraint |
-|---|---|---|
-| `id` | uuid | primary key |
-| strategy identity | chain + hash | FK strategies |
-| `block_number` | numeric | not null |
-| `block_hash` | bytea | 32 bytes |
-| `activated` | boolean | not null |
-| `revoked` | boolean | not null |
-| `used_input` | numeric(78,0) | non-negative |
-| `ens_status` | text | raw enum/value |
-| `ens_token_id` | numeric(78,0) | current token ID |
-| `ens_owner` | bytea | observed owner |
-| `ens_expiry` | numeric(78,0) | observed timestamp |
-| `ens_address` | bytea | resolved address |
-| `result` | text | PASS/FAIL/UNKNOWN |
+| Column            | Type          | Constraint         |
+| ----------------- | ------------- | ------------------ |
+| `id`              | uuid          | primary key        |
+| strategy identity | chain + hash  | FK strategies      |
+| `block_number`    | numeric       | not null           |
+| `block_hash`      | bytea         | 32 bytes           |
+| `activated`       | boolean       | not null           |
+| `revoked`         | boolean       | not null           |
+| `used_input`      | numeric(78,0) | non-negative       |
+| `ens_status`      | text          | raw enum/value     |
+| `ens_token_id`    | numeric(78,0) | current token ID   |
+| `ens_owner`       | bytea         | observed owner     |
+| `ens_expiry`      | numeric(78,0) | observed timestamp |
+| `ens_address`     | bytea         | resolved address   |
+| `result`          | text          | PASS/FAIL/UNKNOWN  |
 
 Unique `(chain_id, strategy_hash, block_hash)`.
 
@@ -199,50 +199,50 @@ Unique `(chain_id, strategy_hash, block_hash)`.
 
 One row per token and block:
 
-| Column | Type |
-|---|---|
+| Column                                 | Type          |
+| -------------------------------------- | ------------- |
 | strategy identity + token + block hash | composite key |
-| `raw_balance` | numeric(78,0) |
-| `tokens_count` | smallint |
-| `read_status` | text |
-| `observed_at` | timestamptz |
+| `raw_balance`                          | numeric(78,0) |
+| `tokens_count`                         | smallint      |
+| `read_status`                          | text          |
+| `observed_at`                          | timestamptz   |
 
 Never call this a wallet balance.
 
 ### `simulations`
 
-| Column | Type | Constraint |
-|---|---|---|
-| `id` | uuid | primary key |
-| strategy identity | chain + hash | FK strategies |
-| `caller` | bytea | 20 bytes |
-| `to_address` | bytea | Mandate app |
-| `calldata_hash` | bytea | 32 bytes |
-| `block_number` / `block_hash` | numeric / bytea | exact context |
-| `result` | text | PASS/FAIL/UNKNOWN |
-| `checks_json` | jsonb | validated versioned schema |
-| `expected_movement_json` | jsonb | decimal strings |
-| `expires_at` | timestamptz | advisory freshness |
-| `created_at` | timestamptz | not null |
+| Column                        | Type            | Constraint                 |
+| ----------------------------- | --------------- | -------------------------- |
+| `id`                          | uuid            | primary key                |
+| strategy identity             | chain + hash    | FK strategies              |
+| `caller`                      | bytea           | 20 bytes                   |
+| `to_address`                  | bytea           | Mandate app                |
+| `calldata_hash`               | bytea           | 32 bytes                   |
+| `block_number` / `block_hash` | numeric / bytea | exact context              |
+| `result`                      | text            | PASS/FAIL/UNKNOWN          |
+| `checks_json`                 | jsonb           | validated versioned schema |
+| `expected_movement_json`      | jsonb           | decimal strings            |
+| `expires_at`                  | timestamptz     | advisory freshness         |
+| `created_at`                  | timestamptz     | not null                   |
 
 No signed transaction or private key material.
 
 ### `executions`
 
-| Column | Type | Constraint |
-|---|---|---|
-| `chain_id` | numeric | composite PK |
-| `tx_hash` | bytea | composite PK |
-| strategy identity | chain + hash | FK strategies |
-| `caller` | bytea | actual sender |
-| `amount_in` | numeric(78,0) | event value |
-| `amount_out` | numeric(78,0) | event value |
-| `used_input_after` | numeric(78,0) | event value |
-| `status` | text | SUBMITTED/CONFIRMED/REVERTED/REORGED |
-| `block_number` | numeric | nullable until mined |
-| `block_hash` | bytea | nullable until mined |
-| `transaction_index` | integer | canonical ordering |
-| `confirmation_count` | integer | derived at refresh |
+| Column               | Type          | Constraint                           |
+| -------------------- | ------------- | ------------------------------------ |
+| `chain_id`           | numeric       | composite PK                         |
+| `tx_hash`            | bytea         | composite PK                         |
+| `block_hash`         | bytea         | composite PK, 32 bytes               |
+| strategy identity    | chain + hash  | FK strategies                        |
+| `caller`             | bytea         | actual sender                        |
+| `amount_in`          | numeric(78,0) | event value                          |
+| `amount_out`         | numeric(78,0) | event value                          |
+| `used_input_after`   | numeric(78,0) | event value                          |
+| `status`             | text          | SUBMITTED/CONFIRMED/REVERTED/REORGED |
+| `block_number`       | numeric       | exact inclusion height               |
+| `transaction_index`  | numeric       | exact canonical ordering             |
+| `confirmation_count` | integer       | derived at refresh                   |
 
 Submission is never sufficient for confirmed state.
 
@@ -252,14 +252,14 @@ Canonical key: `(chain_id, block_hash, tx_hash, log_index)`. Store contract, top
 
 ### `balance_deltas`
 
-| Column | Type |
-|---|---|
-| execution identity | FK executions |
-| account | maker/agent/app |
-| token | FK tokens |
-| before/after block refs | exact refs |
-| before/after/delta | numeric(78,0) signed where required |
-| source | RPC_CALL/EVENT_RECONSTRUCTION |
+| Column                  | Type                                |
+| ----------------------- | ----------------------------------- |
+| execution identity      | FK executions                       |
+| account                 | maker/agent/app                     |
+| token                   | FK tokens                           |
+| before/after block refs | exact refs                          |
+| before/after/delta      | numeric(78,0) signed where required |
+| source                  | RPC_CALL/EVENT_RECONSTRUCTION       |
 
 The hackathon proof must include maker, agent, and app for both tokens.
 
@@ -269,7 +269,7 @@ Audit key: execution + `audit_version` + canonical block hash. Result is `COMPLI
 
 ## 5. Idempotency and transaction rules
 
-- Upsert submitted transaction by `(chain_id, tx_hash)`.
+- Upsert an observed transaction inclusion by `(chain_id, tx_hash, block_hash)`.
 - Receipt, decoded events, balance deltas, and audit commit in one database transaction.
 - Same canonical receipt replay produces identical keys and no duplicate events.
 - A block-hash change marks the prior execution/audit `REORGED`/invalid; new canonical evidence creates new rows.

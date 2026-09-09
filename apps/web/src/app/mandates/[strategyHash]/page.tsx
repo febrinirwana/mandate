@@ -1,18 +1,21 @@
 import type { Metadata } from "next";
-import { MandateInspector } from "@/components/mandate/inspector";
 import { Footer } from "@/components/landing/footer";
 import { Nav } from "@/components/landing/nav";
-import { DEMO_STRATEGY_HASH } from "@/lib/demo";
+import { MandateInspector } from "@/components/mandate/inspector";
+import { runtimeConfig } from "@/lib/runtime.server";
 
 export const metadata: Metadata = {
   title: "Mandate: Inspection",
-  description: "Public, read-only authority inspection: who may act, on what, until when, and how to stop it.",
+  description:
+    "Public, read-only authority inspection: who may act, on what, until when, and how to stop it.",
 };
 
-export default async function MandatePage({ params }: { params: Promise<{ strategyHash: string }> }) {
+export default async function MandatePage({
+  params,
+}: {
+  params: Promise<{ strategyHash: string }>;
+}) {
   const { strategyHash } = await params;
-  const canonical = strategyHash?.toLowerCase() === DEMO_STRATEGY_HASH;
-  const wellFormed = !!strategyHash?.match(/^0x[0-9a-fA-F]{64}$/);
   return (
     <>
       <a
@@ -23,7 +26,7 @@ export default async function MandatePage({ params }: { params: Promise<{ strate
       </a>
       <Nav />
       <main id="main">
-        <MandateInspector hash={strategyHash} resolved={canonical || wellFormed} />
+        <MandateInspector hash={strategyHash} runtime={runtimeConfig()} />
       </main>
       <Footer />
     </>

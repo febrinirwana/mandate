@@ -100,18 +100,18 @@ If a real route is unavailable on the ENS test network, show two clearly labeled
 
 ## 8. Vocabulary
 
-| Term | Meaning |
-|---|---|
-| Maker | Treasury wallet whose tokens remain wallet-custodied between executions |
-| Agent | Dedicated low-value EOA authorized to call one strategy |
-| Agent identity | ENSv2 subname registration plus current token owner, expiry, and resolved address |
-| Strategy | Immutable ABI-encoded execution policy shipped to Aqua |
-| Strategy hash | `keccak256(abi.encode(strategy))` |
-| Mandate | App activation state plus the immutable strategy and live ENS authorization |
-| Virtual balance | Aqua's per-maker/app/strategy/token allowance accounting, not a second token balance |
-| Simulation | Advisory execution preview bound to exact state and calldata |
-| Revocation | Owner action that makes further execution revert; Mandate, Aqua, and ENS each provide a stop path |
-| Receipt evidence | Canonical transaction, events, balances, and policy checks used for audit |
+| Term             | Meaning                                                                                           |
+| ---------------- | ------------------------------------------------------------------------------------------------- |
+| Maker            | Treasury wallet whose tokens remain wallet-custodied between executions                           |
+| Agent            | Dedicated low-value EOA authorized to call one strategy                                           |
+| Agent identity   | ENSv2 subname registration plus current token owner, expiry, and resolved address                 |
+| Strategy         | Immutable ABI-encoded execution policy shipped to Aqua                                            |
+| Strategy hash    | `keccak256(abi.encode(strategy))`                                                                 |
+| Mandate          | App activation state plus the immutable strategy and live ENS authorization                       |
+| Virtual balance  | Aqua's per-maker/app/strategy/token allowance accounting, not a second token balance              |
+| Simulation       | Advisory execution preview bound to exact state and calldata                                      |
+| Revocation       | Owner action that makes further execution revert; Mandate, Aqua, and ENS each provide a stop path |
+| Receipt evidence | Canonical transaction, events, balances, and policy checks used for audit                         |
 
 ## 9. Document order
 
@@ -142,10 +142,10 @@ When documents disagree: PRD owns product scope; Smart Contract owns onchain inv
 
 Research snapshots used for the mechanics above:
 
-| Source | HEAD verified on 4 September 2026 at 23:37 WIB (UTC+7) |
-|---|---|
-| `1inch/aqua` | `9c5c42e5840e8741fba3597c48456c9510212b66` |
-| `1inch/swap-vm` | `f09a41e689240adc645934f965c8061749397cd2` |
-| `ensdomains/contracts-v2` | `48b3e2d39513b9dd32ef1850877a29009bc807b9` |
+| Source                    | HEAD verified on 4 September 2026 at 23:37 WIB (UTC+7) |
+| ------------------------- | ------------------------------------------------------ |
+| `1inch/aqua`              | `9c5c42e5840e8741fba3597c48456c9510212b66`             |
+| `1inch/swap-vm`           | `f09a41e689240adc645934f965c8061749397cd2`             |
+| `ensdomains/contracts-v2` | `48b3e2d39513b9dd32ef1850877a29009bc807b9`             |
 
 Research snapshot captured: 4 September 2026 at 23:37 WIB (UTC+7). Reverify sponsor rules, deployment addresses, and API behavior before submission.

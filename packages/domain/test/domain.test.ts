@@ -3,12 +3,15 @@ import sepoliaManifest from "../../contracts/src/deployments/sepolia.json" with 
 
 import {
   AddressSchema,
+  CanonicalReceiptEvidenceV1Schema,
   DecimalStringSchema,
   DeploymentManifestV1Schema,
   Hash32Schema,
   ReasonCodeSchema,
+  MandateSnapshotV1Schema,
   ReceiptAuditV1Schema,
   StrategyV1Schema,
+  VenueManifestV1Schema,
   jsonSchemas,
 } from "../src/index.js";
 
@@ -69,6 +72,92 @@ const validManifest = {
   tokens: [],
 } as const;
 
+const validVenueManifest = {
+  version: 1,
+  environment: "ETHEREUM_MAINNET_FORK",
+  chainId: "1",
+  generatedAt: "2026-09-07T05:00:00.000Z",
+  verificationBlock: { number: "24000000", hash: hash("1") },
+  contracts: [
+    {
+      kind: "SWAP_TARGET",
+      name: "1inch Aggregation Router V6",
+      enabled: true,
+      external: true,
+      official: true,
+      chainId: "1",
+      address: address("1"),
+      codeHash: hash("2"),
+      sourceRevision: "a".repeat(40),
+      sourceUrl: "https://etherscan.io/address/0x111111125421ca6dc452d289314280a0f8842a65#code",
+      verificationBlock: { number: "24000000", hash: hash("1") },
+      verifiedAt: "2026-09-07T05:00:00.000Z",
+      probes: [{ method: "eth_getCode", resultHash: hash("3") }],
+    },
+    {
+      kind: "AQUA",
+      name: "1inch Aqua",
+      enabled: true,
+      external: true,
+      official: true,
+      chainId: "1",
+      address: address("6"),
+      codeHash: hash("8"),
+      sourceRevision: "b".repeat(40),
+      sourceUrl:
+        "https://business.1inch.com/portal/documentation/aqua/reference/contract-addresses",
+      verificationBlock: { number: "24000000", hash: hash("1") },
+      verifiedAt: "2026-09-07T05:00:00.000Z",
+      probes: [{ method: "eth_getCode", resultHash: hash("9") }],
+    },
+    {
+      kind: "SWAP_EXECUTOR",
+      name: "1inch Aggregation Executor",
+      enabled: true,
+      external: true,
+      official: true,
+      chainId: "1",
+      address: address("5"),
+      codeHash: hash("a"),
+      sourceRevision: "etherscan-verified:AggregationExecutor",
+      sourceUrl: "https://etherscan.io/",
+      verificationBlock: { number: "24000000", hash: hash("1") },
+      verifiedAt: "2026-09-07T05:00:00.000Z",
+      probes: [{ method: "eth_getCode", resultHash: hash("b") }],
+    },
+  ],
+  tokens: [
+    { chainId: "1", address: address("2"), codeHash: hash("4"), decimals: 18, symbol: "WETH" },
+    { chainId: "1", address: address("3"), codeHash: hash("5"), decimals: 6, symbol: "USDC" },
+  ],
+  route: {
+    provider: "1inch-classic-swap-v6.1",
+    chainId: "1",
+    apiVersion: "v6.1",
+    endpoint: "https://api.1inch.com/swap/v6.1/1/swap",
+    requestId: "request-123",
+    requestedAt: "2026-09-07T05:00:00.000Z",
+    responseHash: hash("6"),
+    target: address("1"),
+    selector: "0x07ed2379",
+    calldataSchema: "swap(address,(address,address,address,address,uint256,uint256,uint256),bytes)",
+    calldata: "0x07ed2379abcd",
+    calldataHash: hash("7"),
+    caller: address("4"),
+    executor: address("5"),
+    recipient: address("4"),
+    tokenIn: address("2"),
+    tokenOut: address("3"),
+    amountIn: "100000000000000000",
+    quotedAmountOut: "250000000",
+    routeMinimumOut: "240000000",
+    nativeValue: "0",
+    allowPartialFill: false,
+    deadline: null,
+    protocols: ["UNISWAP_V3"],
+  },
+} as const;
+
 describe("primitive boundary schemas", () => {
   it("rejects numbers, floating strings, malformed addresses, and malformed hashes", () => {
     expect(DecimalStringSchema.safeParse(1.5).success).toBe(false);
@@ -121,8 +210,7 @@ describe("stable reason codes", () => {
   it("accepts a PRD code and rejects unknown codes", () => {
     expect(ReasonCodeSchema.parse("MANDATE_REVOKED")).toBe("MANDATE_REVOKED");
     expect(ReasonCodeSchema.safeParse("NEW_UNDOCUMENTED_CODE").success).toBe(false);
-    expect(ReasonCodeSchema.options).toHaveLength(27);
-    expect(ReasonCodeSchema.options.at(-1)).toBe("RECEIPT_NOT_CANONICAL");
+    expect(ReasonCodeSchema.parse("INPUT_TRANSFER_MISMATCH")).toBe("INPUT_TRANSFER_MISMATCH");
   });
 });
 
@@ -143,6 +231,123 @@ describe("ReceiptAuditV1Schema", () => {
         ],
       }),
     ).toBeDefined();
+  });
+});
+
+describe("MandateSnapshotV1Schema", () => {
+  it("carries the exact immutable strategy required for public inspection", () => {
+    expect(
+      MandateSnapshotV1Schema.parse({
+        version: 1,
+        chainId: "11155111",
+        strategyHash: hash("a"),
+        block: { number: "11648628", hash: hash("b") },
+        strategy: validStrategy,
+        aqua: {
+          address: address("c"),
+          result: "PASS",
+          inputBalance: "1000",
+          outputBalance: "0",
+        },
+        physical: {
+          result: "PASS",
+          makerTokenIn: "1000",
+          makerTokenOut: "0",
+          agentTokenIn: "0",
+          agentTokenOut: "0",
+          appTokenIn: "0",
+          appTokenOut: "0",
+        },
+        state: { maker: validStrategy.maker, usedInput: "0", activated: true, revoked: false },
+        ens: {
+          status: "REGISTERED",
+          tokenId: "1",
+          owner: validStrategy.agent,
+          expiry: "1788626400",
+          address: validStrategy.agent,
+        },
+        result: "PASS",
+      }),
+    ).toMatchObject({ strategy: validStrategy });
+  });
+});
+
+describe("CanonicalReceiptEvidenceV1Schema", () => {
+  const validEvidence = {
+    version: 1,
+    strategy: validStrategy,
+    execution: {
+      version: 1,
+      chainId: "11155111",
+      txHash: hash("1"),
+      block: { number: "11634851", hash: hash("2") },
+      transactionIndex: "3",
+      strategyHash: hash("3"),
+      caller: address("2"),
+      amountIn: "10",
+      amountOut: "20",
+      usedInputAfter: "10",
+      status: "CONFIRMED",
+    },
+    audit: {
+      version: 1,
+      result: "COMPLIANT",
+      chainId: "11155111",
+      txHash: hash("1"),
+      block: { number: "11634851", hash: hash("2") },
+      strategyHash: hash("3"),
+      checks: [],
+      evidence: [{ provider: "rpc-receipt", responseHash: hash("4") }],
+    },
+    events: [
+      {
+        logIndex: "0",
+        contract: address("8"),
+        topic0: hash("5"),
+        topics: [hash("5")],
+        data: "0x",
+        kind: "MandateExecuted",
+        decoded: { strategyHash: hash("3") },
+        decoderVersion: 1,
+      },
+    ],
+    balanceDeltas: [
+      {
+        account: address("1"),
+        token: address("6"),
+        beforeBlock: { number: "11634850", hash: hash("6") },
+        afterBlock: { number: "11634851", hash: hash("2") },
+        before: "10",
+        after: "0",
+        delta: "-10",
+        source: "RPC_CALL",
+      },
+    ],
+  } as const;
+
+  it("accepts a confirmed receipt bound to one strategy and one canonical block", () => {
+    expect(CanonicalReceiptEvidenceV1Schema.parse(validEvidence)).toEqual(validEvidence);
+  });
+
+  it("rejects inconsistent audit bindings and malformed raw event bytes", () => {
+    expect(
+      CanonicalReceiptEvidenceV1Schema.safeParse({
+        ...validEvidence,
+        audit: { ...validEvidence.audit, txHash: hash("9") },
+      }).success,
+    ).toBe(false);
+    expect(
+      CanonicalReceiptEvidenceV1Schema.safeParse({
+        ...validEvidence,
+        events: [{ ...validEvidence.events[0], data: "0x0" }],
+      }).success,
+    ).toBe(false);
+    expect(
+      CanonicalReceiptEvidenceV1Schema.safeParse({
+        ...validEvidence,
+        execution: { ...validEvidence.execution, transactionIndex: "03" },
+      }).success,
+    ).toBe(false);
   });
 });
 
@@ -172,12 +377,48 @@ describe("DeploymentManifestV1Schema", () => {
     ).toBe(false);
   });
 
-  it("admits the checked-in Sepolia deployment evidence", () => {
-    expect(DeploymentManifestV1Schema.parse(sepoliaManifest).contracts).toHaveLength(3);
+  it("admits the checked-in Sepolia authority runtime evidence", () => {
+    const manifest = DeploymentManifestV1Schema.parse(sepoliaManifest);
+    expect(manifest.contracts.map(({ kind }) => kind)).toEqual([
+      "AQUA",
+      "ENS_REGISTRY",
+      "ENS_RESOLVER",
+      "ENS_REGISTRY",
+      "ENS_RESOLVER",
+      "MANDATE_APP",
+      "SWAP_TARGET",
+    ]);
+    expect(manifest.tokens.map(({ symbol, decimals }) => ({ symbol, decimals }))).toEqual([
+      { symbol: "USDC", decimals: 6 },
+      { symbol: "DAI", decimals: 18 },
+    ]);
   });
 
   it("exports generated JSON Schema inputs", () => {
     expect(jsonSchemas.strategyV1).toMatchObject({ type: "object" });
     expect(jsonSchemas.deploymentManifestV1).toMatchObject({ type: "object" });
+  });
+});
+
+describe("VenueManifestV1Schema", () => {
+  it("round-trips an exact-input route bound to one canonical mainnet block", () => {
+    expect(VenueManifestV1Schema.parse(validVenueManifest)).toEqual(validVenueManifest);
+  });
+
+  it.each([
+    ["native value", { route: { ...validVenueManifest.route, nativeValue: "1" } }],
+    ["partial fill", { route: { ...validVenueManifest.route, allowPartialFill: true } }],
+    ["different recipient", { route: { ...validVenueManifest.route, recipient: address("5") } }],
+    ["different chain", { chainId: "11155111" }],
+    ["unknown target", { route: { ...validVenueManifest.route, target: address("9") } }],
+    ["unknown executor", { route: { ...validVenueManifest.route, executor: address("9") } }],
+  ])("rejects a venue manifest with %s", (_name, mutation) => {
+    expect(VenueManifestV1Schema.safeParse({ ...validVenueManifest, ...mutation }).success).toBe(
+      false,
+    );
+  });
+
+  it("exports the venue manifest JSON Schema", () => {
+    expect(jsonSchemas.venueManifestV1).toMatchObject({ type: "object" });
   });
 });

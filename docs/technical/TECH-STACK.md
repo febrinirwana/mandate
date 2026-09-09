@@ -2,23 +2,23 @@
 
 ## 1. Decision summary
 
-| Layer | Choice | Why |
-|---|---|---|
-| Workspace | pnpm workspaces + Turborepo | one typed build graph without custom tooling |
-| Web | Next.js App Router + React + TypeScript | issuance, public inspection, receipt routes, wallet client islands |
-| UI | Tailwind CSS + Radix primitives | accessible behavior with owned visual system |
-| Motion | CSS first; Motion for state/layout | sufficient for ledger transitions; reduced-motion support |
-| Wallet/RPC | viem + wagmi | typed calldata, block-tagged reads, simulation, wallet state |
-| API | Hono on Node | small versioned boundary for agent and Bazantic clients |
-| Validation | Zod + generated JSON Schema/OpenAPI | one trust-boundary schema per contract |
-| Database | PostgreSQL + Drizzle | relational receipt/evidence provenance and migrations |
-| Contracts | Solidity 0.8.30 + Foundry | matches current Aqua compiler and supports focused unit/fork tests |
+| Layer              | Choice                                                       | Why                                                                       |
+| ------------------ | ------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| Workspace          | pnpm workspaces + Turborepo                                  | one typed build graph without custom tooling                              |
+| Web                | Next.js App Router + React + TypeScript                      | issuance, public inspection, receipt routes, wallet client islands        |
+| UI                 | Tailwind CSS + Radix primitives                              | accessible behavior with owned visual system                              |
+| Motion             | CSS first; Motion for state/layout                           | sufficient for ledger transitions; reduced-motion support                 |
+| Wallet/RPC         | viem + wagmi                                                 | typed calldata, block-tagged reads, simulation, wallet state              |
+| API                | Hono on Node                                                 | small versioned boundary for agent and Bazantic clients                   |
+| Validation         | Zod + generated JSON Schema/OpenAPI                          | one trust-boundary schema per contract                                    |
+| Database           | Supabase managed PostgreSQL + Drizzle                        | relational receipt/evidence provenance, reviewed migrations, managed ops  |
+| Contracts          | Solidity 0.8.30 + Foundry                                    | matches current Aqua compiler and supports focused unit/fork tests        |
 | Contract libraries | pinned 1inch Aqua source + OpenZeppelin-compatible utilities | reuse audited primitives; no copied partial interfaces without source pin |
-| Agent signer | viem local account in isolated server process | direct dedicated EOA without owner-key custody |
-| Agent interface | HTTP plus optional MCP tool set | typed simulation/inspection/execution preparation |
-| Paid audit | Bazantic x402/MPP Gateway + Recipe | meaningful machine-paid receipt analysis |
-| Observability | structured JSON logs + OpenTelemetry-compatible spans | trace simulation/receipt paths without secrets |
-| Tests | Foundry, Vitest, Playwright | contract invariants, typed services, real browser flow |
+| Agent signer       | viem local account in isolated server process                | direct dedicated EOA without owner-key custody                            |
+| Agent interface    | HTTP plus optional MCP tool set                              | typed simulation/inspection/execution preparation                         |
+| Paid audit         | Bazantic x402/MPP Gateway + Recipe                           | meaningful machine-paid receipt analysis                                  |
+| Observability      | structured JSON logs + OpenTelemetry-compatible spans        | trace simulation/receipt paths without secrets                            |
+| Tests              | Foundry, Vitest, Playwright                                  | contract invariants, typed services, real browser flow                    |
 
 Pin exact versions and integrity in lockfiles at scaffold time. Reverify Aqua and ENSv2 interface compatibility before selecting package revisions.
 
@@ -54,8 +54,8 @@ No generic `utils` package. Each invariant belongs to the domain that owns it.
 - Node.js active LTS, minimum 22; pin exact version.
 - pnpm through Corepack; exact `packageManager` value.
 - Solidity/Foundry compiler 0.8.30 for Aqua source compatibility.
-- PostgreSQL 16 or newer.
-- Docker only for local PostgreSQL.
+- Supabase PostgreSQL 17 for shared environments; local PostgreSQL remains optional for isolated tests.
+- Runtime queries use the transaction pooler with prepared statements disabled; migrations use the IPv4 session pooler.
 - Sepolia RPC with archival/block-tagged read support for the demo window.
 - A supported-chain archival RPC for the pinned settlement fork if needed.
 
@@ -116,6 +116,11 @@ Use SafeERC20 semantics and `forceApprove` where supported by the selected libra
 - Browser never receives agent/server secret or owner private key.
 - Shared schemas generate OpenAPI, JSON Schema, and MCP tool definitions.
 
+Supabase is storage, not authority. Task 7 computes policy, simulation, and audit from
+block-bound chain reads; a database outage can make evidence unavailable but can never
+turn a `FAIL` or `UNKNOWN` into `PASS`. Drizzle owns typed persistence, Supabase CLI owns
+project linking, and reviewed migrations are applied over the session pooler.
+
 ## 7. Package interfaces
 
 ### `@mandate/domain`
@@ -148,6 +153,18 @@ All reads accept explicit chain and optional block reference. No hidden latest-b
 
 Repositories return domain values, not raw Drizzle rows. Canonical receipt, events, snapshots, and audit result commit atomically. Reorg invalidation is an explicit transaction.
 
+### `apps/worker`
+
+The worker polls observed Sepolia executions from PostgreSQL, verifies the stored block
+hash against the canonical block at the same height, and only then persists the full
+receipt evidence transaction. The inclusion block counts as confirmation one.
+
+- `WORKER_CONFIRMATION_DEPTH` defaults to `4`; allowed range `0..1024`.
+- `WORKER_BATCH_SIZE` defaults to `25`; allowed range `1..1000`.
+- `WORKER_POLL_INTERVAL_MS` defaults to `15000`; allowed range `100..3600000`.
+- RPC failures remain retryable and never persist a compliant audit.
+- The process exposes no HTTP, signing, wallet, or generic RPC interface.
+
 ## 8. API contracts
 
 Versioned routes:
@@ -161,29 +178,29 @@ No generic proxy route, raw RPC route, or arbitrary contract call endpoint. Baza
 
 ## 9. Testing stack
 
-| Contract | Tool | Required examples |
-|---|---|---|
-| strategy validation/hash | Foundry | invalid fields, encoding parity, Aqua hash equality |
-| authority | Foundry | caller, active/revoked, time, ENS status/owner/expiry/address |
-| limits/rate | Foundry + fuzz | zero, boundaries, ceil division, cumulative cap, overflow |
-| settlement | Foundry | exact pull/call/push, rollback, residue, allowance clearing |
-| adversarial tokens/target | Foundry | false return, fee, reentrancy, malicious recipient, partial spend |
-| chain adapters | Vitest + Anvil | block binding, revert decode, stale simulation |
-| persistence | Vitest + PostgreSQL | idempotency, canonicality, reorg invalidation |
-| web | Playwright + real local chain | issue, inspect, simulate pass/fail, execute, revoke, wallet reject, 375px |
-| sponsor proof | Sepolia/fork smoke scripts | actual contracts, transaction hashes, balance evidence |
+| Contract                  | Tool                          | Required examples                                                         |
+| ------------------------- | ----------------------------- | ------------------------------------------------------------------------- |
+| strategy validation/hash  | Foundry                       | invalid fields, encoding parity, Aqua hash equality                       |
+| authority                 | Foundry                       | caller, active/revoked, time, ENS status/owner/expiry/address             |
+| limits/rate               | Foundry + fuzz                | zero, boundaries, ceil division, cumulative cap, overflow                 |
+| settlement                | Foundry                       | exact pull/call/push, rollback, residue, allowance clearing               |
+| adversarial tokens/target | Foundry                       | false return, fee, reentrancy, malicious recipient, partial spend         |
+| chain adapters            | Vitest + Anvil                | block binding, revert decode, stale simulation                            |
+| persistence               | Vitest + PostgreSQL           | idempotency, canonicality, reorg invalidation                             |
+| web                       | Playwright + real local chain | issue, inspect, simulate pass/fail, execute, revoke, wallet reject, 375px |
+| sponsor proof             | Sepolia/fork smoke scripts    | actual contracts, transaction hashes, balance evidence                    |
 
 ## 10. Rejected choices
 
-| Rejected | Reason |
-|---|---|
-| Account abstraction for MVP | duplicates mandate policy and increases setup/security surface |
-| Relayer for MVP | changes caller/replay model before direct authority is proven |
-| NestJS/GraphQL | unnecessary framework/schema weight for four routes |
-| Redis/queue service | PostgreSQL jobs and event cadence are enough at hackathon scale |
-| General arbitrary-call executor | destroys the narrow authority claim |
-| Upgradeable Mandate contract | admin key becomes a hidden mutable policy path |
-| Onchain oracle dependency | fixed immutable rate floor proves the boundary without oracle/liveness risk |
-| LLM policy evaluator | nondeterministic and unauthoritative |
-| GSAP runtime by default | CSS/Motion covers required state transitions |
-| Multi-chain abstraction | ENS sponsor proof and Aqua deployment reality must be proven one chain at a time |
+| Rejected                        | Reason                                                                           |
+| ------------------------------- | -------------------------------------------------------------------------------- |
+| Account abstraction for MVP     | duplicates mandate policy and increases setup/security surface                   |
+| Relayer for MVP                 | changes caller/replay model before direct authority is proven                    |
+| NestJS/GraphQL                  | unnecessary framework/schema weight for four routes                              |
+| Redis/queue service             | PostgreSQL jobs and event cadence are enough at hackathon scale                  |
+| General arbitrary-call executor | destroys the narrow authority claim                                              |
+| Upgradeable Mandate contract    | admin key becomes a hidden mutable policy path                                   |
+| Onchain oracle dependency       | fixed immutable rate floor proves the boundary without oracle/liveness risk      |
+| LLM policy evaluator            | nondeterministic and unauthoritative                                             |
+| GSAP runtime by default         | CSS/Motion covers required state transitions                                     |
+| Multi-chain abstraction         | ENS sponsor proof and Aqua deployment reality must be proven one chain at a time |

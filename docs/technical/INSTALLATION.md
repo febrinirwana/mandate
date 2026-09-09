@@ -42,18 +42,41 @@ Foundry dependencies must be pinned to commit hashes, including Aqua and ENSv2 c
 
 ## 3. Environment contract
 
-Create local `.env` files from the checked-in example after scaffold. Minimum server-only variables:
+Create the ignored root `.env` from `.env.example`. For a local PostgreSQL run, set:
 
 ```dotenv
-DATABASE_URL=postgresql://mandate:mandate@127.0.0.1:5432/mandate
+DATABASE_URL=postgresql://mandate:mandate@127.0.0.1:55432/mandate?sslmode=disable
+DATABASE_MIGRATION_URL=postgresql://mandate:mandate@127.0.0.1:55432/mandate?sslmode=disable
 SEPOLIA_RPC_URL=https://...
-SETTLEMENT_FORK_RPC_URL=https://...
-NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=...
+SEPOLIA_MANDATE_APP=0xffdefe2ebb164095b471e1f0b7ec492c8d26438f
+SEPOLIA_MANDATE_DEPLOYMENT_BLOCK=11668678
+SEPOLIA_VENUE_INPUT_RECIPIENT=0xee637a2cf3aa61a29339532941b80b41ffea88c7
 ONEINCH_API_KEY=...
 BAZANTIC_API_KEY=...
-AGENT_KEYSTORE_PATH=...
-AGENT_KEYSTORE_PASSWORD=...
+API_PORT=3001
+WORKER_CONFIRMATION_DEPTH=4
+WORKER_BATCH_SIZE=25
+WORKER_POLL_INTERVAL_MS=15000
 ```
+
+For the Next.js authority composer, create the ignored `apps/web/.env.local` with `MANDATE_CHAIN_ID=11155111`, the same `SEPOLIA_MANDATE_APP`, `MANDATE_API_ORIGIN`, `NEXT_PUBLIC_PRIVY_APP_ID`, and `MANDATE_SEPOLIA_FAUCET_AMOUNT=100`. Copy the checked-in `MANDATE_POLICY_PROFILE` from `.env.example`; it is a single-line JSON object generated from block-stamped reads of the agent identity, token metadata, and fixed route. These values are public, but the composer still fails closed when the profile is absent, malformed, or inconsistent with live chain state.
+
+### Sepolia smart-wallet gas sponsorship
+
+The owner receives test-only Sepolia USDC from the ENSv2 deployment, not real USDC and not ETH. The token reports symbol `USDC` and six decimals onchain. The output token reports symbol `DAI` and 18 decimals; the fixed venue is pre-funded with test-only DAI.
+
+The authority composer submits atomic batches through Privy's `useSmartWallets()` client. Configure its account-abstraction paymaster:
+
+1. Open the app in [Privy Dashboard](https://dashboard.privy.io/apps).
+2. Open **Wallet infrastructure → Advanced → Smart wallets** and select **Sepolia**.
+3. Keep **Alchemy Smart Wallets**, then use **Quick setup → Alchemy**.
+4. Select an Ethereum Sepolia Alchemy app and Gas Manager policy. Enter the requested endpoint key and policy ID, then save.
+5. Confirm the Sepolia smart-wallet entry has a non-empty **Paymaster URL**. The development bundler may remain the default public Pimlico endpoint unless quick setup replaces it.
+6. Return to `/issue` with a Privy smart wallet holding `0` Sepolia ETH and click **Fund 100 USDC**. Success means a sponsored Sepolia transaction hash appears and the canonical balance increases by exactly `100000000` raw units.
+
+Privy's separate **Fee sponsorship** page and its billing credits apply to native embedded-wallet transaction submission; they do not substitute for the paymaster used by this smart-wallet client. A Pimlico `AA21 didn't pay prefund` error with empty `paymasterAndData` means the Sepolia paymaster is absent or not being selected.
+
+Limit the Alchemy policy to Sepolia and this demo's smart wallet while validating the flow. For production, use policy rules or a server-approved sponsorship path that fail-closes and permits only the faucet, exact token approvals, Aqua ship/dock, Mandate activate, and Mandate revoke calls.
 
 Rules:
 
@@ -68,9 +91,9 @@ Rules:
 After Task 1 creates Docker Compose:
 
 ```bash
-docker compose up -d postgres
-pnpm --filter @mandate/db migrate
-pnpm --filter @mandate/db test
+docker compose up -d --wait postgres
+pnpm --filter @mandate/db db:migrate
+TEST_DATABASE_URL=postgresql://mandate:mandate@127.0.0.1:55432/mandate?sslmode=disable pnpm --filter @mandate/db test
 ```
 
 Database is not an authority source. Dropping local data must not prevent reconstructing confirmed execution evidence from chain.
@@ -85,13 +108,19 @@ anvil --host 127.0.0.1 --port 8545
 
 Deploy pinned Aqua, token/venue fixtures, ENS-compatible identity fixture, and Mandate using the deterministic local script. Fixture contracts are for tests only and must have names that include `Mock` or `Test`. UI labels the environment `LOCAL FIXTURE`.
 
-For real settlement, fork a verified supported chain at a pinned block:
+Capture a live 1inch route and its finalized-block deployment manifest:
 
 ```bash
-anvil --fork-url "$SETTLEMENT_FORK_RPC_URL" --fork-block-number <verified-block>
+pnpm --filter @mandate/chain capture:route
 ```
 
-The concrete block is recorded only after a successful live probe. Never leave `<verified-block>` in an executable script or claimed result.
+Then replay the exact route against the production Mandate app, official Aqua, and real 1inch liquidity at the manifest's pinned block:
+
+```bash
+pnpm verify:venue
+```
+
+`verify:venue` reads the block from `packages/contracts/src/deployments/mainnet.json`. Foundry must be available as `forge`, or `FORGE_BIN` must point to the executable. The manifest records only public route and runtime evidence; secrets remain in the ignored `.env`.
 
 ## 6. ENSv2 Sepolia setup
 
@@ -131,15 +160,24 @@ Operational constraints:
 
 ## 9. Running services
 
-Expected commands after implementation:
+Start local PostgreSQL only when not using the managed Supabase database:
 
 ```bash
-pnpm dev
-pnpm --filter @mandate/agent dev
-pnpm --filter @mandate/worker dev
+docker compose up -d --wait postgres
+pnpm --filter @mandate/db db:migrate
 ```
 
-A single `pnpm dev` may run web/API for local convenience. The signer process remains separately configured and can be disabled; public inspection and manual-agent simulation still work.
+From the repository root, run the web app, API, and receipt-confirmation worker in one terminal:
+
+```bash
+pnpm --parallel --filter @mandate/web --filter @mandate/api --filter @mandate/worker run dev
+```
+
+- Web: [http://localhost:3100](http://localhost:3100). Port 3100 is explicitly pinned in `apps/web/package.json`.
+- API: [http://localhost:3001/openapi.json](http://localhost:3001/openapi.json), configurable through `API_PORT`.
+- Worker: no HTTP port. It polls pending observed executions and commits evidence only after canonical-chain confirmation.
+
+The web surface uses same-origin typed API routes for mandate inspection, simulation, execution lookup, and receipt audit. It never treats unavailable or stale chain data as a green state.
 
 ## 10. Bazantic setup
 

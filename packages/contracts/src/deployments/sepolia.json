@@ -2,7 +2,7 @@
   "version": 1,
   "environment": "SEPOLIA",
   "chainId": "11155111",
-  "generatedAt": "2026-09-04T17:48:36.000Z",
+  "generatedAt": "2026-09-09T15:00:00.000Z",
   "contracts": [
     {
       "kind": "AQUA",
@@ -16,10 +16,10 @@
       "sourceRevision": "81c26e4619ce21556ab02b3284ee2685de21fb18",
       "sourceUrl": "https://github.com/1inch/aqua/tree/81c26e4619ce21556ab02b3284ee2685de21fb18",
       "verificationBlock": {
-        "number": "11634993",
-        "hash": "0xfa6aa87d51040cc664902d6ff5a11b0c1917c0deb0e3ce48651f3655e33fb338"
+        "number": "11645813",
+        "hash": "0xb32305bfd7b46e4b539c9dd831eaa31b4c5d23cd6d62c26354f92e22a1da70fb"
       },
-      "verifiedAt": "2026-09-04T17:48:36.000Z",
+      "verifiedAt": "2026-09-06T07:29:36.000Z",
       "probes": [
         {
           "method": "owner() ABI result bytes, SHA-256",
@@ -39,10 +39,10 @@
       "sourceRevision": "97a57293f3b4279d94b571e678edb53ce62638f4",
       "sourceUrl": "https://github.com/ensdomains/contracts-v2/tree/97a57293f3b4279d94b571e678edb53ce62638f4",
       "verificationBlock": {
-        "number": "11634993",
-        "hash": "0xfa6aa87d51040cc664902d6ff5a11b0c1917c0deb0e3ce48651f3655e33fb338"
+        "number": "11645813",
+        "hash": "0xb32305bfd7b46e4b539c9dd831eaa31b4c5d23cd6d62c26354f92e22a1da70fb"
       },
-      "verifiedAt": "2026-09-04T17:48:36.000Z",
+      "verifiedAt": "2026-09-06T07:29:36.000Z",
       "probes": [
         {
           "method": "getState(uint256) with label id 0 ABI result bytes, SHA-256",
@@ -52,7 +52,7 @@
     },
     {
       "kind": "ENS_RESOLVER",
-      "name": "ENSv2 PublicResolverV2",
+      "name": "ENSv2 PublicResolverV2 (not identity authority)",
       "enabled": false,
       "external": true,
       "official": true,
@@ -62,17 +62,148 @@
       "sourceRevision": "97a57293f3b4279d94b571e678edb53ce62638f4",
       "sourceUrl": "https://github.com/ensdomains/contracts-v2/tree/97a57293f3b4279d94b571e678edb53ce62638f4",
       "verificationBlock": {
-        "number": "11634993",
-        "hash": "0xfa6aa87d51040cc664902d6ff5a11b0c1917c0deb0e3ce48651f3655e33fb338"
+        "number": "11645813",
+        "hash": "0xb32305bfd7b46e4b539c9dd831eaa31b4c5d23cd6d62c26354f92e22a1da70fb"
       },
-      "verifiedAt": "2026-09-04T17:48:36.000Z",
+      "verifiedAt": "2026-09-06T07:29:36.000Z",
       "probes": [
         {
           "method": "addr(bytes32) with node 0 ABI result bytes, SHA-256",
           "resultHash": "0x66687aadf862bd776c8fc18b8e9f8e20089714856ee233b3902a591d0d5f2925"
         }
       ]
+    },
+    {
+      "kind": "ENS_REGISTRY",
+      "name": "Mandate permissioned agent registry",
+      "enabled": true,
+      "external": false,
+      "official": false,
+      "chainId": "11155111",
+      "address": "0xb15cba2d8b5ff4c26c001d39cd026a00dcd94dee",
+      "codeHash": "0xa337d3591048f9a3e3069d06e2356a9d08191677c9af333be2b096df414c6374",
+      "sourceRevision": "97a57293f3b4279d94b571e678edb53ce62638f4",
+      "sourceUrl": "https://github.com/ensdomains/contracts-v2/tree/97a57293f3b4279d94b571e678edb53ce62638f4",
+      "verificationBlock": {
+        "number": "11668681",
+        "hash": "0x2c893855f099ecdf5e9daad091863a1d6edbd57279cc7bb0a01dfcd6f1099aa7"
+      },
+      "verifiedAt": "2026-09-09T15:00:00.000Z",
+      "probes": [
+        {
+          "method": "getState(uint256) with configured label id ABI result bytes, SHA-256",
+          "resultHash": "0xd32cd159824a98b2c670b759ee26bc2a75aeec5aa113c2ce7540aeaa9b4937b1"
+        },
+        {
+          "method": "getResolver(string) with configured label ABI result bytes, SHA-256",
+          "resultHash": "0x8151f5af465abcbd8f0d7f290cfc28d3e699b7974ca833dd4ee8b9f5185a987c"
+        }
+      ]
+    },
+    {
+      "kind": "ENS_RESOLVER",
+      "name": "Mandate permissioned agent resolver",
+      "enabled": true,
+      "external": false,
+      "official": false,
+      "chainId": "11155111",
+      "address": "0x088a0b6bcf7b1983d2d419786304c78068fb3161",
+      "codeHash": "0x5b70fc3ad8a7519d77cf30b9ed9955ca175ba54a5d8e0727b91300ed2f09611e",
+      "sourceRevision": "97a57293f3b4279d94b571e678edb53ce62638f4",
+      "sourceUrl": "https://github.com/ensdomains/contracts-v2/tree/97a57293f3b4279d94b571e678edb53ce62638f4",
+      "verificationBlock": {
+        "number": "11668681",
+        "hash": "0x2c893855f099ecdf5e9daad091863a1d6edbd57279cc7bb0a01dfcd6f1099aa7"
+      },
+      "verifiedAt": "2026-09-09T15:00:00.000Z",
+      "probes": [
+        {
+          "method": "addr(bytes32) with configured identity node ABI result bytes, SHA-256",
+          "resultHash": "0xecba00568dc70c9b6c6574c4a170060586455a8234d1554cfe186331884ce9d6"
+        }
+      ]
+    },
+    {
+      "kind": "MANDATE_APP",
+      "name": "MandateAquaApp",
+      "enabled": true,
+      "external": false,
+      "official": false,
+      "chainId": "11155111",
+      "address": "0xffdefe2ebb164095b471e1f0b7ec492c8d26438f",
+      "codeHash": "0xa2c076ab96e952b92753c6a451712b997de3f65ff3840bfe6ee5e5fadb667be9",
+      "sourceRevision": "3786aacf8a3377d4f97a7ddd67ebb0c3127cbf05",
+      "sourceUrl": "https://github.com/febrinirwana/mandate/blob/3786aacf8a3377d4f97a7ddd67ebb0c3127cbf05/contracts/src/MandateAquaApp.sol",
+      "verificationBlock": {
+        "number": "11668681",
+        "hash": "0x2c893855f099ecdf5e9daad091863a1d6edbd57279cc7bb0a01dfcd6f1099aa7"
+      },
+      "verifiedAt": "2026-09-09T15:00:00.000Z",
+      "probes": [
+        {
+          "method": "AQUA() ABI result bytes, SHA-256",
+          "resultHash": "0x508261755e2aef4789233deb21da6e15c9476bc1cfb380cfc37a978ddb8226b0"
+        },
+        {
+          "method": "MAX_MANDATE_DURATION() ABI result bytes, SHA-256",
+          "resultHash": "0xe7a633810d0af36cbf3edb1864725d46db1c3b7f5cd5f82fd07bb30d015d294e"
+        }
+      ]
+    },
+    {
+      "kind": "SWAP_TARGET",
+      "name": "Sepolia exact-input USDC-to-DAI venue",
+      "enabled": true,
+      "external": false,
+      "official": false,
+      "chainId": "11155111",
+      "address": "0x6690118e223948ee6dabf09e089247854bccd369",
+      "codeHash": "0xd7f3363e092d3039c2d3137acf072e12a705dcf783fb30af2dec14de114e9394",
+      "sourceRevision": "3786aacf8a3377d4f97a7ddd67ebb0c3127cbf05",
+      "sourceUrl": "https://github.com/febrinirwana/mandate/blob/3786aacf8a3377d4f97a7ddd67ebb0c3127cbf05/contracts/src/SepoliaExactInputVenue.sol",
+      "verificationBlock": {
+        "number": "11668681",
+        "hash": "0x2c893855f099ecdf5e9daad091863a1d6edbd57279cc7bb0a01dfcd6f1099aa7"
+      },
+      "verifiedAt": "2026-09-09T15:00:00.000Z",
+      "probes": [
+        {
+          "method": "TOKEN_IN() ABI result bytes, SHA-256",
+          "resultHash": "0xcdfc96d90b94d50fe82ecad5e9ef13e91feca34885128381f1e684af36142906"
+        },
+        {
+          "method": "TOKEN_OUT() ABI result bytes, SHA-256",
+          "resultHash": "0x220508e1f0a02d0297314ed630789f6dbad7f947138db27050d12592ca8530cc"
+        },
+        {
+          "method": "INPUT_RECIPIENT() ABI result bytes, SHA-256",
+          "resultHash": "0xbfbe585a8554c6e91f621eaafaabd5cdacd64f6c5c8455865814da4d75de3ff6"
+        },
+        {
+          "method": "OUTPUT_RATE_NUMERATOR() ABI result bytes, SHA-256",
+          "resultHash": "0x9556a039dfacbad1a48adef14952f15876125e2c94f5f5ea396e651a17324b34"
+        },
+        {
+          "method": "OUTPUT_RATE_DENOMINATOR() ABI result bytes, SHA-256",
+          "resultHash": "0xec4916dd28fc4c10d78e287ca5d9cc51ee1ae73cbfde08c6b37324cbfaac8bc5"
+        }
+      ]
     }
   ],
-  "tokens": []
+  "tokens": [
+    {
+      "chainId": "11155111",
+      "address": "0x768f42455a2d082e23ceef7d51e5787c82d67a39",
+      "codeHash": "0xee640ba5927c02c9f6eddf75ef6634e08a354c4a9fd852927fbac510bec75a68",
+      "decimals": 6,
+      "symbol": "USDC"
+    },
+    {
+      "chainId": "11155111",
+      "address": "0x5472c5725a00b7ba11f0794a79d08ade6f4683bd",
+      "codeHash": "0xbc2bb09f07668a0a5e761239c1a52cd62c94bf64198527ab33e98897d2ea6f20",
+      "decimals": 18,
+      "symbol": "DAI"
+    }
+  ]
 }

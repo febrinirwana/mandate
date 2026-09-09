@@ -1,5 +1,20 @@
 # Mandate Smart-Contract Specification
 
+## Sepolia deployment
+
+| Field                       | Value                                                                                                                                                                      |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Mandate app                 | [`0xFfDEfE2eBB164095b471e1F0B7EC492c8D26438F`](https://sepolia.etherscan.io/address/0xFfDEfE2eBB164095b471e1F0B7EC492c8D26438F)                                            |
+| App deployment block        | [`11668678`](https://sepolia.etherscan.io/block/11668678)                                                                                                                  |
+| App deployment transaction  | [`0x0e3759ce72441de56684d002afbbcc19606812bb674a14db169ad781f268e9ee`](https://sepolia.etherscan.io/tx/0x0e3759ce72441de56684d002afbbcc19606812bb674a14db169ad781f268e9ee) |
+| Fixed USDC-to-DAI venue     | [`0x6690118e223948eE6dabF09e089247854bCcD369`](https://sepolia.etherscan.io/address/0x6690118e223948eE6dabF09e089247854bCcD369)                                            |
+| Venue input recipient       | [`0xee637a2cf3aa61a29339532941b80b41ffea88c7`](https://sepolia.etherscan.io/address/0xee637a2cf3aa61a29339532941b80b41ffea88c7)                                            |
+| Bound official Sepolia Aqua | [`0x1111113CCf1426A8E30e2bfF5E005d929bF6a90a`](https://sepolia.etherscan.io/address/0x1111113CCf1426A8E30e2bfF5E005d929bF6a90a)                                            |
+| Chain                       | Sepolia (`11155111`)                                                                                                                                                       |
+| Verification block          | [`11668681`](https://sepolia.etherscan.io/block/11668681)                                                                                                                  |
+
+This is the configured public runtime for the API, web app, and confirmation worker. The app and venue addresses are public configuration. `packages/contracts/src/deployments/sepolia.json` binds their runtime code hashes and ABI probe hashes to canonical block `11668681`.
+
 ## 1. Contract decision
 
 MVP deploys one non-upgradeable `MandateAquaApp`. It is a narrow exact-input executor, not a generic router. It binds one Aqua strategy hash to one treasury maker, one dedicated agent, one live ENSv2 identity, one pair, one venue target/selector, one rate floor, caps, and a time window.

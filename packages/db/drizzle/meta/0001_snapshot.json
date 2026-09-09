@@ -1,0 +1,792 @@
+{
+  "id": "9aee4f84-e53e-4778-911f-8ce963456e4a",
+  "prevId": "0a988dd3-ea15-4b71-95ad-8f3d965430b7",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.audit_evidence": {
+      "name": "audit_evidence",
+      "schema": "",
+      "columns": {
+        "chain_id": {
+          "name": "chain_id",
+          "type": "numeric(78, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tx_hash": {
+          "name": "tx_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "block_hash": {
+          "name": "block_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "audit_version": {
+          "name": "audit_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ordinal": {
+          "name": "ordinal",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "provider": {
+          "name": "provider",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "response_hash": {
+          "name": "response_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "audit_evidence_chain_id_tx_hash_block_hash_audit_version_ordinal_pk": {
+          "name": "audit_evidence_chain_id_tx_hash_block_hash_audit_version_ordinal_pk",
+          "columns": [
+            "chain_id",
+            "tx_hash",
+            "block_hash",
+            "audit_version",
+            "ordinal"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "audit_evidence_ordinal_uint": {
+          "name": "audit_evidence_ordinal_uint",
+          "value": "\"audit_evidence\".\"ordinal\" >= 0"
+        },
+        "audit_evidence_hash_hex": {
+          "name": "audit_evidence_hash_hex",
+          "value": "\"audit_evidence\".\"response_hash\" ~ '^0x[0-9a-f]{64}$'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.audits": {
+      "name": "audits",
+      "schema": "",
+      "columns": {
+        "chain_id": {
+          "name": "chain_id",
+          "type": "numeric(78, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tx_hash": {
+          "name": "tx_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "block_hash": {
+          "name": "block_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "audit_version": {
+          "name": "audit_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "result": {
+          "name": "result",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "checks": {
+          "name": "checks",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "invalidated_at": {
+          "name": "invalidated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "invalidation_reason": {
+          "name": "invalidation_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "audits_chain_id_tx_hash_block_hash_audit_version_pk": {
+          "name": "audits_chain_id_tx_hash_block_hash_audit_version_pk",
+          "columns": [
+            "chain_id",
+            "tx_hash",
+            "block_hash",
+            "audit_version"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "audits_result": {
+          "name": "audits_result",
+          "value": "\"audits\".\"result\" in ('COMPLIANT', 'NON_COMPLIANT', 'UNKNOWN')"
+        },
+        "audits_version_positive": {
+          "name": "audits_version_positive",
+          "value": "\"audits\".\"audit_version\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.balance_deltas": {
+      "name": "balance_deltas",
+      "schema": "",
+      "columns": {
+        "chain_id": {
+          "name": "chain_id",
+          "type": "numeric(78, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tx_hash": {
+          "name": "tx_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "block_hash": {
+          "name": "block_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "account": {
+          "name": "account",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "before_block_number": {
+          "name": "before_block_number",
+          "type": "numeric(78, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "before_block_hash": {
+          "name": "before_block_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "before_amount": {
+          "name": "before_amount",
+          "type": "numeric(78, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "after_amount": {
+          "name": "after_amount",
+          "type": "numeric(78, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "delta": {
+          "name": "delta",
+          "type": "numeric(78, 0)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "balance_deltas_chain_id_tx_hash_block_hash_account_token_source_pk": {
+          "name": "balance_deltas_chain_id_tx_hash_block_hash_account_token_source_pk",
+          "columns": [
+            "chain_id",
+            "tx_hash",
+            "block_hash",
+            "account",
+            "token",
+            "source"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "balance_deltas_source": {
+          "name": "balance_deltas_source",
+          "value": "\"balance_deltas\".\"source\" in ('RPC_CALL', 'EVENT_RECONSTRUCTION', 'AQUA_RAW_BALANCE')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.evidence_invalidations": {
+      "name": "evidence_invalidations",
+      "schema": "",
+      "columns": {
+        "chain_id": {
+          "name": "chain_id",
+          "type": "numeric(78, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tx_hash": {
+          "name": "tx_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "replaced_block_hash": {
+          "name": "replaced_block_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "canonical_block_hash": {
+          "name": "canonical_block_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "invalidated_at": {
+          "name": "invalidated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "evidence_invalidations_chain_id_tx_hash_replaced_block_hash_reason_pk": {
+          "name": "evidence_invalidations_chain_id_tx_hash_replaced_block_hash_reason_pk",
+          "columns": [
+            "chain_id",
+            "tx_hash",
+            "replaced_block_hash",
+            "reason"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "evidence_invalidations_reason": {
+          "name": "evidence_invalidations_reason",
+          "value": "\"evidence_invalidations\".\"reason\" in ('BLOCK_HASH_REPLACED', 'RECEIPT_DISAPPEARED')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.execution_events": {
+      "name": "execution_events",
+      "schema": "",
+      "columns": {
+        "chain_id": {
+          "name": "chain_id",
+          "type": "numeric(78, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "block_hash": {
+          "name": "block_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tx_hash": {
+          "name": "tx_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "log_index": {
+          "name": "log_index",
+          "type": "numeric(78, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contract": {
+          "name": "contract",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "topic0": {
+          "name": "topic0",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "topics": {
+          "name": "topics",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "data": {
+          "name": "data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "decoded": {
+          "name": "decoded",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "decoder_version": {
+          "name": "decoder_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "execution_events_chain_id_block_hash_tx_hash_log_index_pk": {
+          "name": "execution_events_chain_id_block_hash_tx_hash_log_index_pk",
+          "columns": [
+            "chain_id",
+            "block_hash",
+            "tx_hash",
+            "log_index"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "execution_events_block_hash_hex": {
+          "name": "execution_events_block_hash_hex",
+          "value": "\"execution_events\".\"block_hash\" ~ '^0x[0-9a-f]{64}$'"
+        },
+        "execution_events_tx_hash_hex": {
+          "name": "execution_events_tx_hash_hex",
+          "value": "\"execution_events\".\"tx_hash\" ~ '^0x[0-9a-f]{64}$'"
+        },
+        "execution_events_contract_hex": {
+          "name": "execution_events_contract_hex",
+          "value": "\"execution_events\".\"contract\" ~ '^0x[0-9a-f]{40}$'"
+        },
+        "execution_events_data_hex": {
+          "name": "execution_events_data_hex",
+          "value": "\"execution_events\".\"data\" ~ '^0x([0-9a-f]{2})*$'"
+        },
+        "execution_events_decoder_version": {
+          "name": "execution_events_decoder_version",
+          "value": "\"execution_events\".\"decoder_version\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.executions": {
+      "name": "executions",
+      "schema": "",
+      "columns": {
+        "chain_id": {
+          "name": "chain_id",
+          "type": "numeric(78, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tx_hash": {
+          "name": "tx_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "strategy_hash": {
+          "name": "strategy_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "caller": {
+          "name": "caller",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amount_in": {
+          "name": "amount_in",
+          "type": "numeric(78, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amount_out": {
+          "name": "amount_out",
+          "type": "numeric(78, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "used_input_after": {
+          "name": "used_input_after",
+          "type": "numeric(78, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "block_number": {
+          "name": "block_number",
+          "type": "numeric(78, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "block_hash": {
+          "name": "block_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "confirmation_count": {
+          "name": "confirmation_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "executions_pending_idx": {
+          "name": "executions_pending_idx",
+          "columns": [
+            {
+              "expression": "chain_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "block_number",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "executions_chain_id_tx_hash_pk": {
+          "name": "executions_chain_id_tx_hash_pk",
+          "columns": [
+            "chain_id",
+            "tx_hash"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "executions_tx_hash_hex": {
+          "name": "executions_tx_hash_hex",
+          "value": "\"executions\".\"tx_hash\" ~ '^0x[0-9a-f]{64}$'"
+        },
+        "executions_block_hash_hex": {
+          "name": "executions_block_hash_hex",
+          "value": "\"executions\".\"block_hash\" ~ '^0x[0-9a-f]{64}$'"
+        },
+        "executions_caller_hex": {
+          "name": "executions_caller_hex",
+          "value": "\"executions\".\"caller\" ~ '^0x[0-9a-f]{40}$'"
+        },
+        "executions_status": {
+          "name": "executions_status",
+          "value": "\"executions\".\"status\" in ('SUBMITTED', 'CONFIRMED', 'REVERTED', 'REORGED')"
+        },
+        "executions_amount_in_uint": {
+          "name": "executions_amount_in_uint",
+          "value": "\"executions\".\"amount_in\" >= 0"
+        },
+        "executions_amount_out_uint": {
+          "name": "executions_amount_out_uint",
+          "value": "\"executions\".\"amount_out\" >= 0"
+        },
+        "executions_used_input_uint": {
+          "name": "executions_used_input_uint",
+          "value": "\"executions\".\"used_input_after\" >= 0"
+        },
+        "executions_confirmations_uint": {
+          "name": "executions_confirmations_uint",
+          "value": "\"executions\".\"confirmation_count\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.simulation_evidence": {
+      "name": "simulation_evidence",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "chain_id": {
+          "name": "chain_id",
+          "type": "numeric(78, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "strategy_hash": {
+          "name": "strategy_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "block_number": {
+          "name": "block_number",
+          "type": "numeric(78, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "block_hash": {
+          "name": "block_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "caller": {
+          "name": "caller",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "calldata_hash": {
+          "name": "calldata_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "result": {
+          "name": "result",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "response": {
+          "name": "response",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "simulation_evidence_strategy_idx": {
+          "name": "simulation_evidence_strategy_idx",
+          "columns": [
+            {
+              "expression": "chain_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "strategy_hash",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "simulation_evidence_id_hex": {
+          "name": "simulation_evidence_id_hex",
+          "value": "\"simulation_evidence\".\"id\" ~ '^0x[0-9a-f]{64}$'"
+        },
+        "simulation_evidence_strategy_hash_hex": {
+          "name": "simulation_evidence_strategy_hash_hex",
+          "value": "\"simulation_evidence\".\"strategy_hash\" ~ '^0x[0-9a-f]{64}$'"
+        },
+        "simulation_evidence_block_hash_hex": {
+          "name": "simulation_evidence_block_hash_hex",
+          "value": "\"simulation_evidence\".\"block_hash\" ~ '^0x[0-9a-f]{64}$'"
+        },
+        "simulation_evidence_caller_hex": {
+          "name": "simulation_evidence_caller_hex",
+          "value": "\"simulation_evidence\".\"caller\" ~ '^0x[0-9a-f]{40}$'"
+        },
+        "simulation_evidence_calldata_hash_hex": {
+          "name": "simulation_evidence_calldata_hash_hex",
+          "value": "\"simulation_evidence\".\"calldata_hash\" ~ '^0x[0-9a-f]{64}$'"
+        },
+        "simulation_evidence_result": {
+          "name": "simulation_evidence_result",
+          "value": "\"simulation_evidence\".\"result\" in ('PASS', 'FAIL', 'UNKNOWN')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.strategies": {
+      "name": "strategies",
+      "schema": "",
+      "columns": {
+        "chain_id": {
+          "name": "chain_id",
+          "type": "numeric(78, 0)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "strategy_hash": {
+          "name": "strategy_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "definition": {
+          "name": "definition",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "strategies_chain_id_strategy_hash_pk": {
+          "name": "strategies_chain_id_strategy_hash_pk",
+          "columns": [
+            "chain_id",
+            "strategy_hash"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "strategies_hash_hex": {
+          "name": "strategies_hash_hex",
+          "value": "\"strategies\".\"strategy_hash\" ~ '^0x[0-9a-f]{64}$'"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

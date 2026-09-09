@@ -194,7 +194,7 @@ export function Landscape({ className, cell = 6 }: { className?: string; cell?: 
     }
 
     function ensureCanvas() {
-      let canvas = host.querySelector("canvas") as HTMLCanvasElement | null;
+      let canvas = host.querySelector("canvas");
       if (!canvas) {
         canvas = document.createElement("canvas");
         canvas.style.width = "100%";
@@ -216,7 +216,9 @@ export function Landscape({ className, cell = 6 }: { className?: string; cell?: 
     });
     ro.observe(host);
 
-    const io = new IntersectionObserver(([e]) => (inView = e.isIntersecting), { rootMargin: "80px" });
+    const io = new IntersectionObserver(([e]) => (inView = e.isIntersecting), {
+      rootMargin: "80px",
+    });
     io.observe(host);
 
     const onMove = (e: PointerEvent) => {

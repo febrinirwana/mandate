@@ -9,8 +9,8 @@ const STATEMENTS = [
     num: "01",
     body: (
       <>
-        Identity is <Chip icon={<AtSign strokeWidth={2.4} />} /> live state, verified onchain at execution
-        time, never a cached approval.
+        Identity is <Chip icon={<AtSign strokeWidth={2.4} />} /> live state, verified onchain at
+        execution time, never a cached approval.
       </>
     ),
   },
@@ -18,7 +18,8 @@ const STATEMENTS = [
     num: "02",
     body: (
       <>
-        The contract authorizes. <Chip icon={<FileCheck2 strokeWidth={2.4} />} /> Simulation only informs.
+        The contract authorizes. <Chip icon={<FileCheck2 strokeWidth={2.4} />} /> Simulation only
+        informs.
       </>
     ),
   },
@@ -39,7 +40,9 @@ function Chip({ icon }: { icon: React.ReactNode }) {
       className="mx-1.5 inline-grid h-[0.82em] w-[0.82em] translate-y-[0.1em] place-items-center rounded-[0.14em] align-baseline"
       style={{ background: "var(--accent-soft)", color: "var(--accent)" }}
     >
-      <span className="grid h-[0.5em] w-[0.5em] place-items-center [&_svg]:h-full [&_svg]:w-full">{icon}</span>
+      <span className="grid h-[0.5em] w-[0.5em] place-items-center [&_svg]:h-full [&_svg]:w-full">
+        {icon}
+      </span>
     </span>
   );
 }
@@ -71,8 +74,16 @@ function Statement({
   const first = index === 0;
   const last = index === total - 1;
   const opacity = useTransform(progress, [b.inStart, b.inEnd, b.outStart, b.outEnd], [0, 1, 1, 0]);
-  const y = useTransform(progress, [b.inStart, b.inEnd, b.outStart, b.outEnd], [first ? 0 : 26, 0, 0, last ? 0 : -26]);
-  const blur = useTransform(progress, [b.inStart, b.inEnd, b.outStart, b.outEnd], [first ? 0 : 5, 0, 0, last ? 0 : 5]);
+  const y = useTransform(
+    progress,
+    [b.inStart, b.inEnd, b.outStart, b.outEnd],
+    [first ? 0 : 26, 0, 0, last ? 0 : -26],
+  );
+  const blur = useTransform(
+    progress,
+    [b.inStart, b.inEnd, b.outStart, b.outEnd],
+    [first ? 0 : 5, 0, 0, last ? 0 : 5],
+  );
   const filter = useTransform(blur, (v) => `blur(${v}px)`);
 
   return (
@@ -85,7 +96,13 @@ function Statement({
   );
 }
 
-function NumeralColumn({ progress, side }: { progress: MotionValue<number>; side: "left" | "right" }) {
+function NumeralColumn({
+  progress,
+  side,
+}: {
+  progress: MotionValue<number>;
+  side: "left" | "right";
+}) {
   const numerals = STATEMENTS.map((s, i) => {
     const b = bounds(i, STATEMENTS.length);
     return { num: s.num, bounds: b };
@@ -98,7 +115,13 @@ function NumeralColumn({ progress, side }: { progress: MotionValue<number>; side
       <span className="absolute left-1/2 top-0 h-[38%] w-px bg-rule" />
       <span className="absolute bottom-0 left-1/2 h-[38%] w-px bg-rule" />
       {numerals.map((n, i) => (
-        <Numeral key={n.num} label={n.num} bounds={n.bounds} progress={progress} top={14 + i * 33} />
+        <Numeral
+          key={n.num}
+          label={n.num}
+          bounds={n.bounds}
+          progress={progress}
+          top={14 + i * 33}
+        />
       ))}
     </div>
   );
@@ -115,7 +138,11 @@ function Numeral({
   progress: MotionValue<number>;
   top: number;
 }) {
-  const opacity = useTransform(progress, [bounds.inStart, bounds.inEnd, bounds.outStart, bounds.outEnd], [0, 1, 1, 0]);
+  const opacity = useTransform(
+    progress,
+    [bounds.inStart, bounds.inEnd, bounds.outStart, bounds.outEnd],
+    [0, 1, 1, 0],
+  );
   return (
     <motion.span
       className="mono-data absolute left-1/2 -translate-x-1/2"
@@ -136,7 +163,10 @@ export function Statements() {
       <section className="border-b border-rule" aria-label="Principles">
         <div className="mx-auto max-w-[1440px] space-y-16 border-x border-rule px-6 py-24 text-center lg:px-10">
           {STATEMENTS.map((s) => (
-            <p key={s.num} className="statement mx-auto max-w-[24ch] text-[clamp(1.75rem,4vw,3.5rem)]">
+            <p
+              key={s.num}
+              className="statement mx-auto max-w-[24ch] text-[clamp(1.75rem,4vw,3.5rem)]"
+            >
               {s.body}
             </p>
           ))}
@@ -146,7 +176,12 @@ export function Statements() {
   }
 
   return (
-    <section ref={ref} className="relative border-b border-rule" style={{ height: "320vh" }} aria-label="Principles">
+    <section
+      ref={ref}
+      className="relative border-b border-rule"
+      style={{ height: "320vh" }}
+      aria-label="Principles"
+    >
       <div className="sticky top-0 flex h-[100svh] items-center overflow-hidden">
         <NumeralColumn progress={scrollYProgress} side="left" />
         <NumeralColumn progress={scrollYProgress} side="right" />
@@ -154,7 +189,9 @@ export function Statements() {
           <div className="relative h-[26rem] md:h-[30rem]">
             {STATEMENTS.map((s, i) => (
               <Statement key={s.num} index={i} total={STATEMENTS.length} progress={scrollYProgress}>
-                <p className="statement mx-auto max-w-[24ch] text-[clamp(1.875rem,4.2vw,3.75rem)]">{s.body}</p>
+                <p className="statement mx-auto max-w-[24ch] text-[clamp(1.875rem,4.2vw,3.75rem)]">
+                  {s.body}
+                </p>
               </Statement>
             ))}
           </div>

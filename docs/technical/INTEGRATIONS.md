@@ -4,15 +4,15 @@
 
 ## 1. Integration map
 
-| Integration | Load-bearing contribution | Trust boundary | MVP proof |
-|---|---|---|---|
-| 1inch Aqua | wallet-custodied virtual allocation and app-only pull/push | Aqua accounting/source/deployment | ship, active balances, bounded pull, output push, dock |
-| ENSv2 | live agent identity, ownership, expiry, revocation | registry/resolver deployment and state | Sepolia register, resolve, execute, revoke/expire, fail |
-| Fixed swap venue | actual exact-input conversion | venue code/liquidity/calldata | fixed target+selector, exact spend, output delta, revert |
-| 1inch API/trace | route or transaction evidence | API availability/auth/chain support | one recorded live response tied to demo transaction |
-| Bazantic | paid machine-to-machine audit workflow | account, gateway, service/Recipe semantics | paid Recipe calls both Mandate and 1inch services |
-| RPC provider | block-tagged calls, simulation, receipts | completeness, reorg, rate limits | multi-call/read probes and canonical receipt |
-| ERC-20s | physical balances and approvals | non-standard token behavior | admission suite and code hash |
+| Integration      | Load-bearing contribution                                  | Trust boundary                             | MVP proof                                                |
+| ---------------- | ---------------------------------------------------------- | ------------------------------------------ | -------------------------------------------------------- |
+| 1inch Aqua       | wallet-custodied virtual allocation and app-only pull/push | Aqua accounting/source/deployment          | ship, active balances, bounded pull, output push, dock   |
+| ENSv2            | live agent identity, ownership, expiry, revocation         | registry/resolver deployment and state     | Sepolia register, resolve, execute, revoke/expire, fail  |
+| Fixed swap venue | actual exact-input conversion                              | venue code/liquidity/calldata              | fixed target+selector, exact spend, output delta, revert |
+| 1inch API/trace  | route or transaction evidence                              | API availability/auth/chain support        | one recorded live response tied to demo transaction      |
+| Bazantic         | paid machine-to-machine audit workflow                     | account, gateway, service/Recipe semantics | paid Recipe calls both Mandate and 1inch services        |
+| RPC provider     | block-tagged calls, simulation, receipts                   | completeness, reorg, rate limits           | multi-call/read probes and canonical receipt             |
+| ERC-20s          | physical balances and approvals                            | non-standard token behavior                | admission suite and code hash                            |
 
 ## 2. 1inch Aqua
 
@@ -239,16 +239,16 @@ No address enters production code as an unexplained constant.
 
 ## 10. Integration failure register
 
-| Risk | Detection | Release response |
-|---|---|---|
-| no compatible Aqua on Sepolia | official docs/source + `eth_getCode` | self-deploy pinned source, label honestly, confirm prize eligibility |
-| no real venue on Sepolia | exact-input probe fails | split Sepolia identity and pinned-fork settlement proofs |
-| ENS ABI/deployment changes | compile/runtime probe fails | update adapter/spec from official source; do not shim guessed ABI |
-| token leaves residue | admission test | replace token/route or explicitly model refund; no invariant bypass |
-| 1inch endpoint unavailable | live probe | use only verified alternative contribution; update claims |
-| Bazantic service not considered new | sponsor feedback | narrow Inspector to unique mandate semantics; do not proxy |
-| archival receipt state unavailable | block-tagged read fails | audit `UNKNOWN` or switch verified provider |
-| chain reorg | receipt block hash changes | invalidate and rebuild audit after confirmations |
+| Risk                                | Detection                            | Release response                                                     |
+| ----------------------------------- | ------------------------------------ | -------------------------------------------------------------------- |
+| no compatible Aqua on Sepolia       | official docs/source + `eth_getCode` | self-deploy pinned source, label honestly, confirm prize eligibility |
+| no real venue on Sepolia            | exact-input probe fails              | split Sepolia identity and pinned-fork settlement proofs             |
+| ENS ABI/deployment changes          | compile/runtime probe fails          | update adapter/spec from official source; do not shim guessed ABI    |
+| token leaves residue                | admission test                       | replace token/route or explicitly model refund; no invariant bypass  |
+| 1inch endpoint unavailable          | live probe                           | use only verified alternative contribution; update claims            |
+| Bazantic service not considered new | sponsor feedback                     | narrow Inspector to unique mandate semantics; do not proxy           |
+| archival receipt state unavailable  | block-tagged read fails              | audit `UNKNOWN` or switch verified provider                          |
+| chain reorg                         | receipt block hash changes           | invalidate and rebuild audit after confirmations                     |
 
 ## 11. Source and claim discipline
 

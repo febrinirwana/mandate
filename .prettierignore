@@ -3,3 +3,6 @@ contracts/lib/
 node_modules/
 .next/
 reference/
+packages/db/drizzle/meta/
+supabase/.temp/
+pnpm-lock.yaml

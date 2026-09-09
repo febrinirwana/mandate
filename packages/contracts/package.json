@@ -1,0 +1,23 @@
+{
+  "name": "@mandate/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./mandate-aqua-app": "./src/MandateAquaApp.abi.ts"
+  },
+  "scripts": {
+    "generate": "node scripts/generate-mandate-abi.mjs",
+    "lint": "eslint src test scripts",
+    "prove:local-abi": "node scripts/prove-local-abi.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "viem": "2.56.3"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vitest": "5.0.0"
+  }
+}

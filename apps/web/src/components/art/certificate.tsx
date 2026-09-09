@@ -1,6 +1,13 @@
 "use client";
 
-import { motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform } from "motion/react";
+import {
+  motion,
+  useInView,
+  useMotionValue,
+  useReducedMotion,
+  useSpring,
+  useTransform,
+} from "motion/react";
 import { MoveRight } from "lucide-react";
 import { useRef, type PointerEvent } from "react";
 
@@ -52,8 +59,14 @@ export function Certificate({ className }: { className?: string }) {
   const reduced = useReducedMotion();
   const px = useMotionValue(0);
   const py = useMotionValue(0);
-  const rotateX = useSpring(useTransform(py, [-1, 1], [3.5, -3.5]), { stiffness: 130, damping: 18 });
-  const rotateY = useSpring(useTransform(px, [-1, 1], [-4.5, 4.5]), { stiffness: 130, damping: 18 });
+  const rotateX = useSpring(useTransform(py, [-1, 1], [3.5, -3.5]), {
+    stiffness: 130,
+    damping: 18,
+  });
+  const rotateY = useSpring(useTransform(px, [-1, 1], [-4.5, 4.5]), {
+    stiffness: 130,
+    damping: 18,
+  });
 
   const onMove = (e: PointerEvent<HTMLDivElement>) => {
     if (reduced) return;
@@ -72,22 +85,42 @@ export function Certificate({ className }: { className?: string }) {
       className={className}
       style={{ perspective: 1400 }}
       initial={reduced ? false : { opacity: 0, y: 32, rotate: -2.5 }}
-      animate={inView && !reduced ? { opacity: 1, y: [32, 0, -7, 0], rotate: [-2.5, -1.2, -1.2, -1.2] } : inView ? { opacity: 1, y: 0, rotate: -1.2 } : {}}
-      transition={inView ? { duration: 1.6, times: [0, 0.45, 0.78, 1], ease: [0.16, 1, 0.3, 1] } : {}}
+      animate={
+        inView && !reduced
+          ? { opacity: 1, y: [32, 0, -7, 0], rotate: [-2.5, -1.2, -1.2, -1.2] }
+          : inView
+            ? { opacity: 1, y: 0, rotate: -1.2 }
+            : {}
+      }
+      transition={
+        inView ? { duration: 1.6, times: [0, 0.45, 0.78, 1], ease: [0.16, 1, 0.3, 1] } : {}
+      }
     >
       {/* crisp dot-grid patches behind the paper */}
-      <div className="dot-grid pointer-events-none absolute -top-10 -right-6 -z-10 hidden h-44 w-44 opacity-50 md:block" aria-hidden="true" />
-      <div className="dot-grid pointer-events-none absolute -bottom-8 -left-10 -z-10 hidden h-36 w-56 opacity-40 md:block" aria-hidden="true" />
+      <div
+        className="dot-grid pointer-events-none absolute -top-10 -right-6 -z-10 hidden h-44 w-44 opacity-50 md:block"
+        aria-hidden="true"
+      />
+      <div
+        className="dot-grid pointer-events-none absolute -bottom-8 -left-10 -z-10 hidden h-36 w-56 opacity-40 md:block"
+        aria-hidden="true"
+      />
 
       <motion.div
         onPointerMove={onMove}
         onPointerLeave={onLeave}
-        style={{ rotateX: reduced ? undefined : rotateX, rotateY: reduced ? undefined : rotateY, transformStyle: "preserve-3d" }}
+        style={{
+          rotateX: reduced ? undefined : rotateX,
+          rotateY: reduced ? undefined : rotateY,
+          transformStyle: "preserve-3d",
+        }}
         className="relative mx-auto w-full max-w-[440px] border border-[rgb(26_25_22/0.16)] bg-raised"
       >
         <div
           className="pointer-events-none absolute inset-0"
-          style={{ boxShadow: "0 1px 0 rgb(26 25 22 / 0.06), 0 36px 70px -36px rgb(26 25 22 / 0.28)" }}
+          style={{
+            boxShadow: "0 1px 0 rgb(26 25 22 / 0.06), 0 36px 70px -36px rgb(26 25 22 / 0.28)",
+          }}
           aria-hidden="true"
         />
 
@@ -100,9 +133,16 @@ export function Certificate({ className }: { className?: string }) {
             <div className="text-right">
               <span
                 className="ledger-label inline-flex items-center gap-1.5 rounded-[2px] px-1.5 py-0.5"
-                style={{ background: "var(--accent-soft)", color: "var(--accent-deep)", fontSize: "0.625rem" }}
+                style={{
+                  background: "var(--accent-soft)",
+                  color: "var(--accent-deep)",
+                  fontSize: "0.625rem",
+                }}
               >
-                <span className="h-[5px] w-[5px] rounded-full" style={{ background: "var(--accent)" }} />
+                <span
+                  className="h-[5px] w-[5px] rounded-full"
+                  style={{ background: "var(--accent)" }}
+                />
                 Active
               </span>
               <div className="mono-data mt-2 text-ink-3">NO. MD-2026-0007</div>
@@ -110,9 +150,18 @@ export function Certificate({ className }: { className?: string }) {
           </div>
 
           <div className="mt-7 flex items-center gap-3 border-b border-rule pb-6">
-            <span className="text-[2.125rem] leading-none font-medium tracking-[-0.03em] tabular-nums">USDC</span>
-            <MoveRight size={22} strokeWidth={1.75} style={{ color: "var(--accent)" }} aria-label="to" />
-            <span className="text-[2.125rem] leading-none font-medium tracking-[-0.03em]">WETH</span>
+            <span className="text-[2.125rem] leading-none font-medium tracking-[-0.03em] tabular-nums">
+              USDC
+            </span>
+            <MoveRight
+              size={22}
+              strokeWidth={1.75}
+              style={{ color: "var(--accent)" }}
+              aria-label="to"
+            />
+            <span className="text-[2.125rem] leading-none font-medium tracking-[-0.03em]">
+              WETH
+            </span>
           </div>
 
           <dl>
@@ -145,7 +194,9 @@ export function Certificate({ className }: { className?: string }) {
                 transition={{ duration: 1.15, ease: [0.25, 1, 0.5, 1], delay: 0.55 }}
               />
             </svg>
-            <div className="ledger-label mt-1 text-ink-3">Owner signature · vitalik.mandate.eth</div>
+            <div className="ledger-label mt-1 text-ink-3">
+              Owner signature · vitalik.mandate.eth
+            </div>
           </div>
           <motion.div
             initial={reduced ? false : { scale: 0, rotate: -18, opacity: 0 }}
@@ -164,7 +215,11 @@ export function Certificate({ className }: { className?: string }) {
           </span>
           <span className="flex h-4 items-end gap-[3px]" aria-hidden="true">
             {[2, 4, 2, 5, 3, 2, 4, 2, 5, 2, 3, 4, 2, 2, 5, 3, 2, 4].map((w, i) => (
-              <span key={i} className="inline-block" style={{ width: w, height: "100%", background: "var(--paper-raised)" }} />
+              <span
+                key={i}
+                className="inline-block"
+                style={{ width: w, height: "100%", background: "var(--paper-raised)" }}
+              />
             ))}
           </span>
         </div>
