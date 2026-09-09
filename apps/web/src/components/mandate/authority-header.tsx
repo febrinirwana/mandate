@@ -30,7 +30,7 @@ export function AuthorityHeader({
 
   return (
     <header
-      className={`grid gap-6 border-b border-rule pb-8 md:grid-cols-[1fr_auto] ${compact ? "pb-6" : ""}`}
+      className={`grid grid-cols-[minmax(0,1fr)] gap-6 border-b border-rule pb-8 md:grid-cols-[minmax(0,1fr)_auto] ${compact ? "pb-6" : ""}`}
     >
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-3">
@@ -46,9 +46,13 @@ export function AuthorityHeader({
         <h2 className="mt-3 break-all text-[1.375rem] font-medium tracking-[-0.015em]">{label}</h2>
         <div className="mono-data mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-ink-2">
           <CopyValue value={agent} />
-          <span className="text-ink-3" aria-hidden="true">·</span>
+          <span className="text-ink-3" aria-hidden="true">
+            ·
+          </span>
           <span>chain {chain}</span>
-          <span className="text-ink-3" aria-hidden="true">·</span>
+          <span className="text-ink-3" aria-hidden="true">
+            ·
+          </span>
           <span>agent may act only through the immutable strategy</span>
         </div>
         {sentence && (
@@ -63,7 +67,7 @@ export function AuthorityHeader({
           </p>
         )}
       </div>
-      <div className="mono-data self-end text-right text-ink-3 max-md:self-start max-md:text-left">
+      <div className="mono-data min-w-0 max-w-full self-end text-right text-ink-3 max-md:self-start max-md:text-left">
         <div className="ledger-label">Strategy</div>
         <CopyValue value={strategyHash} className="mt-1 justify-end max-md:justify-start" />
       </div>

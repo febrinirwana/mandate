@@ -1,0 +1,16 @@
+import { defineConfig, devices } from "@playwright/test";
+
+export default defineConfig({
+  testDir: "./e2e",
+  timeout: 90_000,
+  fullyParallel: false,
+  workers: 1,
+  retries: 0,
+  reporter: "line",
+  use: {
+    baseURL: process.env.MANDATE_WEB_URL ?? "http://127.0.0.1:3100",
+    trace: "retain-on-failure",
+    screenshot: "only-on-failure",
+    ...devices["Desktop Chrome"],
+  },
+});

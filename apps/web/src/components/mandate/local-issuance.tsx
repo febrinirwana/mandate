@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Check, LockKeyhole } from "lucide-react";
 import { useMemo, useState } from "react";
 import { keccak256, stringToHex } from "viem";
@@ -138,7 +139,10 @@ export function LocalIssuance({
         </div>
         <div className="self-start border border-rule bg-raised px-4 py-3 text-right">
           <p className="ledger-label text-ink-3">Local owner</p>
-          <p className="mono-data mt-1">
+          <p
+            aria-label={maker ? `Local owner ${maker}` : "Local owner not connected"}
+            className="mono-data mt-1"
+          >
             {maker ? `${maker.slice(0, 6)}…${maker.slice(-4)}` : "Not connected"}
           </p>
         </div>
@@ -209,8 +213,20 @@ export function LocalIssuance({
             onClick={() => void runNext()}
             disabled={!strategy || !maker || readiness.kind !== "READY" || state.completed === 4}
           >
-            {state.completed === 4 ? "Authority active" : step[state.completed]}
+            {state.completed === 4
+              ? "Authority active"
+              : state.kind === "SUBMITTED"
+                ? "Check transaction receipt"
+                : step[state.completed]}
           </Button>
+          {state.completed === 4 && strategy && (
+            <Link
+              href={`/mandates/${strategyHash(strategy)}`}
+              className="mt-3 inline-flex min-h-11 items-center border border-rule px-4 text-[0.75rem] font-semibold uppercase tracking-[0.08em] transition-colors hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            >
+              Inspect active authority
+            </Link>
+          )}
           {message && (
             <p role="status" className="mono-data mt-3 text-ink-2">
               {message}

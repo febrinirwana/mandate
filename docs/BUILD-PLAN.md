@@ -181,16 +181,16 @@ Acceptance: database deletion permits chain reconstruction; replay is idempotent
 
 **Files:** create `apps/web` routes/components/styles/tests according to DESIGN-SYSTEMS.
 
-- [ ] Build read-only landing and mandate inspection first; no wallet required.
-- [ ] Build four-step owner issuance with exact field validation, human summary, ABI table, transaction sequence, and receipt states.
-- [ ] Build authority header, constraint ledger, Aqua physical/virtual distinction, simulation gate, flow trace, revocation console, and receipt plate.
-- [ ] Integrate wallet signing for ENS setup, token approvals, Aqua ship/dock, Mandate activation/revoke; preserve state on rejection.
-- [ ] Integrate agent/manual execution path without exposing server signer secrets.
-- [ ] Implement loading, stale, RPC outage, ENS mismatch, route revert, wallet rejection, submitted, confirmed, reverted, and reorged states.
-- [ ] Meet WCAG 2.2 AA, keyboard/focus, full accessible addresses, 44px targets, reduced motion, and 375px layout.
-- [ ] Use CSS/Motion only; add GSAP only with a recorded need and performance check.
-- [ ] Drive the actual local surface with Playwright through issue, inspect, simulate pass, simulate fail, execute, receipt, revoke, repeated fail, wallet reject, and narrow viewport.
-- [ ] Commit `feat: ship Mandate authority ledger experience`.
+- [x] Build read-only landing and mandate inspection first; no wallet required.
+- [x] Build four-step owner issuance with exact field validation, human summary, ABI table, transaction sequence, and receipt states.
+- [x] Build authority header, constraint ledger, Aqua physical/virtual distinction, simulation gate, flow trace, revocation console, and receipt plate.
+- [x] Integrate wallet signing for ENS setup, token approvals, Aqua ship/dock, Mandate activation/revoke; preserve state on rejection.
+- [x] Integrate agent/manual execution path without exposing server signer secrets.
+- [x] Implement loading, stale, RPC outage, ENS mismatch, route revert, wallet rejection, submitted, confirmed, reverted, and reorged states.
+- [x] Meet WCAG 2.2 AA, keyboard/focus, full accessible addresses, 44px targets, reduced motion, and 375px layout.
+- [x] Use CSS/Motion only; add GSAP only with a recorded need and performance check.
+- [x] Drive the actual local surface with Playwright through issue, inspect, simulate pass, simulate fail, execute, receipt, revoke, repeated fail, wallet reject, and narrow viewport.
+- [x] Commit `feat: ship Mandate authority ledger experience`.
 
 Acceptance: a new viewer can state who may act, what can move, remaining cap, expiry, and revoke path in ten seconds; browser proof covers real local chain behavior.
 
