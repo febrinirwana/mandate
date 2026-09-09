@@ -20,7 +20,6 @@ const profile: PolicyProfileV1 = {
 
 const draft: PolicyDraftV1 = {
   version: 1,
-  intent: "Let Nova swap up to 1,000 USDC for WETH until 2030.",
   agent: "Nova",
   tokenIn: "USDC",
   tokenOut: "WETH",

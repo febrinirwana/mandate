@@ -58,7 +58,7 @@ WORKER_BATCH_SIZE=25
 WORKER_POLL_INTERVAL_MS=15000
 ```
 
-For the Next.js authority composer, create the ignored `apps/web/.env.local` with `MANDATE_CHAIN_ID=11155111`, the same `SEPOLIA_MANDATE_APP`, `MANDATE_API_ORIGIN`, and `NEXT_PUBLIC_PRIVY_APP_ID`. `MANDATE_POLICY_PROFILE` is a JSON object containing the verified agent name/address, ENS registry/resolver/label/node, supported input/output token symbols/addresses/decimals, and audited route target/selector. These are public onchain values but must be sourced from a verified deployment record; the composer fails closed when the profile is absent or malformed. `POLICY_AI_ENDPOINT`, `POLICY_AI_API_KEY`, and `POLICY_AI_MODEL` configure optional server-side structured policy drafting and must not be exposed with `NEXT_PUBLIC_`.
+For the Next.js authority composer, create the ignored `apps/web/.env.local` with `MANDATE_CHAIN_ID=11155111`, the same `SEPOLIA_MANDATE_APP`, `MANDATE_API_ORIGIN`, and `NEXT_PUBLIC_PRIVY_APP_ID`. `MANDATE_POLICY_PROFILE` is a JSON object containing the verified agent name/address, ENS registry/resolver/label/node, supported input/output token symbols/addresses/decimals, and audited route target/selector. These are public onchain values but must be sourced from a verified deployment record; the composer fails closed when the profile is absent or malformed. In Privy Dashboard, enable Ethereum embedded wallets and a Sepolia smart wallet for this App ID; enable gas sponsorship only after restricting it to this app's approved transaction policy.
 
 Rules:
 
@@ -159,7 +159,7 @@ pnpm --parallel --filter @mandate/web --filter @mandate/api --filter @mandate/wo
 - API: [http://localhost:3001/openapi.json](http://localhost:3001/openapi.json), configurable through `API_PORT`.
 - Worker: no HTTP port. It polls pending observed executions and commits evidence only after canonical-chain confirmation.
 
-The web surface currently renders clearly labeled synthetic demonstration data; it does not yet call the API. Use the API directly to test live Sepolia reads and receipt evidence.
+The web surface uses same-origin typed API routes for mandate inspection, simulation, execution lookup, and receipt audit. It never treats unavailable or stale chain data as a green state.
 
 ## 10. Bazantic setup
 

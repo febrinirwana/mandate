@@ -60,7 +60,6 @@ export function parsePolicyProfile(value: string | undefined): PolicyProfileV1 |
 
 export type PolicyDraftV1 = {
   version: 1;
-  intent: string;
   agent: string;
   tokenIn: string;
   tokenOut: string;
@@ -110,7 +109,7 @@ export function compilePolicy(
   profile: PolicyProfileV1,
   context: PolicyCompilationContext,
 ): StrategyV1 {
-  if (draft.version !== 1 || !draft.intent.trim()) throw new Error("policy intent is required");
+  if (draft.version !== 1) throw new Error("unsupported policy version");
   if (draft.agent !== profile.agent.name) throw new Error("agent is not in the trusted policy profile");
   if (draft.tokenIn !== profile.tokenIn.symbol || draft.tokenOut !== profile.tokenOut.symbol) {
     throw new Error("asset pair is not in the trusted policy profile");

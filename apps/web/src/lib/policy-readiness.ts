@@ -62,7 +62,7 @@ export async function checkPolicyReadiness({ mandateApp, profile, rpcUrl, now = 
     if (code.some((value) => !hasCode(value))) return { kind: "BLOCKED", reason: "A configured authority contract has no live code." };
 
     const aquaData = encodeFunctionData({ abi: aquaAbi, functionName: "AQUA" });
-    const aqua = decodeFunctionResult({ abi: aquaAbi, functionName: "AQUA", data: await call(fetcher, rpcUrl, mandateApp, aquaData) }) as Address;
+    const aqua = decodeFunctionResult({ abi: aquaAbi, functionName: "AQUA", data: await call(fetcher, rpcUrl, mandateApp, aquaData) });
     if (!hasCode(await rpc(fetcher, rpcUrl, "eth_getCode", [aqua, "latest"]))) return { kind: "BLOCKED", reason: "The Mandate app is not bound to a live Aqua deployment." };
 
     const labelId = BigInt(keccak256(stringToHex(profile.ens.label)));
