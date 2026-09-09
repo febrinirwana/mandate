@@ -109,6 +109,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@mandate/agent':
+        specifier: workspace:*
+        version: link:../agent
       '@mandate/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts

@@ -13,3 +13,4 @@ export {
   type DedicatedKeystoreConfiguration,
   type MandateExecutionSigner,
 } from "./signer.js";
+export { prepareManualExecution, runAutomatedExecution } from "./runtime.js";
