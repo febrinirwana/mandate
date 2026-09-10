@@ -63,7 +63,7 @@
 
 **Files:**
 
-- Create: `skill/SKILL.md`
+- Create: `.agents/skills/mandate-constrained-execution/SKILL.md`
 - Create: `evals/agent-runtime.ts`, `evals/unsafe-raw-signer.ts`
 - Test: `apps/agent/test/evals.test.ts`, `apps/agent/test/public-api.test.ts`
 - Modify: `.env.example`, `docs/BUILD-PLAN.md`
