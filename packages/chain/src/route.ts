@@ -10,6 +10,7 @@ import {
   type Hex,
 } from "viem";
 import { z } from "zod";
+import type { RouteAssessmentReason } from "@mandate/domain";
 
 const DECIMAL = /^(?:0|[1-9][0-9]*)$/;
 const SLIPPAGE = /^(?:0|[1-9][0-9]*)(?:\.[0-9]+)?$/;
@@ -20,6 +21,20 @@ export const ONEINCH_AGGREGATION_ROUTER_V6 = "0x111111125421cA6dc452d289314280a0
 export const CLASSIC_SWAP_SELECTOR = "0x07ed2379" as const;
 export const CLASSIC_SWAP_SCHEMA =
   "swap(address,(address,address,address,address,uint256,uint256,uint256),bytes)";
+
+export class RouteAdmissionError extends Error {
+  constructor(
+    readonly reason: RouteAssessmentReason,
+    message: string,
+  ) {
+    super(message);
+    this.name = "RouteAdmissionError";
+  }
+}
+
+function rejectRoute(reason: RouteAssessmentReason, message: string): never {
+  throw new RouteAdmissionError(reason, message);
+}
 
 export const aggregationRouterV6Abi = [
   {
@@ -157,35 +172,46 @@ export function admitClassicSwapRoute(
   expectation: RouteExpectation,
   requestId: string,
 ): AdmittedClassicSwapRoute {
-  if (expectation.chainId !== 1) throw new Error("only Ethereum mainnet routes are admitted");
-  if (requestId.trim().length === 0) throw new Error("1inch response did not include a request ID");
+  if (expectation.chainId !== 1)
+    rejectRoute("ONEINCH_RESPONSE_INVALID", "only Ethereum mainnet routes are admitted");
+  if (requestId.trim().length === 0)
+    rejectRoute("ONEINCH_RESPONSE_INVALID", "1inch response did not include a request ID");
 
-  const response = classicSwapResponseSchema.parse(input);
+  const parsed = classicSwapResponseSchema.safeParse(input);
+  if (!parsed.success) rejectRoute("ONEINCH_RESPONSE_INVALID", "1inch response schema is invalid");
+  const response = parsed.data;
   const target = getAddress(response.tx.to);
   const caller = getAddress(response.tx.from);
   const tokenIn = getAddress(expectation.srcToken);
   const tokenOut = getAddress(expectation.dstToken);
 
   if (target !== getAddress(expectation.router))
-    throw new Error("route target differs from admitted router");
+    rejectRoute("TARGET_MISMATCH", "route target differs from admitted router");
   if (caller !== getAddress(expectation.caller))
-    throw new Error("route caller differs from Mandate app");
+    rejectRoute("CALLER_MISMATCH", "route caller differs from Mandate app");
   if (
     expectation.protocols.length === 0 ||
     expectation.protocols.some((protocol) => !PROTOCOL.test(protocol))
   ) {
-    throw new Error("route expectation contains no valid liquidity source");
+    rejectRoute("ONEINCH_RESPONSE_INVALID", "route expectation contains no valid liquidity source");
   }
-  if (tokenIn === tokenOut) throw new Error("route tokens must differ");
-  if (BigInt(response.tx.value) !== 0n) throw new Error("route requires native value");
+  if (tokenIn === tokenOut) rejectRoute("TOKEN_MISMATCH", "route tokens must differ");
+  if (BigInt(response.tx.value) !== 0n)
+    rejectRoute("NATIVE_VALUE_NONZERO", "route requires native value");
 
   const calldata = response.tx.data;
   if (calldata.slice(0, 10).toLowerCase() !== CLASSIC_SWAP_SELECTOR) {
-    throw new Error("route selector is not the admitted Classic Swap function");
+    rejectRoute("SELECTOR_MISMATCH", "route selector is not the admitted Classic Swap function");
   }
 
-  const decoded = decodeFunctionData({ abi: aggregationRouterV6Abi, data: calldata });
-  if (decoded.functionName !== "swap") throw new Error("unsupported route function");
+  let decoded;
+  try {
+    decoded = decodeFunctionData({ abi: aggregationRouterV6Abi, data: calldata });
+  } catch {
+    rejectRoute("ONEINCH_RESPONSE_INVALID", "route calldata cannot be decoded");
+  }
+  if (decoded.functionName !== "swap")
+    rejectRoute("SELECTOR_MISMATCH", "unsupported route function");
   const [executorAddress, description, executorData] = decoded.args;
   const executor = getAddress(executorAddress);
   const recipient = getAddress(description.dstReceiver);
@@ -194,28 +220,38 @@ export function admitClassicSwapRoute(
   const decodedTokenOut = getAddress(description.dstToken);
 
   if (executor === "0x0000000000000000000000000000000000000000") {
-    throw new Error("route executor is zero");
+    rejectRoute("ROUTE_EXECUTOR_INVALID", "route executor is zero");
   }
   if (sourceReceiver !== executor) {
-    throw new Error("route requires callback custody outside the admitted executor");
+    rejectRoute(
+      "CALLBACK_CUSTODY_UNSAFE",
+      "route requires callback custody outside the admitted executor",
+    );
   }
   if (recipient !== getAddress(expectation.recipient))
-    throw new Error("route recipient is not the Mandate app");
+    rejectRoute("RECIPIENT_MISMATCH", "route recipient is not the Mandate app");
   if (decodedTokenIn !== tokenIn || decodedTokenOut !== tokenOut) {
-    throw new Error("route calldata token pair differs from the request");
+    rejectRoute("TOKEN_MISMATCH", "route calldata token pair differs from the request");
   }
   if (description.amount !== expectation.amount)
-    throw new Error("route does not spend the exact requested input");
+    rejectRoute("AMOUNT_MISMATCH", "route does not spend the exact requested input");
   if (description.flags !== 0n) {
-    throw new Error("route enables partial fill, extra native value, or Permit2");
+    rejectRoute(
+      "PARTIAL_FILL_ENABLED",
+      "route enables partial fill, extra native value, or Permit2",
+    );
   }
   if (
     description.minReturnAmount <= 0n ||
     description.minReturnAmount > BigInt(response.dstAmount)
   ) {
-    throw new Error("route minimum output is invalid for the quoted output");
+    rejectRoute(
+      "ONEINCH_RESPONSE_INVALID",
+      "route minimum output is invalid for the quoted output",
+    );
   }
-  if (executorData === "0x") throw new Error("route contains no admitted liquidity call");
+  if (executorData === "0x")
+    rejectRoute("ROUTE_EXECUTOR_INVALID", "route contains no admitted liquidity call");
 
   const protocols = [...new Set(expectation.protocols)].sort();
 

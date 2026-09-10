@@ -198,14 +198,14 @@ Acceptance: a new viewer can state who may act, what can move, remaining cap, ex
 
 **Files:** create `apps/agent`, `skill/SKILL.md`, `evals`, and tests.
 
-- [ ] Define signer interface that accepts only validated Mandate execution requests; no generic transaction/sign message method.
-- [ ] Load encrypted dedicated keystore in server-only process; assert chain/app/strategy/selector/amount policy before signing.
-- [ ] Implement flow: inspect -> simulate -> require fresh pass -> sign/send -> wait receipt -> audit.
-- [ ] Add manual mode using a dedicated browser wallet for environments where automated key custody is inappropriate.
-- [ ] Write public skill with exact safety rules, tool schemas, reason semantics, and examples; no credentials or hard-coded demo success.
-- [ ] Evaluate fixed prompts against an unconstrained raw signer baseline: wrong target, cap breach, stale simulation, revoked identity, malicious route, unknown evidence.
-- [ ] Record whether Mandate prevents prohibited submissions and where onchain reverts remain the final boundary.
-- [ ] Commit `feat: constrain dedicated Mandate agent signer`.
+- [x] Define signer interface that accepts only validated Mandate execution requests; no generic transaction/sign message method.
+- [x] Load encrypted dedicated keystore in server-only process; assert chain/app/strategy/selector/amount policy before signing.
+- [x] Implement flow: inspect -> simulate -> require fresh pass -> sign/send -> wait receipt -> audit.
+- [x] Add manual mode using a dedicated browser wallet for environments where automated key custody is inappropriate.
+- [x] Write public skill with exact safety rules, tool schemas, reason semantics, and examples; no credentials or hard-coded demo success.
+- [x] Evaluate fixed prompts against an unconstrained raw signer baseline: wrong target, cap breach, stale simulation, revoked identity, malicious route, unknown evidence.
+- [x] Record whether Mandate prevents prohibited submissions and where onchain reverts remain the final boundary.
+- [x] Commit `feat: constrain dedicated Mandate agent signer`.
 
 Acceptance: compromised decision logic cannot ask project signer to submit an arbitrary transaction; onchain contract still rejects bypass attempts sent outside the runtime.
 
@@ -213,14 +213,14 @@ Acceptance: compromised decision logic cannot ask project signer to submit an ar
 
 **Files:** update `apps/api` audit service; create `integrations/bazantic` schemas/fixtures/instructions; update evidence docs.
 
-- [ ] Re-read current Bazantic prize and product docs; create account and record non-secret identifiers.
-- [ ] Register Mandate Inspector as a new paid x402/MPP service with smallest practical test price.
-- [ ] Connect one live 1inch trace/data service and Mandate Inspector in one Recipe keyed by exact chain/tx hash.
-- [ ] Validate provider response schemas, hashes, timeouts, and disagreement behavior; no provider alone may manufacture `COMPLIANT`.
-- [ ] Execute the Recipe from request and payment through combined response against the real demo transaction.
-- [ ] Record payment/evidence/request IDs and a redacted screen capture; include required account attribution in submission.
-- [ ] Add contract/integration tests for `NON_COMPLIANT`, `UNKNOWN`, mismatched tx, and unavailable provider.
-- [ ] Commit `feat: publish paid Mandate receipt audit Recipe`.
+- [x] Re-read current Bazantic prize and product docs; create account and record non-secret identifiers.
+- [x] Register Mandate Inspector as a new paid x402/MPP service with smallest practical test price.
+- [x] Connect one live 1inch route service and Mandate Inspector in one Recipe bound to exact strategy and route inputs.
+- [x] Validate provider response schemas, hashes, timeouts, and disagreement behavior; no provider alone may manufacture `PASS`.
+- [x] Execute the published Recipe and replay its exact two-step path through paid 1inch and Mandate x402 gateways against a live route.
+- [x] Record Recipe, grant, payment, request, block, and evidence IDs plus redacted screen captures and required account attribution.
+- [x] Add domain, chain, and API tests for `PASS`, `FAIL`, `UNKNOWN`, mismatched bindings, and unavailable provider.
+- [x] Commit `feat: publish paid Mandate receipt audit Recipe`.
 
 Acceptance: a judge can replay the working Recipe and see distinct, necessary contributions from 1inch and Mandate.
 

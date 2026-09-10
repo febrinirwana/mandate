@@ -1,0 +1,31 @@
+{
+  "name": "@mandate/agent",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./manual": "./src/manual.ts"
+  },
+  "scripts": {
+    "eval": "tsx ../../evals/agent-runtime.ts",
+    "lint": "eslint src test scripts",
+    "smoke:local": "tsx scripts/smoke-local.ts",
+    "start": "tsx src/process.ts",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@mandate/chain": "workspace:*",
+    "@mandate/contracts": "workspace:*",
+    "@mandate/domain": "workspace:*",
+    "viem": "2.56.3",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "tsx": "4.23.13",
+    "typescript": "5.9.3",
+    "vitest": "5.0.0"
+  }
+}

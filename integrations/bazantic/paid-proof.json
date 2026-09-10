@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "capturedAt": "2026-09-10T07:31:03.982Z",
+  "account": {
+    "username": "Febri",
+    "payer": "0x6835A6c084c011452Eeecf130745114CE0783A19",
+    "grantId": "c58a779a-393d-475f-b63d-405fff8566e6",
+    "grantCapUsd": "0.01",
+    "network": "base",
+    "grantStatus": "revoked"
+  },
+  "recipe": {
+    "id": "05132729-6750-4183-b8fa-4f70b5061b21",
+    "handle": "mandate-1inch-route-assurance",
+    "gatewayMcpUrl": "https://jtc64fcl6jbgzbohqrkfeu4may.bazgateway.com/recipe-mcp",
+    "model": "anthropic/claude-haiku-4.5",
+    "httpStatus": 200,
+    "payment": null,
+    "result": "PASS",
+    "strategyHash": "0x083eeb4cc34e1bfb06191876baf16920e56eed60c6163019fffc7db358a719e1",
+    "assessedAt": "2026-09-10T07:28:56.667Z",
+    "oneInchRequestId": "c69a1f4e-ad78-4077-a014-82bd01d791cd",
+    "evidence": [
+      {
+        "provider": "1inch-classic-swap-v6.1",
+        "responseHash": "0xf9ec9f2bceaac5682c6a4a42efa79fcd607b212d62aef7d6490d13f75124c769"
+      },
+      {
+        "provider": "mandate-strategy",
+        "responseHash": "0x083eeb4cc34e1bfb06191876baf16920e56eed60c6163019fffc7db358a719e1"
+      }
+    ]
+  },
+  "paidIngredientReplay": {
+    "inputBinding": {
+      "mandateApp": "0x478cd5c6c2aa46d8e246e0b06bb971a855c443ee",
+      "amountIn": "100000000000000000",
+      "agentMinOut": "1",
+      "executionDeadline": "1789025760",
+      "protocols": ["UNISWAP_V3"]
+    },
+    "oneInch": {
+      "gatewayId": "gkrbmuh3urcytk6aumsvf2kyxm",
+      "tool": "getClassicSwapRoute",
+      "httpStatus": 200,
+      "amountBaseUnits": "10",
+      "amountUsd": "0.00001",
+      "settlementTx": "0x19faef678b5585b9f9a0852e4c3be528d9d94408174a8e4681bc02f3e00f8c6a",
+      "blockNumber": "51118034",
+      "blockHash": "0x7231c4cc0213213e1fd39e92e8aa335ab0eb18170ed5d651934c823da697e38a",
+      "route": {
+        "dstAmount": "245994143",
+        "target": "0x111111125421ca6dc452d289314280a0f8842a65",
+        "caller": "0x478cd5c6c2aa46d8e246e0b06bb971a855c443ee",
+        "nativeValue": "0",
+        "selector": "0x07ed2379"
+      }
+    },
+    "mandate": {
+      "gatewayId": "soinswyiozdb7caskqudzeojgq",
+      "tool": "assessOneInchRoute",
+      "httpStatus": 200,
+      "amountBaseUnits": "10",
+      "amountUsd": "0.00001",
+      "settlementTx": "0x7897578d829caa367a8fd368d30ad0d712d17d063cdc9c4c6c9c9202c1ee3938",
+      "blockNumber": "51118060",
+      "blockHash": "0x3238897f15f4686f34eb6f041cecac31c418d503b8117a04372337f8d2168447",
+      "result": "PASS",
+      "reasons": [],
+      "strategyHash": "0x35926e0c5e28814df4d489361a10f5e340fd8fd0df0862bed2b445c09a5ffc99",
+      "assessedAt": "2026-09-10T07:31:03.982Z",
+      "routeRequestId": "bazantic-payment-0x19faef678b5585b9f9a0852e4c3be528d9d94408174a8e4681bc02f3e00f8c6a",
+      "checks": [
+        {
+          "code": "PROVIDER_RESPONSE",
+          "result": "PASS"
+        },
+        {
+          "code": "ROUTE_BINDINGS",
+          "result": "PASS"
+        },
+        {
+          "code": "POLICY_TARGET",
+          "result": "PASS"
+        },
+        {
+          "code": "POLICY_SELECTOR",
+          "result": "PASS"
+        },
+        {
+          "code": "PER_CALL_CAP",
+          "result": "PASS"
+        },
+        {
+          "code": "RATE_FLOOR",
+          "result": "PASS"
+        },
+        {
+          "code": "ROUTE_MINIMUM",
+          "result": "PASS"
+        },
+        {
+          "code": "EXECUTION_WINDOW",
+          "result": "PASS"
+        }
+      ],
+      "evidence": [
+        {
+          "provider": "1inch-classic-swap-v6.1",
+          "responseHash": "0x935c233ed0398ef02a59bd1560562dbf380beee437fbaf6da4a6c49abec34d59"
+        },
+        {
+          "provider": "mandate-strategy",
+          "responseHash": "0x35926e0c5e28814df4d489361a10f5e340fd8fd0df0862bed2b445c09a5ffc99"
+        }
+      ]
+    },
+    "settlementNote": "Both test gateways are owned by the same Bazantic account as the payer, so each successful 10-base-unit USDC transfer has identical from/to and no net account balance change."
+  }
+}

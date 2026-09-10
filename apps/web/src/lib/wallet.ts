@@ -1,3 +1,4 @@
+import { revalidatePrepared, type PreparedExecution } from "@mandate/agent/manual";
 import type { MandateSnapshotV1, SimulationRequestV1, StrategyV1 } from "@mandate/domain";
 import { mandateAquaAppAbi } from "@mandate/contracts/mandate-aqua-app";
 import { decodeFunctionResult, encodeFunctionData, parseAbi, type Address, type Hex } from "viem";
@@ -197,6 +198,11 @@ export function submitExecution(request: SimulationRequestV1): Promise<WalletSta
     intent.request.mandateApp,
     intent.calldata,
   );
+}
+
+export async function submitPreparedExecution(prepared: PreparedExecution): Promise<WalletState> {
+  const request = await revalidatePrepared(prepared);
+  return send(request.chainId, request.account, request.to, request.data);
 }
 
 export function revokeMandate(

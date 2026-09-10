@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@mandate/contracts": "workspace:*",
+    "@mandate/agent": "workspace:*",
     "@mandate/domain": "workspace:*",
     "@privy-io/react-auth": "^3.41.0",
     "@radix-ui/react-dialog": "^1.1.23",
