@@ -56,15 +56,63 @@ const snapshot = {
   result: "PASS" as const,
 };
 
+const routeRequest = {
+  version: 1 as const,
+  chainId: "1" as const,
+  mandateApp: address("a"),
+  strategy: {
+    ...snapshot.strategy,
+    tokenIn: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    tokenOut: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+    swapTarget: "0x111111125421ca6dc452d289314280a0f8842a65",
+    swapSelector: "0x07ed2379" as const,
+    maxInputPerCall: "100000000000000000",
+    maxInputTotal: "100000000000000000",
+    validAfter: "1789000000",
+    validUntil: "1789005600",
+  },
+  amountIn: "100000000000000000",
+  agentMinOut: "1",
+  executionDeadline: "1789002300",
+  protocols: ["UNISWAP_V3"],
+  provider: {
+    status: "UNAVAILABLE" as const,
+    observedAt: "2026-09-10T01:00:00.000Z",
+    reason: "TIMEOUT" as const,
+  },
+};
+
+const routeAssessment = {
+  version: 1 as const,
+  result: "UNKNOWN" as const,
+  reasons: ["ONEINCH_UNAVAILABLE" as const],
+  chainId: "1" as const,
+  strategyHash: hash("c"),
+  assessedAt: "2026-09-10T01:00:01.000Z",
+  request: {
+    mandateApp: routeRequest.mandateApp,
+    amountIn: routeRequest.amountIn,
+    agentMinOut: routeRequest.agentMinOut,
+    executionDeadline: routeRequest.executionDeadline,
+  },
+  route: null,
+  checks: [{ code: "PROVIDER_RESPONSE" as const, result: "UNKNOWN" as const }],
+  evidence: [
+    { provider: "1inch-classic-swap-v6.1" as const, responseHash: hash("d") },
+    { provider: "mandate-strategy" as const, responseHash: hash("c") },
+  ],
+};
+
 const services = {
   readMandate: vi.fn().mockResolvedValue(snapshot),
   simulate: vi.fn(),
   readExecution: vi.fn(),
   auditReceipt: vi.fn(),
+  assessRoute: vi.fn().mockResolvedValue(routeAssessment),
 };
 
 describe("Mandate API", () => {
-  it("exposes generated OpenAPI for exactly four versioned operations", async () => {
+  it("exposes generated OpenAPI for exactly five versioned operations", async () => {
     const response = await createApp(services).request("/openapi.json");
     const document = (await response.json()) as { paths: Record<string, unknown> };
 
@@ -74,6 +122,7 @@ describe("Mandate API", () => {
       "/v1/simulations",
       "/v1/executions/{chainId}/{txHash}",
       "/v1/receipts/{chainId}/{txHash}/audit",
+      "/v1/routes/1inch/assess",
     ]);
   });
 
@@ -88,6 +137,26 @@ describe("Mandate API", () => {
     expect(valid.status).toBe(200);
     expect(valid.headers.get("x-request-id")).toBe("req-12345678");
     expect(await valid.json()).toEqual(snapshot);
+  });
+
+  it("returns a schema-bound route assessment without upgrading provider uncertainty", async () => {
+    const response = await createApp(services).request("/v1/routes/1inch/assess", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-request-id": "route-12345678" },
+      body: JSON.stringify(routeRequest),
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-request-id")).toBe("route-12345678");
+    expect(await response.json()).toEqual(routeAssessment);
+    expect(services.assessRoute).toHaveBeenCalledWith(routeRequest);
+
+    const invalid = await createApp(services).request("/v1/routes/1inch/assess", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ ...routeRequest, chainId: "11155111" }),
+    });
+    expect(invalid.status).toBe(400);
   });
 
   it("caps request bodies before parsing", async () => {

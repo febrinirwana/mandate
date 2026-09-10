@@ -10,6 +10,8 @@ import {
   ReasonCodeSchema,
   MandateSnapshotV1Schema,
   ReceiptAuditV1Schema,
+  RouteAssessmentRequestV1Schema,
+  RouteAssessmentV1Schema,
   StrategyV1Schema,
   VenueManifestV1Schema,
   jsonSchemas,
@@ -231,6 +233,107 @@ describe("ReceiptAuditV1Schema", () => {
         ],
       }),
     ).toBeDefined();
+  });
+});
+
+describe("RouteAssessment schemas", () => {
+  const request = {
+    version: 1,
+    chainId: "1",
+    mandateApp: address("a"),
+    strategy: {
+      ...validStrategy,
+      swapTarget: "0x111111125421ca6dc452d289314280a0f8842a65",
+      swapSelector: "0x07ed2379",
+    },
+    amountIn: "100000000000000000",
+    agentMinOut: "240000000",
+    executionDeadline: "1788540300",
+    protocols: ["UNISWAP_V3"],
+    provider: {
+      status: "AVAILABLE",
+      requestId: "request-123",
+      requestedAt: "2026-09-10T01:00:00.000Z",
+      response: {
+        dstAmount: "250000000",
+        tx: {
+          from: address("a"),
+          to: "0x111111125421ca6dc452d289314280a0f8842a65",
+          data: "0x07ed2379abcd",
+          value: "0",
+        },
+      },
+    },
+  } as const;
+
+  const assessment = {
+    version: 1,
+    result: "PASS",
+    reasons: [],
+    chainId: "1",
+    strategyHash: hash("1"),
+    assessedAt: "2026-09-10T01:00:01.000Z",
+    request: {
+      mandateApp: address("a"),
+      amountIn: "100000000000000000",
+      agentMinOut: "240000000",
+      executionDeadline: "1788540300",
+    },
+    route: {
+      provider: "1inch-classic-swap-v6.1",
+      requestId: "request-123",
+      target: "0x111111125421ca6dc452d289314280a0f8842a65",
+      selector: "0x07ed2379",
+      executor: address("b"),
+      caller: address("a"),
+      recipient: address("a"),
+      tokenIn: address("6"),
+      tokenOut: address("7"),
+      amountIn: "100000000000000000",
+      quotedAmountOut: "250000000",
+      routeMinimumOut: "240000000",
+      nativeValue: "0",
+      allowPartialFill: false,
+      protocols: ["UNISWAP_V3"],
+    },
+    checks: [{ code: "ROUTE_BINDINGS", result: "PASS" }],
+    evidence: [
+      { provider: "1inch-classic-swap-v6.1", responseHash: hash("2") },
+      { provider: "mandate-strategy", responseHash: hash("1") },
+    ],
+  } as const;
+
+  it("round-trips strict provider input and fail-closed assessment output", () => {
+    expect(RouteAssessmentRequestV1Schema.parse(request)).toEqual(request);
+    expect(RouteAssessmentV1Schema.parse(assessment)).toEqual(assessment);
+    expect(
+      RouteAssessmentRequestV1Schema.safeParse({ ...request, amountIn: 100000000000000000n })
+        .success,
+    ).toBe(false);
+    expect(
+      RouteAssessmentRequestV1Schema.safeParse({ ...request, chainId: "11155111" }).success,
+    ).toBe(false);
+    expect(
+      RouteAssessmentRequestV1Schema.safeParse({
+        ...request,
+        provider: { ...request.provider, authorization: "Bearer secret" },
+      }).success,
+    ).toBe(false);
+  });
+
+  it("rejects a positive result when any required check is not PASS", () => {
+    expect(
+      RouteAssessmentV1Schema.safeParse({
+        ...assessment,
+        checks: [{ code: "PROVIDER_RESPONSE", result: "UNKNOWN" }],
+      }).success,
+    ).toBe(false);
+    expect(
+      RouteAssessmentV1Schema.safeParse({
+        ...assessment,
+        reasons: ["ONEINCH_UNAVAILABLE"],
+      }).success,
+    ).toBe(false);
   });
 });
 

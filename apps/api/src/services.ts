@@ -1,4 +1,9 @@
-import { ChainReadError, MandateChainService, StaleSimulationError } from "@mandate/chain";
+import {
+  ChainReadError,
+  MandateChainService,
+  StaleSimulationError,
+  assessClassicSwapRoute,
+} from "@mandate/chain";
 import { createCanonicalEvidenceRepository, createDatabase, simulationEvidence } from "@mandate/db";
 import { createPublicClient, http, isAddress, type Address, type Chain } from "viem";
 import { sepolia } from "viem/chains";
@@ -93,6 +98,7 @@ export function createProductionServices(): { services: ApiServices; close: () =
   const evidence = createCanonicalEvidenceRepository(database.db);
 
   const services: ApiServices = {
+    assessRoute: async (input) => assessClassicSwapRoute(input, new Date()),
     readMandate: (input) => translate(() => chain.readMandate(input)),
     readExecution: (input) =>
       translate(async () => {

@@ -213,13 +213,13 @@ Acceptance: compromised decision logic cannot ask project signer to submit an ar
 
 **Files:** update `apps/api` audit service; create `integrations/bazantic` schemas/fixtures/instructions; update evidence docs.
 
-- [ ] Re-read current Bazantic prize and product docs; create account and record non-secret identifiers.
-- [ ] Register Mandate Inspector as a new paid x402/MPP service with smallest practical test price.
-- [ ] Connect one live 1inch trace/data service and Mandate Inspector in one Recipe keyed by exact chain/tx hash.
-- [ ] Validate provider response schemas, hashes, timeouts, and disagreement behavior; no provider alone may manufacture `COMPLIANT`.
-- [ ] Execute the Recipe from request and payment through combined response against the real demo transaction.
+- [x] Re-read current Bazantic prize and product docs; create account and record non-secret identifiers.
+- [x] Register Mandate Inspector as a new paid x402/MPP service with smallest practical test price.
+- [x] Connect one live 1inch route service and Mandate Inspector in one Recipe bound to exact strategy and route inputs.
+- [x] Validate provider response schemas, hashes, timeouts, and disagreement behavior; no provider alone may manufacture `PASS`.
+- [ ] Execute the paid Recipe from request through combined response against a live 1inch route.
 - [ ] Record payment/evidence/request IDs and a redacted screen capture; include required account attribution in submission.
-- [ ] Add contract/integration tests for `NON_COMPLIANT`, `UNKNOWN`, mismatched tx, and unavailable provider.
+- [x] Add domain, chain, and API tests for `PASS`, `FAIL`, `UNKNOWN`, mismatched bindings, and unavailable provider.
 - [ ] Commit `feat: publish paid Mandate receipt audit Recipe`.
 
 Acceptance: a judge can replay the working Recipe and see distinct, necessary contributions from 1inch and Mandate.

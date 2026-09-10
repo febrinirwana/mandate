@@ -4,11 +4,15 @@ import {
   MandateSnapshotV1Schema,
   PositiveUint256StringSchema,
   ReceiptAuditV1Schema,
+  RouteAssessmentRequestV1Schema,
+  RouteAssessmentV1Schema,
   SimulationRequestV1Schema,
   SimulationV1Schema,
   type ExecutionV1,
   type MandateSnapshotV1,
   type ReceiptAuditV1,
+  type RouteAssessmentRequestV1,
+  type RouteAssessmentV1,
   type SimulationRequestV1,
   type SimulationV1,
 } from "@mandate/domain";
@@ -35,6 +39,7 @@ export interface ApiServices {
   simulate(input: SimulationRequestV1): Promise<SimulationV1>;
   readExecution(input: { chainId: string; txHash: `0x${string}` }): Promise<ExecutionV1>;
   auditReceipt(input: { chainId: string; txHash: `0x${string}` }): Promise<ReceiptAuditV1>;
+  assessRoute(input: RouteAssessmentRequestV1): Promise<RouteAssessmentV1>;
 }
 
 export interface ApiOptions {
@@ -135,6 +140,7 @@ const executionRoute = createRoute({
 
 const auditRoute = createRoute({
   method: "get",
+  operationId: "auditMandateReceipt",
   path: "/v1/receipts/{chainId}/{txHash}/audit",
   request: { params: TransactionPathSchema },
   responses: {
@@ -153,6 +159,32 @@ const auditRoute = createRoute({
     503: {
       content: { "application/json": { schema: ErrorSchema } },
       description: "Audit evidence unavailable",
+    },
+  },
+});
+
+const routeAssessmentRoute = createRoute({
+  method: "post",
+  path: "/v1/routes/1inch/assess",
+  operationId: "assessOneInchRoute",
+  request: {
+    body: {
+      required: true,
+      content: { "application/json": { schema: RouteAssessmentRequestV1Schema } },
+    },
+  },
+  responses: {
+    200: {
+      content: { "application/json": { schema: RouteAssessmentV1Schema } },
+      description: "Fail-closed 1inch route assessment against one immutable Mandate strategy",
+    },
+    400: {
+      content: { "application/json": { schema: ErrorSchema } },
+      description: "Invalid assessment request",
+    },
+    503: {
+      content: { "application/json": { schema: ErrorSchema } },
+      description: "Assessment unavailable",
     },
   },
 });
@@ -243,6 +275,9 @@ export function createApp(services: ApiServices, options: ApiOptions = {}) {
       200,
     );
   });
+  app.openapi(routeAssessmentRoute, async (context) =>
+    context.json(await services.assessRoute(context.req.valid("json")), 200),
+  );
 
   app.doc("/openapi.json", {
     openapi: "3.1.0",
