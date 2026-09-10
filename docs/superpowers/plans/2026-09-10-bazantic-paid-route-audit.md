@@ -178,13 +178,13 @@ Call `/openapi.json`, one valid route assessment, one unavailable assessment, an
 
 Use Bazantic's dashboard with upstream secrets entered only into secret credential fields. Confirm generated MCP URLs and operation names; never copy credential values into chat or files.
 
-- [ ] **Step 3: Create, draft-test, publish, and paid-test the Recipe**
+- [ ] **Step 3: Create, draft-test, publish, and execute the Recipe**
 
-Verify the Recipe invokes distinct 1inch and Mandate operations. A successful paid flow must return the same exact chain, route bindings, strategy hash, result, and evidence hashes as the Mandate response.
+Verify the public Recipe invokes distinct 1inch and Mandate operations and returns the exact Mandate result. Then replay the same two-step flow through both priced gateways with a capped grant, recording each canonical x402 settlement. Never claim Recipe-level payment when its MCP response contains no payment receipt.
 
 - [ ] **Step 4: Capture redacted submission evidence**
 
-Record non-secret account username, gateway/Recipe slugs or IDs, request/payment/evidence IDs, public links, UTC timestamp, and a screen capture with all credentials and unrelated account data hidden.
+Record non-secret account username, gateway/Recipe slugs or IDs, Recipe result bindings, grant ID, payment transactions, canonical blocks, evidence hashes, public links, UTC timestamp, and a screen capture with all credentials and unrelated account data hidden.
 
 ### Task 6: Release verification and exact commit
 
@@ -200,7 +200,7 @@ Record non-secret account username, gateway/Recipe slugs or IDs, request/payment
 
 - [ ] **Step 1: Run focused behavior smoke**
 
-Exercise one valid live 1inch response through the public paid Recipe, then submit an unavailable provider envelope and one mutated target payload. Observe `PASS`, `UNKNOWN`, and `FAIL` respectively.
+Exercise one valid live 1inch response through the public Recipe and through the paid two-gateway replay. Submit an unavailable provider envelope and one mutated target payload directly to the public assessor. Observe `PASS`, `UNKNOWN`, and `FAIL` respectively.
 
 - [ ] **Step 2: Run repository verification**
 

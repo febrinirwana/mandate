@@ -18,6 +18,7 @@ The Recipe binds `getClassicSwapRoute` first and `assessOneInchRoute` second. Th
 - `recipe.json`: exact published Recipe control definition, excluding server-generated owner/status/timestamp fields.
 - `fixtures/pass-request.json`: deterministic valid assessor request.
 - `fixtures/unavailable-request.json`: deterministic provider-timeout request that must remain `UNKNOWN`.
+- `paid-proof.json`: public identifiers, canonical Base settlement references, Recipe result bindings, and no credentials or raw payment authorization.
 
 The fixtures are direct inputs for `POST /v1/routes/1inch/assess`; they do not call or pay 1inch. The Recipe's live run obtains a fresh provider response instead.
 
@@ -27,9 +28,10 @@ The fixtures are direct inputs for `POST /v1/routes/1inch/assess`; they do not c
 2. Register the Mandate API OpenAPI document and price only the intended operations. The public gateway currently uses the minimum UI price of **1 millicent per call** (`10` USDC base units on Base).
 3. Create or update the Recipe from `recipe.json`, then confirm the two exact tool bindings before publication.
 4. Test the draft for tool/schema correctness. Bazantic labels this test path **No payment occurs**; it is not paid-flow evidence.
-5. Invoke the published Recipe from Bazantic's Recipe MCP server with a funded, capped spend grant or a funded self-custody Bazantic wallet. Record the payment reference and exact response evidence hashes.
+5. Invoke the published Recipe through `https://jtc64fcl6jbgzbohqrkfeu4may.bazgateway.com/recipe-mcp`.
+6. Replay its exact two-step path through the priced 1inch and Mandate gateways with a funded, capped spend grant; bind the paid 1inch response unmodified into the paid Mandate assessment.
 
-On 10 September 2026, Bazantic's published documentation described `baz recipe` commands, while public npm package `@bazantic/cli@0.8.0` did not expose them. The dashboard was therefore used for Recipe creation, test, publication, and binding verification. Do not replace the live paid step with the free draft test.
+On 10 September 2026, Bazantic's published documentation described `baz recipe` commands, while public npm package `@bazantic/cli@0.8.0` did not expose them. The dashboard was used for creation and the generated Recipe MCP URL for the public invocation. Bazantic returned `paid: null` for the Recipe-level call, while both direct ingredient calls produced canonical x402 settlements. `paid-proof.json` records this distinction rather than treating the free draft test or unpriced Recipe response as payment evidence.
 
 ## Trust boundary
 

@@ -98,7 +98,7 @@ export function createProductionServices(): { services: ApiServices; close: () =
   const evidence = createCanonicalEvidenceRepository(database.db);
 
   const services: ApiServices = {
-    assessRoute: async (input) => assessClassicSwapRoute(input, new Date()),
+    assessRoute: (input) => Promise.resolve(assessClassicSwapRoute(input, new Date())),
     readMandate: (input) => translate(() => chain.readMandate(input)),
     readExecution: (input) =>
       translate(async () => {

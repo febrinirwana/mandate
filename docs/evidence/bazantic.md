@@ -14,12 +14,12 @@ Recorded from the authenticated Bazantic dashboard on 10 September 2026:
 | Recipe name               | `Mandate 1inch Route Assurance`                    |
 | Recipe handle             | `mandate-1inch-route-assurance`                    |
 | Recipe ID                 | `05132729-6750-4183-b8fa-4f70b5061b21`             |
-| Published at              | `2026-09-10T05:30:15.187Z`                         |
+| Published at              | `2026-09-10T07:28:18.758Z`                         |
 | 1inch gateway ID          | `gkrbmuh3urcytk6aumsvf2kyxm`                       |
 | Mandate gateway ID        | `soinswyiozdb7caskqudzeojgq`                       |
 | 1inch MCP                 | `https://mandate-oneinch-route.bazgateway.com/mcp` |
 | Mandate MCP               | `https://mandate-inspector.bazgateway.com/mcp`     |
-| Recipe model              | `anthropic/claude-sonnet-4.6`                      |
+| Recipe model              | `anthropic/claude-haiku-4.5`                       |
 
 The Recipe binds exactly two tools, in order:
 
@@ -42,10 +42,27 @@ At `2026-09-10T06:23:41.823Z`, the public assessor returned the following consum
 
 The same strategy hash across the three rows proves that only provider availability/route evidence changed. A provider alone cannot create `PASS`: Mandate decodes the calldata and applies deterministic `FAIL > UNKNOWN > PASS` precedence.
 
-A live dashboard Recipe test also called both gateways and returned a Mandate `PASS` assessment with Recipe-visible 1inch request ID `ca48ca6d-476a-4e2c-b9c4-28922963a2f7` and strategy hash `0x64b1cf19842a0ae005496463a55eb0efb65fa391057d9cbd4bb126a5b491fdd4`. This proves composition, not payment; Bazantic explicitly labels that test path as unpaid.
+## Published Recipe execution
 
-## x402 payment boundary
+The public Recipe MCP gateway `https://jtc64fcl6jbgzbohqrkfeu4may.bazgateway.com/recipe-mcp` listed `mandate-1inch-route-assurance` and returned HTTP 200 from a live invocation at `2026-09-10T07:28:56.667Z`. The first two Sonnet attempts exceeded the gateway timeout; changing only the published model to `anthropic/claude-haiku-4.5` produced the complete result without changing the schema, prompt, or tool bindings.
 
-The Mandate audit gateway returned HTTP 402 with x402 version 2, exact scheme, Base network `eip155:8453`, USDC asset `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`, and amount `10` base units. The configured dashboard price is 1 millicent per call.
+The successful Recipe result was `PASS`, with 1inch request ID `c69a1f4e-ad78-4077-a014-82bd01d791cd`, strategy hash `0x083eeb4cc34e1bfb06191876baf16920e56eed60c6163019fffc7db358a719e1`, 1inch evidence hash `0xf9ec9f2bceaac5682c6a4a42efa79fcd607b212d62aef7d6490d13f75124c769`, and the same strategy hash as Mandate evidence. All eight deterministic checks returned `PASS`.
 
-The final paid Recipe invocation is not yet evidence-complete. The Bazantic hosted balance was `$0.00`, and its Add Funds flow requires a backup login method before funding. No payment reference exists yet. This repository therefore does **not** mark the paid-execution or full redacted-ID checklist items complete, and it does not relabel the unpaid dashboard test as paid proof.
+The Recipe MCP response contained `paid: null`: Bazantic's public Recipe gateway did not issue an x402 challenge. This is recorded rather than relabelled as a paid Recipe-level settlement.
+
+## x402 paid ingredient replay
+
+A verified, all-service spend grant `c58a779a-393d-475f-b63d-405fff8566e6` was capped at `0.01 USDC` on Base and revoked after the proof. The exact Recipe sequence was replayed through the two priced public gateways:
+
+| Step | Gateway/tool                 | Result                                                                                                   |                           Amount | Settlement                                                                                                                                                         |
+| ---- | ---------------------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1    | 1inch `getClassicSwapRoute`  | HTTP 200; target `0x111111125421ca6dc452d289314280a0f8842a65`; selector `0x07ed2379`; output `245994143` | `10` USDC base units (`0.00001`) | [`0x19faef678b5585b9f9a0852e4c3be528d9d94408174a8e4681bc02f3e00f8c6a`](https://basescan.org/tx/0x19faef678b5585b9f9a0852e4c3be528d9d94408174a8e4681bc02f3e00f8c6a) |
+| 2    | Mandate `assessOneInchRoute` | HTTP 200; `PASS`; all eight checks passed                                                                | `10` USDC base units (`0.00001`) | [`0x7897578d829caa367a8fd368d30ad0d712d17d063cdc9c4c6c9c9202c1ee3938`](https://basescan.org/tx/0x7897578d829caa367a8fd368d30ad0d712d17d063cdc9c4c6c9c9202c1ee3938) |
+
+The first receipt is canonical at Base block `51118034`, hash `0x7231c4cc0213213e1fd39e92e8aa335ab0eb18170ed5d651934c823da697e38a`. The second is canonical at block `51118060`, hash `0x3238897f15f4686f34eb6f041cecac31c418d503b8117a04372337f8d2168447`. Both receipt statuses are `1`.
+
+The paid Mandate result binds route request ID `bazantic-payment-0x19faef678b5585b9f9a0852e4c3be528d9d94408174a8e4681bc02f3e00f8c6a`, strategy hash `0x35926e0c5e28814df4d489361a10f5e340fd8fd0df0862bed2b445c09a5ffc99`, 1inch response hash `0x935c233ed0398ef02a59bd1560562dbf380beee437fbaf6da4a6c49abec34d59`, and equal Mandate strategy evidence.
+
+Both gateways and the payer are owned by the same Bazantic account, so each test settlement emitted a successful `10`-unit USDC transfer from and to `0x6835A6c084c011452Eeecf130745114CE0783A19`. The self-payment proves the x402 authorization and canonical settlement path without reducing the account's net balance. It is not described as third-party revenue.
+
+`integrations/bazantic/paid-proof.json` is the red-readable record containing Recipe identifiers, public run output bindings, grant ID, payment transactions, canonical blocks, route facts, checks, and evidence hashes. It omits grant credentials, authorization headers, raw payment receipts, API keys, and provider calldata.

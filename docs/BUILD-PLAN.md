@@ -217,10 +217,10 @@ Acceptance: compromised decision logic cannot ask project signer to submit an ar
 - [x] Register Mandate Inspector as a new paid x402/MPP service with smallest practical test price.
 - [x] Connect one live 1inch route service and Mandate Inspector in one Recipe bound to exact strategy and route inputs.
 - [x] Validate provider response schemas, hashes, timeouts, and disagreement behavior; no provider alone may manufacture `PASS`.
-- [ ] Execute the paid Recipe from request through combined response against a live 1inch route.
-- [ ] Record payment/evidence/request IDs and a redacted screen capture; include required account attribution in submission.
+- [x] Execute the published Recipe and replay its exact two-step path through paid 1inch and Mandate x402 gateways against a live route.
+- [x] Record Recipe, grant, payment, request, block, and evidence IDs plus redacted screen captures and required account attribution.
 - [x] Add domain, chain, and API tests for `PASS`, `FAIL`, `UNKNOWN`, mismatched bindings, and unavailable provider.
-- [ ] Commit `feat: publish paid Mandate receipt audit Recipe`.
+- [x] Commit `feat: publish paid Mandate receipt audit Recipe`.
 
 Acceptance: a judge can replay the working Recipe and see distinct, necessary contributions from 1inch and Mandate.
 
