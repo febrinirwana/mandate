@@ -14,7 +14,8 @@ export interface AgentConfiguration {
     mandateApp: `0x${string}`;
   };
   policy: AgentPolicy;
-  keystore: {
+  custodyMode: "automated" | "manual";
+  keystore?: {
     path: string;
     password: string;
   };
@@ -30,7 +31,11 @@ function required(environment: Environment, name: string): string {
   return value;
 }
 
-function parsed<T>(environment: Environment, name: string, schema: { safeParse(value: unknown): { success: boolean; data?: T } }): T {
+function parsed<T>(
+  environment: Environment,
+  name: string,
+  schema: { safeParse(value: unknown): { success: boolean; data?: T } },
+): T {
   const result = schema.safeParse(required(environment, name));
   if (!result.success) throw new Error(`${name} is invalid`);
   return result.data as T;
@@ -49,10 +54,18 @@ export function parseAgentConfiguration(environment: Environment): AgentConfigur
   if (!URL.canParse(rpcUrl)) throw new Error(`${rpcName} is invalid`);
   const mandateApp = parsed(environment, appName, AddressSchema);
   const signer = parsed(environment, "SEPOLIA_AGENT_ADDRESS", AddressSchema);
-  const maxInputPerCall = parsed(environment, "AGENT_MAX_INPUT_PER_CALL", PositiveUint256StringSchema);
+  const maxInputPerCall = parsed(
+    environment,
+    "AGENT_MAX_INPUT_PER_CALL",
+    PositiveUint256StringSchema,
+  );
   const maxInputTotal = parsed(environment, "AGENT_MAX_INPUT_TOTAL", PositiveUint256StringSchema);
   if (BigInt(maxInputPerCall) > BigInt(maxInputTotal)) {
     throw new Error("AGENT_MAX_INPUT_PER_CALL exceeds AGENT_MAX_INPUT_TOTAL");
+  }
+  const custodyMode = environment["AGENT_CUSTODY_MODE"] ?? "automated";
+  if (custodyMode !== "automated" && custodyMode !== "manual") {
+    throw new Error("AGENT_CUSTODY_MODE is invalid");
   }
 
   return {
@@ -70,9 +83,14 @@ export function parseAgentConfiguration(environment: Environment): AgentConfigur
       maxInputPerCall,
       maxInputTotal,
     },
-    keystore: {
-      path: required(environment, "AGENT_KEYSTORE_PATH"),
-      password: required(environment, "AGENT_KEYSTORE_PASSWORD"),
-    },
+    custodyMode,
+    ...(custodyMode === "automated"
+      ? {
+          keystore: {
+            path: required(environment, "AGENT_KEYSTORE_PATH"),
+            password: required(environment, "AGENT_KEYSTORE_PASSWORD"),
+          },
+        }
+      : {}),
   };
 }

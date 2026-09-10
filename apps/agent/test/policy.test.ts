@@ -50,7 +50,10 @@ describe("configured authority", () => {
 
   it("rejects a strategy for another app binding", async () => {
     await rejects(
-      { ...intent, simulation: { ...simulation, binding: { ...simulation.binding, to: changedAddress("f") } } },
+      {
+        ...intent,
+        simulation: { ...simulation, binding: { ...simulation.binding, to: changedAddress("f") } },
+      },
       "TARGET_MISMATCH",
     );
   });
@@ -81,7 +84,8 @@ describe("configured authority", () => {
   });
 
   it("rejects route calldata with a different recipient", async () => {
-    const badRoute = `${request.routeData.slice(0, -40)}${changedAddress("f").slice(2)}` as `0x${string}`;
+    const badRoute =
+      `${request.routeData.slice(0, -40)}${changedAddress("f").slice(2)}` as `0x${string}`;
     await rejects({ ...intent, routeData: badRoute }, "TARGET_MISMATCH");
   });
 });
@@ -116,17 +120,23 @@ describe("current chain and simulation authority", () => {
 
   it("rejects stale, non-PASS, mismatched, and noncanonical simulation evidence", async () => {
     await rejects(
-      { ...intent, simulation: { ...simulation, binding: { ...simulation.binding, expiresAt: now.toISOString() } } },
+      {
+        ...intent,
+        simulation: {
+          ...simulation,
+          binding: { ...simulation.binding, expiresAt: now.toISOString() },
+        },
+      },
       "SIMULATION_STALE",
     );
     await rejects(
-      { ...intent, simulation: { ...simulation, result: "UNKNOWN", reasons: ["ENS_READ_UNAVAILABLE"] } },
+      {
+        ...intent,
+        simulation: { ...simulation, result: "UNKNOWN", reasons: ["ENS_READ_UNAVAILABLE"] },
+      },
       "ENS_READ_UNAVAILABLE",
     );
-    await rejects(
-      { ...intent, agentMinOut: "49" },
-      "SIMULATION_STALE",
-    );
+    await rejects({ ...intent, agentMinOut: "49" }, "SIMULATION_STALE");
     await rejects(intent, "SIMULATION_STALE", {
       ...authority(),
       getBlockHash: () => Promise.resolve(changedAddress("f").padEnd(66, "f") as `0x${string}`),

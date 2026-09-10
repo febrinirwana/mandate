@@ -17,9 +17,11 @@ import { z } from "zod";
 
 import {
   AgentRejection,
+  reprepareForSigner,
+  type AgentAuthority,
+  type AgentPolicy,
   type ManualExecutionRequest,
   type PreparedExecution,
-  revalidatePrepared,
 } from "./policy.js";
 
 const hex = (bytes: number) => z.string().regex(new RegExp(`^[0-9a-fA-F]{${bytes * 2}}$`));
@@ -52,10 +54,24 @@ type ExecutionTransport = {
   wait(hash: Hash): Promise<{ status: "success" | "reverted" }>;
 };
 
-export function createSignerForTransport(transport: ExecutionTransport): MandateExecutionSigner {
+interface SignerSecurityBoundary {
+  policy: AgentPolicy;
+  authority: AgentAuthority;
+  now?: () => Date;
+}
+
+export function createPolicyBoundSignerForTransport(
+  transport: ExecutionTransport,
+  security: SignerSecurityBoundary,
+): MandateExecutionSigner {
   return {
     async submit(prepared) {
-      const request = await revalidatePrepared(prepared);
+      const request = await reprepareForSigner(
+        prepared,
+        security.policy,
+        security.authority,
+        security.now ? { now: security.now } : {},
+      );
       const txHash = await transport.send(request);
       const receipt = await transport.wait(txHash);
       if (receipt.status !== "success") throw new AgentRejection("ROUTE_REVERTED");
@@ -88,7 +104,10 @@ async function loadDedicatedAccount(configuration: DedicatedKeystoreConfiguratio
       N: parsed.crypto.kdfparams.n,
       r: parsed.crypto.kdfparams.r,
       p: parsed.crypto.kdfparams.p,
-      maxmem: Math.max(128 * parsed.crypto.kdfparams.n * parsed.crypto.kdfparams.r + 1024, 32 * 1024 * 1024),
+      maxmem: Math.max(
+        128 * parsed.crypto.kdfparams.n * parsed.crypto.kdfparams.r + 1024,
+        32 * 1024 * 1024,
+      ),
     },
   );
   const expectedMac = Buffer.from(parsed.crypto.mac, "hex");
@@ -120,6 +139,7 @@ async function loadDedicatedAccount(configuration: DedicatedKeystoreConfiguratio
 
 export async function createDedicatedKeystoreSigner(
   configuration: DedicatedKeystoreConfiguration,
+  security: SignerSecurityBoundary,
 ): Promise<MandateExecutionSigner> {
   if (
     !configuration.keystorePath ||
@@ -128,6 +148,12 @@ export async function createDedicatedKeystoreSigner(
     !Number.isSafeInteger(configuration.chainId) ||
     configuration.chainId < 1 ||
     !URL.canParse(configuration.rpcUrl)
+  ) {
+    throw new AgentRejection("CALLER_NOT_AGENT");
+  }
+  if (
+    security.policy.signer !== configuration.expectedSigner.toLowerCase() ||
+    security.policy.chainId !== configuration.chainId.toString()
   ) {
     throw new AgentRejection("CALLER_NOT_AGENT");
   }
@@ -142,18 +168,21 @@ export async function createDedicatedKeystoreSigner(
   const wallet = createWalletClient({ account, chain, transport });
   const publicClient = createPublicClient({ chain, transport });
 
-  return createSignerForTransport({
-    send: async (request) => {
-      if (request.account !== account.address.toLowerCase()) {
-        throw new AgentRejection("CALLER_NOT_AGENT");
-      }
-      return wallet.sendTransaction({
-        account,
-        to: request.to,
-        data: request.data,
-        value: request.value,
-      });
+  return createPolicyBoundSignerForTransport(
+    {
+      send: async (request) => {
+        if (request.account !== account.address.toLowerCase()) {
+          throw new AgentRejection("CALLER_NOT_AGENT");
+        }
+        return wallet.sendTransaction({
+          account,
+          to: request.to,
+          data: request.data,
+          value: request.value,
+        });
+      },
+      wait: async (hash) => publicClient.waitForTransactionReceipt({ hash }),
     },
-    wait: async (hash) => publicClient.waitForTransactionReceipt({ hash }),
-  });
+    security,
+  );
 }

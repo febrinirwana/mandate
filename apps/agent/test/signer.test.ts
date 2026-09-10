@@ -8,11 +8,11 @@ import { privateKeyToAccount } from "viem/accounts";
 import { afterEach, expect, it, vi } from "vitest";
 
 import { AgentRejection, createDedicatedKeystoreSigner, prepareExecution } from "../src/index.js";
-import { createSignerForTransport } from "../src/signer.js";
+import { createPolicyBoundSignerForTransport } from "../src/signer.js";
 import { authority, now, policy, request, simulation, strategy } from "./fixtures.js";
 
 const directories: string[] = [];
-const password = "test-only-password";
+const fixturePassphrase = "test-only-password";
 const privateKey: Hex = `0x${"11".repeat(32)}`;
 
 async function fixtureKeystore(): Promise<string> {
@@ -20,7 +20,12 @@ async function fixtureKeystore(): Promise<string> {
   directories.push(directory);
   const salt = Buffer.from("22".repeat(32), "hex");
   const iv = Buffer.from("33".repeat(16), "hex");
-  const derived = scryptSync(password, salt, 32, { N: 1024, r: 8, p: 1, maxmem: 32 * 1024 * 1024 });
+  const derived = scryptSync(fixturePassphrase, salt, 32, {
+    N: 1024,
+    r: 8,
+    p: 1,
+    maxmem: 32 * 1024 * 1024,
+  });
   const cipher = createCipheriv("aes-128-ctr", derived.subarray(0, 16), iv);
   const ciphertext = Buffer.concat([
     cipher.update(Buffer.from(privateKey.slice(2), "hex")),
@@ -55,13 +60,23 @@ afterEach(async () => {
 it("loads an encrypted dedicated keystore without exposing account material", async () => {
   const path = await fixtureKeystore();
   const account = privateKeyToAccount(privateKey);
-  const signer = await createDedicatedKeystoreSigner({
-    keystorePath: path,
-    keystorePassword: password,
-    expectedSigner: account.address.toLowerCase() as `0x${string}`,
-    chainId: 31337,
-    rpcUrl: "http://127.0.0.1:1",
-  });
+  const signer = await createDedicatedKeystoreSigner(
+    {
+      keystorePath: path,
+      keystorePassword: fixturePassphrase,
+      expectedSigner: account.address.toLowerCase() as `0x${string}`,
+      chainId: 31337,
+      rpcUrl: "http://127.0.0.1:1",
+    },
+    {
+      policy: {
+        ...policy,
+        chainId: "31337",
+        signer: account.address.toLowerCase() as `0x${string}`,
+      },
+      authority: authority(),
+    },
+  );
 
   expect(Object.keys(signer)).toEqual(["submit"]);
   expect("account" in signer).toBe(false);
@@ -74,22 +89,28 @@ it("rejects a keystore whose decrypted signer is not configured", async () => {
   const path = await fixtureKeystore();
 
   await expect(
-    createDedicatedKeystoreSigner({
-      keystorePath: path,
-      keystorePassword: password,
-      expectedSigner: strategy.agent,
-      chainId: 31337,
-      rpcUrl: "http://127.0.0.1:1",
-    }),
+    createDedicatedKeystoreSigner(
+      {
+        keystorePath: path,
+        keystorePassword: fixturePassphrase,
+        expectedSigner: strategy.agent,
+        chainId: 31337,
+        rpcUrl: "http://127.0.0.1:1",
+      },
+      {
+        policy: { ...policy, chainId: "31337" },
+        authority: authority(),
+      },
+    ),
   ).rejects.toMatchObject({ reason: "CALLER_NOT_AGENT" });
 });
 
 it("rejects a forged prepared request before transport submission", async () => {
   const send = vi.fn(() => Promise.resolve(request.strategy.salt));
-  const signer = createSignerForTransport({
-    send,
-    wait: () => Promise.resolve({ status: "success" as const }),
-  });
+  const signer = createPolicyBoundSignerForTransport(
+    { send, wait: () => Promise.resolve({ status: "success" as const }) },
+    { policy, authority: authority(), now: () => now },
+  );
 
   await expect(signer.submit({ kind: "MANDATE_EXECUTE_PREPARED" } as never)).rejects.toBeInstanceOf(
     AgentRejection,
@@ -97,13 +118,47 @@ it("rejects a forged prepared request before transport submission", async () => 
   expect(send).not.toHaveBeenCalled();
 });
 
+it("rechecks signer-owned policy against a prepared request from compromised decision logic", async () => {
+  const wrongApp = `0x${"f".repeat(40)}` as const;
+  const compromisedSimulation = {
+    ...simulation,
+    binding: { ...simulation.binding, to: wrongApp },
+  };
+  const compromisedAuthority = {
+    ...authority(),
+    simulate: () => Promise.resolve(compromisedSimulation),
+  };
+  const compromised = await prepareExecution(
+    {
+      chainId: request.chainId,
+      strategy,
+      amountIn: request.amountIn,
+      agentMinOut: request.agentMinOut,
+      executionDeadline: request.executionDeadline,
+      routeData: request.routeData,
+      simulation: compromisedSimulation,
+    },
+    { ...policy, mandateApp: wrongApp },
+    compromisedAuthority,
+    { now: () => now },
+  );
+  const send = vi.fn(() => Promise.resolve(request.strategy.salt));
+  const signer = createPolicyBoundSignerForTransport(
+    { send, wait: () => Promise.resolve({ status: "success" as const }) },
+    { policy, authority: authority(), now: () => now },
+  );
+
+  await expect(signer.submit(compromised)).rejects.toMatchObject({ reason: "TARGET_MISMATCH" });
+  expect(send).not.toHaveBeenCalled();
+});
+
 it("revalidates freshness immediately before sending the exact prepared call", async () => {
   let current = now;
   const send = vi.fn(() => Promise.resolve(request.strategy.salt));
-  const signer = createSignerForTransport({
-    send,
-    wait: () => Promise.resolve({ status: "success" as const }),
-  });
+  const signer = createPolicyBoundSignerForTransport(
+    { send, wait: () => Promise.resolve({ status: "success" as const }) },
+    { policy, authority: authority(), now: () => current },
+  );
   const prepared = await prepareExecution(
     {
       chainId: request.chainId,
@@ -129,10 +184,13 @@ it("revalidates freshness immediately before sending the exact prepared call", a
 });
 
 it("treats a reverted receipt as a failed execution", async () => {
-  const signer = createSignerForTransport({
-    send: () => Promise.resolve(request.strategy.salt),
-    wait: () => Promise.resolve({ status: "reverted" as const }),
-  });
+  const signer = createPolicyBoundSignerForTransport(
+    {
+      send: () => Promise.resolve(request.strategy.salt),
+      wait: () => Promise.resolve({ status: "reverted" as const }),
+    },
+    { policy, authority: authority(), now: () => now },
+  );
   const prepared = await prepareExecution(
     {
       chainId: request.chainId,

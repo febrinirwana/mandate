@@ -156,13 +156,16 @@ try {
     );
   }
 
-  const signer = await createDedicatedKeystoreSigner({
-    keystorePath,
-    keystorePassword: password,
-    expectedSigner: policy.signer,
-    chainId: chain.id,
-    rpcUrl,
-  });
+  const signer = await createDedicatedKeystoreSigner(
+    {
+      keystorePath,
+      keystorePassword: password,
+      expectedSigner: policy.signer,
+      chainId: chain.id,
+      rpcUrl,
+    },
+    { policy, authority },
+  );
   const result = await runAutomatedExecution(intent, { policy, authority, signer });
   if (result.execution.status !== "CONFIRMED" || result.audit.result !== "COMPLIANT") {
     throw new Error("local execution evidence is incomplete");

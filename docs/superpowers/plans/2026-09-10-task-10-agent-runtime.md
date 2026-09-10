@@ -24,11 +24,13 @@
 ### Task 1: Constrained signer boundary
 
 **Files:**
+
 - Create: `apps/agent/package.json`, `apps/agent/tsconfig.json`
 - Create: `apps/agent/src/config.ts`, `apps/agent/src/policy.ts`, `apps/agent/src/signer.ts`, `apps/agent/src/index.ts`
 - Test: `apps/agent/test/policy.test.ts`, `apps/agent/test/signer.test.ts`
 
 **Interfaces:**
+
 - Consumes: `StrategyV1`, `SimulationV1`, `MandateSnapshotV1`, `buildExecutionCall`.
 - Produces: strict `ExecutionIntent`, opaque `PreparedExecution`, `prepareExecution`, and a signer exposing only `submit(prepared)`.
 
@@ -41,11 +43,13 @@
 ### Task 2: Execution orchestration and manual mode
 
 **Files:**
+
 - Create: `apps/agent/src/runtime.ts`, `apps/agent/src/process.ts`
 - Test: `apps/agent/test/runtime.test.ts`, `apps/agent/test/manual.test.ts`
 - Modify only if required: `apps/web/src/lib/wallet.ts`
 
 **Interfaces:**
+
 - Consumes: the Task 1 preparation boundary and `MandateChainService` inspection/simulation/execution/audit methods.
 - Produces: `executeMandate(intent, mode)` returning canonical receipt/audit in automated mode or one exact prepared request in manual mode.
 
@@ -58,12 +62,14 @@
 ### Task 3: Public skill, adversarial evals, and proof
 
 **Files:**
+
 - Create: `skill/SKILL.md`
 - Create: `evals/agent-runtime.ts`, `evals/unsafe-raw-signer.ts`
 - Test: `apps/agent/test/evals.test.ts`, `apps/agent/test/public-api.test.ts`
 - Modify: `.env.example`, `docs/BUILD-PLAN.md`
 
 **Interfaces:**
+
 - Consumes: the production constrained runtime and a test/eval-only unsafe baseline.
 - Produces: deterministic six-case comparison and public operator contract.
 

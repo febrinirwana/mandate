@@ -28,7 +28,7 @@ it("parses the isolated Sepolia signer policy", () => {
     mandateApp: policy.mandateApp,
   });
   expect(configuration.policy).toEqual(policy);
-  expect(configuration.keystore.path).toBe(base.AGENT_KEYSTORE_PATH);
+  expect(configuration.keystore?.path).toBe(base.AGENT_KEYSTORE_PATH);
 });
 
 it("selects explicit local runtime instead of stale Sepolia values", () => {
@@ -47,6 +47,18 @@ it("selects explicit local runtime instead of stale Sepolia values", () => {
   });
   expect(configuration.policy.mandateApp).toBe(localApp);
   expect(configuration.policy.chainId).toBe("31337");
+});
+
+it("supports manual custody without server keystore credentials", () => {
+  const configuration = parseAgentConfiguration({
+    ...base,
+    AGENT_CUSTODY_MODE: "manual",
+    AGENT_KEYSTORE_PATH: undefined,
+    AGENT_KEYSTORE_PASSWORD: undefined,
+  });
+
+  expect(configuration.custodyMode).toBe("manual");
+  expect(configuration.keystore).toBeUndefined();
 });
 
 it("reports only missing variable names and never secret values", () => {

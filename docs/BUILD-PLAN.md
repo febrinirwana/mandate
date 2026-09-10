@@ -198,14 +198,14 @@ Acceptance: a new viewer can state who may act, what can move, remaining cap, ex
 
 **Files:** create `apps/agent`, `skill/SKILL.md`, `evals`, and tests.
 
-- [ ] Define signer interface that accepts only validated Mandate execution requests; no generic transaction/sign message method.
-- [ ] Load encrypted dedicated keystore in server-only process; assert chain/app/strategy/selector/amount policy before signing.
-- [ ] Implement flow: inspect -> simulate -> require fresh pass -> sign/send -> wait receipt -> audit.
-- [ ] Add manual mode using a dedicated browser wallet for environments where automated key custody is inappropriate.
-- [ ] Write public skill with exact safety rules, tool schemas, reason semantics, and examples; no credentials or hard-coded demo success.
-- [ ] Evaluate fixed prompts against an unconstrained raw signer baseline: wrong target, cap breach, stale simulation, revoked identity, malicious route, unknown evidence.
-- [ ] Record whether Mandate prevents prohibited submissions and where onchain reverts remain the final boundary.
-- [ ] Commit `feat: constrain dedicated Mandate agent signer`.
+- [x] Define signer interface that accepts only validated Mandate execution requests; no generic transaction/sign message method.
+- [x] Load encrypted dedicated keystore in server-only process; assert chain/app/strategy/selector/amount policy before signing.
+- [x] Implement flow: inspect -> simulate -> require fresh pass -> sign/send -> wait receipt -> audit.
+- [x] Add manual mode using a dedicated browser wallet for environments where automated key custody is inappropriate.
+- [x] Write public skill with exact safety rules, tool schemas, reason semantics, and examples; no credentials or hard-coded demo success.
+- [x] Evaluate fixed prompts against an unconstrained raw signer baseline: wrong target, cap breach, stale simulation, revoked identity, malicious route, unknown evidence.
+- [x] Record whether Mandate prevents prohibited submissions and where onchain reverts remain the final boundary.
+- [x] Commit `feat: constrain dedicated Mandate agent signer`.
 
 Acceptance: compromised decision logic cannot ask project signer to submit an arbitrary transaction; onchain contract still rejects bypass attempts sent outside the runtime.
 

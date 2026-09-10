@@ -67,6 +67,7 @@ export interface ManualExecutionRequest {
 }
 
 type PreparedState = {
+  intent: ExecutionIntent;
   request: ManualExecutionRequest;
   simulation: SimulationV1;
   authority: AgentAuthority;
@@ -78,17 +79,15 @@ const preparedState = new WeakMap<PreparedExecution, PreparedState>();
 export class PreparedExecution {
   readonly kind = "MANDATE_EXECUTE_PREPARED" as const;
 
-  private constructor() {}
-
   toManualRequest(): ManualExecutionRequest {
     return { ...stateOf(this).request };
   }
+}
 
-  static create(state: PreparedState): PreparedExecution {
-    const prepared = new PreparedExecution();
-    preparedState.set(prepared, state);
-    return prepared;
-  }
+function makePrepared(state: PreparedState): PreparedExecution {
+  const prepared = new PreparedExecution();
+  preparedState.set(prepared, state);
+  return prepared;
 }
 
 function stateOf(prepared: PreparedExecution): PreparedState {
@@ -111,7 +110,10 @@ function checkSnapshot(
   policy: AgentPolicy,
 ): void {
   if (snapshot.chainId !== policy.chainId) reject("TARGET_MISMATCH");
-  if (snapshot.strategyHash !== policy.strategyHash || !sameStrategy(snapshot.strategy, intent.strategy)) {
+  if (
+    snapshot.strategyHash !== policy.strategyHash ||
+    !sameStrategy(snapshot.strategy, intent.strategy)
+  ) {
     reject("STRATEGY_HASH_MISMATCH");
   }
   if (!snapshot.state.activated) reject("MANDATE_INACTIVE");
@@ -156,11 +158,16 @@ function checkPolicy(intent: ExecutionIntent, policy: AgentPolicy, now: Date): S
     const route = decodeFunctionData({ abi: venueAbi, data: intent.routeData });
     if (route.functionName !== "swap") reject("SELECTOR_MISMATCH");
     const [routeAmount, routeMinimum, recipient] = route.args;
-    if (routeAmount !== amount || routeMinimum < BigInt(intent.agentMinOut)) reject("ROUTE_REVERTED");
+    if (routeAmount !== amount || routeMinimum < BigInt(intent.agentMinOut))
+      reject("ROUTE_REVERTED");
     if (recipient.toLowerCase() !== policy.routeRecipient) reject("TARGET_MISMATCH");
   } catch (error) {
     if (error instanceof AgentRejection) throw error;
-    reject(intent.routeData.slice(0, 10) === policy.routeSelector ? "ROUTE_REVERTED" : "SELECTOR_MISMATCH");
+    reject(
+      intent.routeData.slice(0, 10) === policy.routeSelector
+        ? "ROUTE_REVERTED"
+        : "SELECTOR_MISMATCH",
+    );
   }
   return SimulationRequestV1Schema.parse({
     chainId: policy.chainId,
@@ -210,7 +217,10 @@ async function checkSimulation(
   }
   let canonical: Hex | null;
   try {
-    canonical = await authority.getBlockHash(request.chainId, BigInt(refreshed.binding.blockNumber));
+    canonical = await authority.getBlockHash(
+      request.chainId,
+      BigInt(refreshed.binding.blockNumber),
+    );
   } catch {
     reject("ENS_READ_UNAVAILABLE");
   }
@@ -234,13 +244,17 @@ export async function prepareExecution(
 
   let snapshot: MandateSnapshotV1;
   try {
-    snapshot = await authority.readMandate({ chainId: policy.chainId, strategyHash: built.strategyHash });
+    snapshot = await authority.readMandate({
+      chainId: policy.chainId,
+      strategyHash: built.strategyHash,
+    });
   } catch {
     reject("ENS_READ_UNAVAILABLE");
   }
   checkSnapshot(snapshot, intent, policy);
   const refreshed = await checkSimulation(intent, request, authority, now());
-  return PreparedExecution.create({
+  return makePrepared({
+    intent,
     request: {
       chainId: policy.chainId,
       account: policy.signer,
@@ -254,7 +268,9 @@ export async function prepareExecution(
   });
 }
 
-export async function revalidatePrepared(prepared: PreparedExecution): Promise<ManualExecutionRequest> {
+export async function revalidatePrepared(
+  prepared: PreparedExecution,
+): Promise<ManualExecutionRequest> {
   const state = stateOf(prepared);
   if (state.now().getTime() >= new Date(state.simulation.binding.expiresAt).getTime()) {
     reject("SIMULATION_STALE");
@@ -270,4 +286,15 @@ export async function revalidatePrepared(prepared: PreparedExecution): Promise<M
   }
   if (canonical !== state.simulation.binding.blockHash) reject("SIMULATION_STALE");
   return { ...state.request };
+}
+
+export async function reprepareForSigner(
+  prepared: PreparedExecution,
+  policy: AgentPolicy,
+  authority: AgentAuthority,
+  options: { now?: () => Date } = {},
+): Promise<ManualExecutionRequest> {
+  const state = stateOf(prepared);
+  const verified = await prepareExecution(state.intent, policy, authority, options);
+  return revalidatePrepared(verified);
 }

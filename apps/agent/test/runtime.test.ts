@@ -6,7 +6,7 @@ import {
   runAutomatedExecution,
   type AgentAuthority,
 } from "../src/index.js";
-import { createSignerForTransport } from "../src/signer.js";
+import { createPolicyBoundSignerForTransport } from "../src/signer.js";
 import { authority, now, policy, request, simulation, strategy } from "./fixtures.js";
 
 const intent = {
@@ -42,7 +42,10 @@ const audit: ReceiptAuditV1 = {
   evidence: [{ provider: "rpc-receipt", responseHash: `0x${"f".repeat(64)}` }],
 };
 
-function runtimeAuthority(order: string[], executionOverride: ExecutionV1 = execution): AgentAuthority {
+function runtimeAuthority(
+  order: string[],
+  executionOverride: ExecutionV1 = execution,
+): AgentAuthority {
   const base = authority();
   return {
     readMandate: () => {
@@ -71,21 +74,32 @@ function runtimeAuthority(order: string[], executionOverride: ExecutionV1 = exec
 it("runs inspect, exact simulation, constrained send, canonical receipt, then audit", async () => {
   const order: string[] = [];
   const chain = runtimeAuthority(order);
-  const signer = createSignerForTransport({
-    send: () => {
-      order.push("send");
-      return Promise.resolve(strategy.salt);
+  const signer = createPolicyBoundSignerForTransport(
+    {
+      send: () => {
+        order.push("send");
+        return Promise.resolve(strategy.salt);
+      },
+      wait: () => {
+        order.push("wait");
+        return Promise.resolve({ status: "success" });
+      },
     },
-    wait: () => {
-      order.push("wait");
-      return Promise.resolve({ status: "success" });
-    },
-  });
+    { policy, authority: chain, now: () => now },
+  );
 
-  const result = await runAutomatedExecution(intent, { policy, authority: chain, signer, now: () => now });
+  const result = await runAutomatedExecution(intent, {
+    policy,
+    authority: chain,
+    signer,
+    now: () => now,
+  });
 
   expect(result).toEqual({ mode: "AUTOMATED", txHash: strategy.salt, execution, audit });
   expect(order).toEqual([
+    "inspect",
+    "simulate",
+    "canonical",
     "inspect",
     "simulate",
     "canonical",
@@ -101,10 +115,13 @@ it("fails closed when the mined receipt is not canonical", async () => {
   const order: string[] = [];
   const chain = runtimeAuthority(order, { ...execution, status: "REORGED" });
   chain.auditReceipt = vi.fn(() => Promise.resolve(audit));
-  const signer = createSignerForTransport({
-    send: () => Promise.resolve(strategy.salt),
-    wait: () => Promise.resolve({ status: "success" }),
-  });
+  const signer = createPolicyBoundSignerForTransport(
+    {
+      send: () => Promise.resolve(strategy.salt),
+      wait: () => Promise.resolve({ status: "success" }),
+    },
+    { policy, authority: chain, now: () => now },
+  );
 
   await expect(
     runAutomatedExecution(intent, { policy, authority: chain, signer, now: () => now }),

@@ -39,7 +39,7 @@ const authority = new MandateChainService([
 ]);
 
 try {
-  if (process.env["AGENT_CUSTODY_MODE"] === "manual") {
+  if (configuration.custodyMode === "manual") {
     const manual = await prepareManualExecution(intent, {
       policy: configuration.policy,
       authority,
@@ -51,13 +51,17 @@ try {
       }),
     );
   } else {
-    const signer = await createDedicatedKeystoreSigner({
-      keystorePath: configuration.keystore.path,
-      keystorePassword: configuration.keystore.password,
-      expectedSigner: configuration.policy.signer,
-      chainId: configuration.runtime.chainId,
-      rpcUrl: configuration.runtime.rpcUrl,
-    });
+    if (!configuration.keystore) throw new Error("automated custody keystore is unavailable");
+    const signer = await createDedicatedKeystoreSigner(
+      {
+        keystorePath: configuration.keystore.path,
+        keystorePassword: configuration.keystore.password,
+        expectedSigner: configuration.policy.signer,
+        chainId: configuration.runtime.chainId,
+        rpcUrl: configuration.runtime.rpcUrl,
+      },
+      { policy: configuration.policy, authority },
+    );
     const result = await runAutomatedExecution(intent, {
       policy: configuration.policy,
       authority,

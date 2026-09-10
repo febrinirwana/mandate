@@ -200,9 +200,7 @@ export function submitExecution(request: SimulationRequestV1): Promise<WalletSta
   );
 }
 
-export async function submitPreparedExecution(
-  prepared: PreparedExecution,
-): Promise<WalletState> {
+export async function submitPreparedExecution(prepared: PreparedExecution): Promise<WalletState> {
   const request = await revalidatePrepared(prepared);
   return send(request.chainId, request.account, request.to, request.data);
 }
