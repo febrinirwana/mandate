@@ -55,14 +55,17 @@ ONEINCH_API_KEY=...
 BAZANTIC_API_KEY=...
 API_PORT=3001
 MANDATE_AGENT_ORIGIN=http://127.0.0.1:3002
+MANDATE_AGENT_AUTH_TOKEN=...
 MANDATE_DEMO_AGENT_ENABLED=true
 AGENT_PORT=3002
+AGENT_HOST=127.0.0.1
+AGENT_AUTH_TOKEN=...
 WORKER_CONFIRMATION_DEPTH=4
 WORKER_BATCH_SIZE=25
 WORKER_POLL_INTERVAL_MS=15000
 ```
 
-For the Next.js authority composer, create the ignored `apps/web/.env.local` with `MANDATE_CHAIN_ID=11155111`, the same `SEPOLIA_MANDATE_APP`, `MANDATE_API_ORIGIN`, `MANDATE_AGENT_ORIGIN=http://127.0.0.1:3002`, `NEXT_PUBLIC_PRIVY_APP_ID`, and `MANDATE_SEPOLIA_FAUCET_AMOUNT=100`. Copy the checked-in `MANDATE_POLICY_PROFILE` from `.env.example`; it is a single-line JSON object generated from block-stamped reads of the agent identity, token metadata, and fixed route. These values are public, but the composer still fails closed when the profile is absent, malformed, or inconsistent with live chain state.
+For the Next.js authority composer, create the ignored `apps/web/.env.local` with `MANDATE_CHAIN_ID=11155111`, the same `SEPOLIA_MANDATE_APP`, `MANDATE_API_ORIGIN`, `MANDATE_AGENT_ORIGIN=http://127.0.0.1:3002`, `NEXT_PUBLIC_PRIVY_APP_ID`, and `MANDATE_SEPOLIA_FAUCET_AMOUNT=100`. Copy the checked-in `MANDATE_POLICY_PROFILE` from `.env.example`; it is a single-line JSON object generated from block-stamped reads of the agent identity, token metadata, and fixed route. Local loopback operation does not require an agent token. A network deployment must set one identical high-entropy value as `AGENT_AUTH_TOKEN` on the agent and `MANDATE_AGENT_AUTH_TOKEN` in the Vercel server environment. That credential is server-only and must never use the `NEXT_PUBLIC_` prefix. Public values still fail closed when the profile is absent, malformed, or inconsistent with live chain state.
 
 ### Sepolia smart-wallet gas sponsorship
 
@@ -158,6 +161,7 @@ Operational constraints:
 - fund with enough native token for bounded demo gas only;
 - transfer no USDC/WETH or other treasury asset to agent;
 - expose no generic signing or arbitrary transaction endpoint;
+- keep `AGENT_HOST=127.0.0.1` unless a private container network is required; any `0.0.0.0` bind fails startup without `AGENT_AUTH_TOKEN`;
 - require expected chain ID, Mandate address, strategy hash, selector, and amount caps in signer configuration;
 - rotate/revoke immediately if logs or environment handling are uncertain.
 
@@ -170,7 +174,7 @@ docker compose up -d --wait postgres
 pnpm --filter @mandate/db db:migrate
 ```
 
-From the repository root, start the complete judge demo—web, API, receipt worker, and the dedicated constrained-agent HTTP service—in one terminal:
+From the repository root, start the complete judge demo, including web, API, receipt worker, and the dedicated constrained-agent HTTP service, in one terminal:
 
 ```bash
 pnpm dev

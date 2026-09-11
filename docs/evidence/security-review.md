@@ -44,15 +44,15 @@ The review checked these release invariants:
 - Status: fixed in `8540ac0`.
 - Verification: web tests decode the submitted calldata and assert the exact total or remaining cap.
 
-### S-03 Medium: the dedicated-agent server listened on every interface by default
+### S-03 Medium: the dedicated-agent server listened on every interface without authentication
 
 - Symbol: `listenDemoExecutionServer` in `apps/agent/src/server.ts`
 - Precondition: the host firewall or network makes the configured agent port reachable.
-- Exploit path: Node's omitted host argument bound the key-backed service to the wildcard address.
-- Impact: the signer service had a larger network exposure than the intended web-to-agent loopback topology.
-- Smallest fix: bind to `127.0.0.1` by default and publish no agent port in the release topology.
-- Status: fixed in `8540ac0`.
-- Verification: the server suite inspects the bound address and requires `127.0.0.1`.
+- Exploit path: Node's omitted host argument bound the key-backed service to the wildcard address, and the execution route did not require a server credential.
+- Impact: the signer service had a larger network exposure than the intended web-to-agent boundary.
+- Smallest fix: bind to `127.0.0.1` by default. A wildcard bind now requires `AGENT_AUTH_TOKEN`, and the execution route compares its bearer credential before parsing or executing a request. The release topology publishes no host port.
+- Status: fixed in `8540ac0` and `eab6042`.
+- Verification: the agent suite proves the loopback default, rejects wildcard configuration without an auth token, rejects missing and incorrect credentials without service execution, and accepts the configured credential.
 
 ## Confirmed controls
 
@@ -62,6 +62,7 @@ The review checked these release invariants:
 - `PreparedExecution` is opaque. The signer revalidates its policy, simulation binding, canonical block hash, account, target, calldata, and zero value immediately before submission.
 - Agent error responses and logs expose only reason codes, stages, and opaque hashes.
 - Non-loopback PostgreSQL URLs require `sslmode=require`.
+- The Vercel server proxy adds the agent bearer credential from server-only configuration. Browser authorization and cookie headers are never forwarded.
 
 ## Residual findings and limits
 
