@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack --port 3100",
+    "serve": "next dev --webpack --port 3100",
     "build": "next build --webpack",
     "start": "next start --port 3100",
     "lint": "eslint .",
@@ -12,10 +13,10 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@mandate/contracts": "workspace:*",
     "@mandate/agent": "workspace:*",
+    "@mandate/contracts": "workspace:*",
     "@mandate/domain": "workspace:*",
-    "@privy-io/react-auth": "^3.41.0",
+    "@privy-io/react-auth": "3.41.0",
     "@radix-ui/react-dialog": "^1.1.23",
     "@radix-ui/react-tooltip": "^1.2.16",
     "lucide-react": "^1.41.0",
@@ -23,6 +24,7 @@
     "next": "16.3.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "styled-components": "6.5.3",
     "viem": "2.56.3"
   },
   "devDependencies": {

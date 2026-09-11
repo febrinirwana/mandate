@@ -512,9 +512,9 @@ export class MandateChainService {
     try {
       const latest = await runtime.client.getBlockNumber();
       const first = runtime.deploymentBlock ?? (latest > 9n ? latest - 9n : 0n);
-      const last = first + 999n < latest ? first + 999n : latest;
-      for (let fromBlock = first; fromBlock <= last; fromBlock += 10n) {
-        const toBlock = fromBlock + 9n < last ? fromBlock + 9n : last;
+      let toBlock = latest;
+      while (toBlock >= first) {
+        const fromBlock = toBlock - first > 9n ? toBlock - 9n : first;
         const logs = await runtime.client.getLogs({
           address: runtime.mandateApp,
           event: activatedEvent,
@@ -526,12 +526,8 @@ export class MandateChainService {
         if (activation?.args.strategy) {
           return decodeStrategyBytes(activation.args.strategy);
         }
-      }
-      if (last < latest) {
-        throw new ChainReadError(
-          "UNAVAILABLE",
-          "activation event is outside the bounded scan window",
-        );
+        if (fromBlock === first) break;
+        toBlock = fromBlock - 1n;
       }
       throw new ChainReadError("NOT_FOUND", "mandate not found");
     } catch (error) {

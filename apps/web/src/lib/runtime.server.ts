@@ -46,3 +46,13 @@ export function runtimeConfig(): MandateRuntime | null {
 export function apiOrigin(): string {
   return process.env["MANDATE_API_ORIGIN"] ?? "http://127.0.0.1:3001";
 }
+
+export function agentOrigin(): string | undefined {
+  const value = process.env["MANDATE_AGENT_ORIGIN"] ?? "http://127.0.0.1:3002";
+  try {
+    const origin = new URL(value);
+    return origin.pathname === "/" && !origin.search && !origin.hash ? origin.origin : undefined;
+  } catch {
+    return undefined;
+  }
+}

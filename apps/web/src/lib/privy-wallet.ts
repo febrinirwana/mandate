@@ -1,6 +1,6 @@
 import type { StrategyV1 } from "@mandate/domain";
 import { mandateAquaAppAbi } from "@mandate/contracts/mandate-aqua-app";
-import { encodeFunctionData, parseAbi } from "viem";
+import { encodeFunctionData, maxUint256, parseAbi } from "viem";
 
 import { encodeStrategy } from "@/lib/mandate";
 import type { WalletState } from "@/lib/wallet";
@@ -69,7 +69,7 @@ export function buildAuthorityCalls(
       data: encodeFunctionData({
         abi: erc20Abi,
         functionName: "approve",
-        args: [aqua, BigInt(strategy.maxInputTotal)],
+        args: [aqua, maxUint256],
       }),
     },
     {

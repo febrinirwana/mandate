@@ -7,6 +7,7 @@
     "node": ">=24.15.0 <25"
   },
   "scripts": {
+    "dev": "pnpm --parallel --filter @mandate/web --filter @mandate/api --filter @mandate/worker --filter @mandate/agent run serve",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "test": "turbo run test",

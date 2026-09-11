@@ -7,6 +7,7 @@ import {
   isSimulationCurrent,
   remainingInput,
 } from "../src/lib/mandate";
+import { formatRate, formatTokenAmount } from "../src/lib/token-display";
 
 const address = (digit: string): `0x${string}` => `0x${digit.repeat(40)}`;
 const hash = (digit: string): `0x${string}` => `0x${digit.repeat(64)}`;
@@ -101,5 +102,25 @@ describe("inspection state", () => {
 
     expect(isSimulationCurrent(binding, intent.request)).toBe(true);
     expect(isSimulationCurrent(binding, { ...intent.request, amountIn: "101" })).toBe(false);
+  });
+});
+
+describe("human-readable token values", () => {
+  it("shows token amounts first while preserving exact base units", () => {
+    expect(formatTokenAmount("1000000", { symbol: "USDC", decimals: 6 })).toBe(
+      "1 USDC (1,000,000 base units)",
+    );
+    expect(formatTokenAmount("500000000", { symbol: "USDC", decimals: 6 })).toBe(
+      "500 USDC (500,000,000 base units)",
+    );
+  });
+
+  it("expresses the raw rate as output tokens per one input token", () => {
+    expect(
+      formatRate("1000000000000", "1", {
+        tokenIn: { symbol: "USDC", decimals: 6 },
+        tokenOut: { symbol: "DAI", decimals: 18 },
+      }),
+    ).toBe("1 DAI per 1 USDC (raw rate 1000000000000/1)");
   });
 });

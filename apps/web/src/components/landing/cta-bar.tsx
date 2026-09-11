@@ -1,7 +1,8 @@
 import { ArrowUpRight } from "lucide-react";
 import { ButtonLink } from "@/components/ui/kit";
 
-const DEMO_HASH = "0x4a91f2c7d6b3e580a9c1d47fb0e2f53618d7c4a9e5b2f08371c6d9a42f8e0b5d";
+const DEMO_URL =
+  "/mandates/0x01163a9088c3c0342fd7d8b07f4720c5d52e1c9626cc114923ae4339414f9fcd?tx=0x0d4174a636098d3b0f717cb2e71d721aa646d6cf43ca61f9ae1460c1df75f164";
 
 export function CtaBar() {
   return (
@@ -14,7 +15,7 @@ export function CtaBar() {
           Issue your first mandate on Sepolia.
         </h2>
         <ButtonLink
-          href={`/mandates/${DEMO_HASH}`}
+          href={DEMO_URL}
           variant="primary"
           className="h-14 rounded-full px-8 text-[1rem]"
           aria-label="Open the demo mandate inspection"

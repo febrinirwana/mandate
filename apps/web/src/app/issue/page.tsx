@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Footer } from "@/components/landing/footer";
 import { Nav } from "@/components/landing/nav";
 import { Issuance } from "@/components/mandate/issuance";
+import { MandateProviders } from "@/components/providers";
 import { runtimeConfig } from "@/lib/runtime.server";
 
 export const metadata: Metadata = {
@@ -21,7 +22,9 @@ export default function IssuePage() {
       </a>
       <Nav />
       <main id="main">
-        <Issuance runtime={runtimeConfig()} />
+        <MandateProviders>
+          <Issuance runtime={runtimeConfig()} />
+        </MandateProviders>
       </main>
       <Footer />
     </>

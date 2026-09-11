@@ -70,6 +70,7 @@ type PreparedState = {
   intent: ExecutionIntent;
   request: ManualExecutionRequest;
   simulation: SimulationV1;
+  policy: AgentPolicy;
   authority: AgentAuthority;
   now: () => Date;
 };
@@ -101,6 +102,10 @@ function reject(reason: ReasonCode): never {
 }
 
 function sameStrategy(left: StrategyV1, right: StrategyV1): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function samePolicy(left: AgentPolicy, right: AgentPolicy): boolean {
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
@@ -265,13 +270,16 @@ export async function prepareExecution(
     simulation: refreshed,
     authority,
     now,
+    policy,
   });
 }
 
 export async function revalidatePrepared(
   prepared: PreparedExecution,
+  expectedPolicy?: AgentPolicy,
 ): Promise<ManualExecutionRequest> {
   const state = stateOf(prepared);
+  if (expectedPolicy && !samePolicy(state.policy, expectedPolicy)) reject("TARGET_MISMATCH");
   if (state.now().getTime() >= new Date(state.simulation.binding.expiresAt).getTime()) {
     reject("SIMULATION_STALE");
   }
@@ -286,15 +294,4 @@ export async function revalidatePrepared(
   }
   if (canonical !== state.simulation.binding.blockHash) reject("SIMULATION_STALE");
   return { ...state.request };
-}
-
-export async function reprepareForSigner(
-  prepared: PreparedExecution,
-  policy: AgentPolicy,
-  authority: AgentAuthority,
-  options: { now?: () => Date } = {},
-): Promise<ManualExecutionRequest> {
-  const state = stateOf(prepared);
-  const verified = await prepareExecution(state.intent, policy, authority, options);
-  return revalidatePrepared(verified);
 }

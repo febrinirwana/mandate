@@ -1,8 +1,11 @@
 import {
+  DemoExecutionRequestV1Schema,
+  DemoExecutionResultV1Schema,
   ExecutionV1Schema,
   MandateSnapshotV1Schema,
   ReceiptAuditV1Schema,
   SimulationV1Schema,
+  type DemoExecutionResultV1,
   type ExecutionV1,
   type MandateSnapshotV1,
   type ReceiptAuditV1,
@@ -44,6 +47,25 @@ export async function simulate(requestBody: SimulationRequestV1): Promise<ApiSta
   });
   if (!value || !value.ok) return { kind: "OUTAGE" };
   const parsed = SimulationV1Schema.safeParse(await value.json());
+  return parsed.success ? { kind: "READY", data: parsed.data } : { kind: "INVALID_RESPONSE" };
+}
+
+export async function runDemoAgent(input: unknown): Promise<ApiState<DemoExecutionResultV1>> {
+  const request = DemoExecutionRequestV1Schema.safeParse(input);
+  if (!request.success) return { kind: "INVALID_RESPONSE" };
+  const value = await response("/api/agent-executions", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(request.data),
+  });
+  if (!value || !value.ok) return { kind: "OUTAGE" };
+  let body: unknown;
+  try {
+    body = await value.json();
+  } catch {
+    return { kind: "INVALID_RESPONSE" };
+  }
+  const parsed = DemoExecutionResultV1Schema.safeParse(body);
   return parsed.success ? { kind: "READY", data: parsed.data } : { kind: "INVALID_RESPONSE" };
 }
 

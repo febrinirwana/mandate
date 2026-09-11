@@ -17,7 +17,7 @@ import { z } from "zod";
 
 import {
   AgentRejection,
-  reprepareForSigner,
+  revalidatePrepared,
   type AgentAuthority,
   type AgentPolicy,
   type ManualExecutionRequest,
@@ -28,7 +28,7 @@ const hex = (bytes: number) => z.string().regex(new RegExp(`^[0-9a-fA-F]{${bytes
 const KeystoreSchema = z.strictObject({
   version: z.literal(3),
   id: z.string().min(1),
-  address: hex(20),
+  address: hex(20).optional(),
   crypto: z.strictObject({
     cipher: z.literal("aes-128-ctr"),
     cipherparams: z.strictObject({ iv: hex(16) }),
@@ -54,7 +54,7 @@ type ExecutionTransport = {
   wait(hash: Hash): Promise<{ status: "success" | "reverted" }>;
 };
 
-interface SignerSecurityBoundary {
+export interface SignerSecurityBoundary {
   policy: AgentPolicy;
   authority: AgentAuthority;
   now?: () => Date;
@@ -66,12 +66,7 @@ export function createPolicyBoundSignerForTransport(
 ): MandateExecutionSigner {
   return {
     async submit(prepared) {
-      const request = await reprepareForSigner(
-        prepared,
-        security.policy,
-        security.authority,
-        security.now ? { now: security.now } : {},
-      );
+      const request = await revalidatePrepared(prepared, security.policy);
       const txHash = await transport.send(request);
       const receipt = await transport.wait(txHash);
       if (receipt.status !== "success") throw new AgentRejection("ROUTE_REVERTED");
@@ -130,17 +125,21 @@ async function loadDedicatedAccount(configuration: DedicatedKeystoreConfiguratio
   decrypted.fill(0);
   if (
     account.address.toLowerCase() !== configuration.expectedSigner.toLowerCase() ||
-    parsed.address.toLowerCase() !== account.address.slice(2).toLowerCase()
+    (parsed.address !== undefined &&
+      parsed.address.toLowerCase() !== account.address.slice(2).toLowerCase())
   ) {
     throw new AgentRejection("CALLER_NOT_AGENT");
   }
   return account;
 }
 
-export async function createDedicatedKeystoreSigner(
+export interface DedicatedKeystoreSignerFactory {
+  create(security: SignerSecurityBoundary): MandateExecutionSigner;
+}
+
+export async function createDedicatedKeystoreSignerFactory(
   configuration: DedicatedKeystoreConfiguration,
-  security: SignerSecurityBoundary,
-): Promise<MandateExecutionSigner> {
+): Promise<DedicatedKeystoreSignerFactory> {
   if (
     !configuration.keystorePath ||
     !configuration.keystorePassword ||
@@ -148,12 +147,6 @@ export async function createDedicatedKeystoreSigner(
     !Number.isSafeInteger(configuration.chainId) ||
     configuration.chainId < 1 ||
     !URL.canParse(configuration.rpcUrl)
-  ) {
-    throw new AgentRejection("CALLER_NOT_AGENT");
-  }
-  if (
-    security.policy.signer !== configuration.expectedSigner.toLowerCase() ||
-    security.policy.chainId !== configuration.chainId.toString()
   ) {
     throw new AgentRejection("CALLER_NOT_AGENT");
   }
@@ -168,21 +161,38 @@ export async function createDedicatedKeystoreSigner(
   const wallet = createWalletClient({ account, chain, transport });
   const publicClient = createPublicClient({ chain, transport });
 
-  return createPolicyBoundSignerForTransport(
-    {
-      send: async (request) => {
-        if (request.account !== account.address.toLowerCase()) {
-          throw new AgentRejection("CALLER_NOT_AGENT");
-        }
-        return wallet.sendTransaction({
-          account,
-          to: request.to,
-          data: request.data,
-          value: request.value,
-        });
-      },
-      wait: async (hash) => publicClient.waitForTransactionReceipt({ hash }),
+  return {
+    create(security) {
+      if (
+        security.policy.signer !== configuration.expectedSigner.toLowerCase() ||
+        security.policy.chainId !== configuration.chainId.toString()
+      ) {
+        throw new AgentRejection("CALLER_NOT_AGENT");
+      }
+      return createPolicyBoundSignerForTransport(
+        {
+          send: async (request) => {
+            if (request.account !== account.address.toLowerCase()) {
+              throw new AgentRejection("CALLER_NOT_AGENT");
+            }
+            return wallet.sendTransaction({
+              account,
+              to: request.to,
+              data: request.data,
+              value: request.value,
+            });
+          },
+          wait: async (hash) => publicClient.waitForTransactionReceipt({ hash }),
+        },
+        security,
+      );
     },
-    security,
-  );
+  };
+}
+
+export async function createDedicatedKeystoreSigner(
+  configuration: DedicatedKeystoreConfiguration,
+  security: SignerSecurityBoundary,
+): Promise<MandateExecutionSigner> {
+  return (await createDedicatedKeystoreSignerFactory(configuration)).create(security);
 }

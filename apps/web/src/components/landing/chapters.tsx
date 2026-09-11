@@ -27,7 +27,7 @@ const CHAPTERS: Chapter[] = [
       "A live ENSv2 name bound to the dedicated signer, verified against the registry onchain at execution time.",
     detail: (
       <div className="flex items-center gap-2">
-        <span className="mono-data font-medium text-ink">vitalik.mandate.eth</span>
+        <span className="mono-data font-medium text-ink">agent.mandate-test.eth</span>
         <span
           className="ledger-label inline-flex items-center gap-1 rounded-[2px] px-1.5 py-0.5"
           style={{
@@ -50,7 +50,7 @@ const CHAPTERS: Chapter[] = [
       "One immutable strategy: pair, route, rate floor, caps, and window, shipped to Aqua and activated by hash.",
     detail: (
       <div className="flex items-center gap-2">
-        <span className="mono-data font-medium text-ink">USDC → WETH · 50K / EXEC</span>
+        <span className="mono-data font-medium text-ink">USDC → DAI · 1 / EXEC</span>
         <motion.span
           initial={{ scale: 0, rotate: -14, opacity: 0 }}
           whileInView={{ scale: 1, rotate: -6, opacity: 1 }}
