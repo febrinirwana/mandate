@@ -15,11 +15,11 @@
     "@mandate/chain": "workspace:*",
     "@mandate/domain": "workspace:*",
     "viem": "2.56.3",
-    "@mandate/db": "workspace:*"
+    "@mandate/db": "workspace:*",
+    "tsx": "4.23.13"
   },
   "devDependencies": {
     "@types/node": "24.13.3",
-    "tsx": "4.23.13",
     "typescript": "5.9.3",
     "vitest": "5.0.0"
   }

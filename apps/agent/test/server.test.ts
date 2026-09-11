@@ -94,6 +94,40 @@ it("reports disabled demo mode as an unavailable safe state without calling the 
   expect(execute).not.toHaveBeenCalled();
 });
 
+it("requires the configured server credential before executing a public demo request", async () => {
+  const execute = vi.fn().mockResolvedValue({ status: "REJECTED", reason: "MANDATE_REVOKED" });
+  const origin = await start({
+    authToken: "server-only-agent-token",
+    demoEnabled: true,
+    service: { execute },
+  });
+
+  for (const authorization of [undefined, "Bearer wrong-token"]) {
+    const response = await fetch(`${origin}/v1/demo-executions`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        ...(authorization ? { authorization } : {}),
+      },
+      body: JSON.stringify(request),
+    });
+    expect(response.status).toBe(401);
+  }
+
+  expect(execute).not.toHaveBeenCalled();
+
+  const response = await fetch(`${origin}/v1/demo-executions`, {
+    method: "POST",
+    headers: {
+      authorization: "Bearer server-only-agent-token",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(request),
+  });
+  expect(response.status).toBe(200);
+  expect(execute).toHaveBeenCalledExactlyOnceWith(request);
+});
+
 it("does not expose configured secrets in unexpected error responses or logs", async () => {
   const sensitiveMarker = "forbidden-sensitive-marker";
   const keystore = '{"encrypted":"test-keystore-content"}';

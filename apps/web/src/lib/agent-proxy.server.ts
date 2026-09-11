@@ -23,9 +23,13 @@ export async function forwardDemoExecution(input: unknown): Promise<AgentProxySt
 
   let response: Response;
   try {
+    const authToken = process.env["MANDATE_AGENT_AUTH_TOKEN"];
     response = await fetch(`${origin}/v1/demo-executions`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: {
+        ...(authToken ? { authorization: `Bearer ${authToken}` } : {}),
+        "content-type": "application/json",
+      },
       body: JSON.stringify(request.data),
       cache: "no-store",
       signal: AbortSignal.timeout(90_000),

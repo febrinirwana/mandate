@@ -105,6 +105,28 @@ it("requires explicit demo mode and parses only the fixed server-side profile ru
     allowedStrategyHash: policy.strategyHash,
   });
   expect(configuration.port).toBe(3002);
+  expect(configuration.host).toBe("127.0.0.1");
+  const networkConfiguration = parseDemoAgentConfiguration({
+    ...base,
+    MANDATE_DEMO_AGENT_ENABLED: "true",
+    MANDATE_POLICY_PROFILE: demoProfile,
+    MANDATE_SEPOLIA_FAUCET_AMOUNT: "100",
+    SEPOLIA_MANDATE_DEPLOYMENT_BLOCK: "11668678",
+    AGENT_HOST: "0.0.0.0",
+    AGENT_AUTH_TOKEN: "test-network-auth-token",
+  });
+  expect(networkConfiguration.host).toBe("0.0.0.0");
+  expect(networkConfiguration.authToken).toBe("test-network-auth-token");
+  expect(() =>
+    parseDemoAgentConfiguration({
+      ...base,
+      MANDATE_DEMO_AGENT_ENABLED: "true",
+      MANDATE_POLICY_PROFILE: demoProfile,
+      MANDATE_SEPOLIA_FAUCET_AMOUNT: "100",
+      SEPOLIA_MANDATE_DEPLOYMENT_BLOCK: "11668678",
+      AGENT_HOST: "0.0.0.0",
+    }),
+  ).toThrow("AGENT_AUTH_TOKEN is not configured");
   expect(configuration.profile.agent.address).toBe(strategy.agent);
   expect(configuration.maximumDemoInput).toBe("100000000");
   expect(() =>

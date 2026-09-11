@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { resolve } from "node:path";
 import { loadEnvFile } from "node:process";
@@ -27,6 +27,7 @@ export interface DemoExecutionService {
 
 export interface DemoExecutionServerOptions {
   demoEnabled: boolean;
+  authToken?: string;
   service: DemoExecutionService;
   logger?: (entry: unknown) => void;
 }
@@ -69,6 +70,16 @@ async function readJson(request: IncomingMessage): Promise<unknown> {
   return JSON.parse(Buffer.concat(chunks).toString("utf8"));
 }
 
+function isAuthorized(request: IncomingMessage, authToken: string | undefined): boolean {
+  if (!authToken) return true;
+  const provided = request.headers.authorization ?? "";
+  const expected = `Bearer ${authToken}`;
+  return timingSafeEqual(
+    createHash("sha256").update(provided).digest(),
+    createHash("sha256").update(expected).digest(),
+  );
+}
+
 async function handleDemoExecutionRequest(
   options: DemoExecutionServerOptions,
   request: IncomingMessage,
@@ -80,6 +91,10 @@ async function handleDemoExecutionRequest(
   }
   if (request.method !== "POST" || request.url !== "/v1/demo-executions") {
     send(response, 404, unknownResult("route unavailable"));
+    return;
+  }
+  if (!isAuthorized(request, options.authToken)) {
+    send(response, 401, unknownResult("authorization required"));
     return;
   }
   if (!options.demoEnabled) {
@@ -173,7 +188,15 @@ async function startStandaloneServer(): Promise<void> {
         runAutomatedExecution(intent, { ...security, signer: signerFactory.create(security) }),
       logger: (entry) => console.error(JSON.stringify(entry)),
     });
-    const server = listenDemoExecutionServer({ demoEnabled: true, service }, configuration.port);
+    const server = listenDemoExecutionServer(
+      {
+        ...(configuration.authToken ? { authToken: configuration.authToken } : {}),
+        demoEnabled: true,
+        service,
+      },
+      configuration.port,
+      configuration.host,
+    );
     server.once("error", () => {
       console.error(JSON.stringify(unknownResult("demo server startup failure")));
       process.exitCode = 1;
