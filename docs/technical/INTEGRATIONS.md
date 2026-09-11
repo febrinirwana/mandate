@@ -153,48 +153,44 @@ Security:
 
 ### Product contribution
 
-Mandate adds a service Bazantic does not already provide:
+Mandate adds a service Bazantic did not already provide:
 
-`GET /v1/receipts/{chainId}/{txHash}/audit`
+`POST /v1/routes/1inch/assess`
 
-It answers: “Did this transaction execute the exact active mandate, identity, caps, Aqua movements, route, and recipient?”
+It answers: “Does this exact 1inch Classic Swap response satisfy one immutable Mandate strategy?”
 
-A Bazantic Recipe combines:
+The published Bazantic Recipe combines:
 
-1. a live 1inch transaction trace/data call;
-2. the Mandate Inspector paid endpoint;
-3. deterministic merge logic keyed by chain and transaction hash.
+1. a live Ethereum-mainnet 1inch Classic Swap route;
+2. the Mandate Inspector policy assessor;
+3. one fail-closed result bound to hashes for both the provider response and Mandate strategy.
 
-Neither service alone produces the final audit: 1inch supplies execution trace/context; Mandate supplies strategy/ENS/cap/Aqua semantics.
+The Recipe passes the 1inch response to Mandate without modification. Mandate decodes the route and checks chain, target, selector, caller, recipient, tokens, amount, native value, partial-fill setting, cap, rate floor, route minimum, and execution window. Neither service alone produces the final result.
 
-### Response
+### Result semantics
 
-```json
-{
-  "version": 1,
-  "result": "COMPLIANT",
-  "chainId": "...",
-  "txHash": "0x...",
-  "block": { "number": "...", "hash": "0x..." },
-  "strategyHash": "0x...",
-  "checks": [],
-  "evidence": [
-    { "provider": "1inch", "responseHash": "0x..." },
-    { "provider": "mandate", "responseHash": "0x..." }
-  ]
-}
-```
+Results are `PASS`, `FAIL`, or `UNKNOWN`:
 
-Result values are `COMPLIANT`, `NON_COMPLIANT`, `UNKNOWN`. A paid response is not automatically compliant.
+- `PASS` requires an available, decodable provider response and every deterministic Mandate check to pass;
+- `FAIL` means available route data contradicts the request or policy;
+- `UNKNOWN` means provider evidence is unavailable or cannot be safely interpreted.
+
+`FAIL` outranks `UNKNOWN`; provider presence and successful payment never imply `PASS`. The response includes the normalized route, individual checks, the strategy hash, and separate 1inch/Mandate evidence hashes.
+
+### Chain-boundary honesty
+
+The Recipe assesses a live Ethereum-mainnet 1inch route. The public execution proof remains on Sepolia because 1inch Classic v6.1 does not advertise Sepolia. The Recipe is not a cross-chain receipt consensus flow, and the mainnet route must not be described as proof of the Sepolia transaction.
+
+The existing `GET /v1/receipts/{chainId}/{txHash}/audit` remains a separate Mandate gateway operation for canonical Sepolia receipt, ENS, cap, Aqua, allowance, residue, and balance evidence.
 
 ### Qualification gates
 
-- create Bazantic account before event cutoff;
-- confirm x402/MPP Gateway and Recipe schema from current docs;
-- verify Mandate service is new and not a thin proxy of an existing API;
-- make both services materially determine the final result;
-- record a screen capture from paid request through final response;
-- include attribution/username required by current submission rules.
+- publish a Bazantic account username with the submission;
+- keep the Mandate Inspector gateway distinct from the sponsor 1inch service;
+- make both services materially determine the Recipe result;
+- record a paid invocation and settlement reference, not only the unpaid dashboard test;
+- record a redacted screen capture and public gateway/Recipe identifiers;
+- keep 1inch, Bazantic, RPC, database, and wallet credentials outside repository artifacts.
 
 ## 7. RPC providers
 

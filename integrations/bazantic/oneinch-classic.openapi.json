@@ -1,0 +1,180 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "1inch Classic Swap Route",
+    "version": "6.1",
+    "description": "Narrow Ethereum-mainnet exact-input route surface used by the Mandate Route Assurance Recipe."
+  },
+  "servers": [
+    {
+      "url": "https://api.1inch.com"
+    }
+  ],
+  "paths": {
+    "/swap/v6.1/1/swap": {
+      "get": {
+        "operationId": "getClassicSwapRoute",
+        "summary": "Build an Ethereum mainnet Classic Swap route",
+        "parameters": [
+          {
+            "name": "src",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[0-9a-fA-F]{40}$"
+            }
+          },
+          {
+            "name": "dst",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[0-9a-fA-F]{40}$"
+            }
+          },
+          {
+            "name": "amount",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]*$"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[0-9a-fA-F]{40}$"
+            }
+          },
+          {
+            "name": "receiver",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^0x[0-9a-fA-F]{40}$"
+            }
+          },
+          {
+            "name": "slippage",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?$"
+            }
+          },
+          {
+            "name": "allowPartialFill",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "false"
+            }
+          },
+          {
+            "name": "disableEstimate",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "true"
+            }
+          },
+          {
+            "name": "protocols",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Z0-9_]+(?:,[A-Z0-9_]+)*$"
+            }
+          },
+          {
+            "name": "complexityLevel",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["0", "1", "2", "3"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Classic Swap route",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["dstAmount", "tx"],
+                  "properties": {
+                    "dstAmount": {
+                      "type": "string",
+                      "pattern": "^[1-9][0-9]*$"
+                    },
+                    "tx": {
+                      "type": "object",
+                      "required": ["from", "to", "data", "value"],
+                      "properties": {
+                        "from": {
+                          "type": "string",
+                          "pattern": "^0x[0-9a-fA-F]{40}$"
+                        },
+                        "to": {
+                          "type": "string",
+                          "pattern": "^0x[0-9a-fA-F]{40}$"
+                        },
+                        "data": {
+                          "type": "string",
+                          "pattern": "^0x(?:[0-9a-fA-F]{2})+$"
+                        },
+                        "value": {
+                          "type": "string",
+                          "pattern": "^(?:0|[1-9][0-9]*)$"
+                        },
+                        "gas": {
+                          "oneOf": [
+                            {
+                              "type": "integer",
+                              "minimum": 1
+                            },
+                            {
+                              "type": "string",
+                              "pattern": "^[1-9][0-9]*$"
+                            }
+                          ]
+                        },
+                        "gasPrice": {
+                          "oneOf": [
+                            {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            {
+                              "type": "string",
+                              "pattern": "^(?:0|[1-9][0-9]*)$"
+                            }
+                          ]
+                        }
+                      },
+                      "additionalProperties": true
+                    }
+                  },
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

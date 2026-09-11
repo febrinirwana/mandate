@@ -33,6 +33,37 @@ importers:
         specifier: 8.69.0
         version: 8.69.0(eslint@10.10.0(jiti@2.7.0))(typescript@5.9.3)
 
+  apps/agent:
+    dependencies:
+      '@mandate/chain':
+        specifier: workspace:*
+        version: link:../../packages/chain
+      '@mandate/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@mandate/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      viem:
+        specifier: 2.56.3
+        version: 2.56.3(bufferutil@4.1.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.5.4)
+      zod:
+        specifier: 4.5.4
+        version: 4.5.4
+    devDependencies:
+      '@types/node':
+        specifier: 24.13.3
+        version: 24.13.3
+      tsx:
+        specifier: 4.23.13
+        version: 4.23.13
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: 5.0.0
+        version: 5.0.0(@types/node@24.13.3)(vite@8.2.2(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0))
+
   apps/api:
     dependencies:
       '@hono/node-server':
@@ -78,6 +109,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@mandate/agent':
+        specifier: workspace:*
+        version: link:../agent
       '@mandate/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts

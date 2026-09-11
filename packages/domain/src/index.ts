@@ -220,6 +220,156 @@ export const ReceiptAuditV1Schema = z.strictObject({
     .min(1),
 });
 
+const RouteAssessmentResultSchema = z.enum(["PASS", "FAIL", "UNKNOWN"]);
+
+export const RouteAssessmentReasonSchema = z.enum([
+  "ONEINCH_UNAVAILABLE",
+  "ONEINCH_RESPONSE_INVALID",
+  "TARGET_MISMATCH",
+  "SELECTOR_MISMATCH",
+  "CALLER_MISMATCH",
+  "RECIPIENT_MISMATCH",
+  "TOKEN_MISMATCH",
+  "AMOUNT_MISMATCH",
+  "NATIVE_VALUE_NONZERO",
+  "PARTIAL_FILL_ENABLED",
+  "CALLBACK_CUSTODY_UNSAFE",
+  "ROUTE_EXECUTOR_INVALID",
+  "PER_CALL_CAP_EXCEEDED",
+  "RATE_FLOOR_UNSATISFIED",
+  "ROUTE_MINIMUM_UNSATISFIED",
+  "EXECUTION_DEADLINE_INVALID",
+]);
+
+const RouteAssessmentCheckCodeSchema = z.enum([
+  "PROVIDER_RESPONSE",
+  "ROUTE_BINDINGS",
+  "POLICY_TARGET",
+  "POLICY_SELECTOR",
+  "PER_CALL_CAP",
+  "RATE_FLOOR",
+  "ROUTE_MINIMUM",
+  "EXECUTION_WINDOW",
+]);
+
+const OneInchAvailableEvidenceV1Schema = z.strictObject({
+  status: z.literal("AVAILABLE"),
+  requestId: z.string().min(1).max(128),
+  requestedAt: TimestampSchema,
+  response: z.record(z.string(), z.unknown()),
+});
+
+const OneInchUnavailableEvidenceV1Schema = z.strictObject({
+  status: z.literal("UNAVAILABLE"),
+  observedAt: TimestampSchema,
+  reason: z.enum(["TIMEOUT", "HTTP_ERROR", "INVALID_RESPONSE"]),
+});
+
+export const OneInchRouteEvidenceV1Schema = z.discriminatedUnion("status", [
+  OneInchAvailableEvidenceV1Schema,
+  OneInchUnavailableEvidenceV1Schema,
+]);
+
+export const RouteAssessmentRequestV1Schema = z.strictObject({
+  version: z.literal(1),
+  chainId: z.literal("1"),
+  mandateApp: NonZeroAddressSchema,
+  strategy: StrategyV1Schema,
+  amountIn: PositiveUint256StringSchema,
+  agentMinOut: Uint256StringSchema,
+  executionDeadline: Uint64StringSchema,
+  protocols: z.array(z.string().regex(/^[A-Z0-9_]+$/)).min(1),
+  provider: OneInchRouteEvidenceV1Schema,
+});
+
+const AssessedRouteV1Schema = z.strictObject({
+  provider: z.literal("1inch-classic-swap-v6.1"),
+  requestId: z.string().min(1).max(128),
+  target: NonZeroAddressSchema,
+  selector: z.literal("0x07ed2379"),
+  executor: NonZeroAddressSchema,
+  caller: NonZeroAddressSchema,
+  recipient: NonZeroAddressSchema,
+  tokenIn: NonZeroAddressSchema,
+  tokenOut: NonZeroAddressSchema,
+  amountIn: PositiveUint256StringSchema,
+  quotedAmountOut: PositiveUint256StringSchema,
+  routeMinimumOut: PositiveUint256StringSchema,
+  nativeValue: z.literal("0"),
+  allowPartialFill: z.literal(false),
+  protocols: z.array(z.string().regex(/^[A-Z0-9_]+$/)).min(1),
+});
+
+const RouteAssessmentCheckV1Schema = z.strictObject({
+  code: RouteAssessmentCheckCodeSchema,
+  result: RouteAssessmentResultSchema,
+  detail: z.string().min(1).max(256).optional(),
+});
+
+const RouteAssessmentEvidenceV1Schema = z.strictObject({
+  provider: z.enum(["1inch-classic-swap-v6.1", "mandate-strategy"]),
+  responseHash: NonZeroHash32Schema,
+});
+
+export const RouteAssessmentV1Schema = z
+  .strictObject({
+    version: z.literal(1),
+    result: RouteAssessmentResultSchema,
+    reasons: z.array(RouteAssessmentReasonSchema),
+    chainId: z.literal("1"),
+    strategyHash: NonZeroHash32Schema,
+    assessedAt: TimestampSchema,
+    request: z.strictObject({
+      mandateApp: NonZeroAddressSchema,
+      amountIn: PositiveUint256StringSchema,
+      agentMinOut: Uint256StringSchema,
+      executionDeadline: Uint64StringSchema,
+    }),
+    route: AssessedRouteV1Schema.nullable(),
+    checks: z.array(RouteAssessmentCheckV1Schema).min(1),
+    evidence: z.array(RouteAssessmentEvidenceV1Schema).length(2),
+  })
+  .superRefine((assessment, context) => {
+    const evidenceProviders = new Set(assessment.evidence.map(({ provider }) => provider));
+    if (
+      evidenceProviders.size !== 2 ||
+      !evidenceProviders.has("1inch-classic-swap-v6.1") ||
+      !evidenceProviders.has("mandate-strategy")
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "assessment evidence must bind 1inch and the Mandate strategy",
+        path: ["evidence"],
+      });
+    }
+    if (
+      assessment.evidence.find(({ provider }) => provider === "mandate-strategy")?.responseHash !==
+      assessment.strategyHash
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "Mandate strategy evidence must equal strategyHash",
+        path: ["evidence"],
+      });
+    }
+
+    const hasFail = assessment.checks.some(({ result }) => result === "FAIL");
+    const hasUnknown = assessment.checks.some(({ result }) => result === "UNKNOWN");
+    if (
+      (assessment.result === "PASS" &&
+        (assessment.route === null || assessment.reasons.length > 0 || hasFail || hasUnknown)) ||
+      (assessment.result === "FAIL" && (!hasFail || assessment.reasons.length === 0)) ||
+      (assessment.result === "UNKNOWN" &&
+        (hasFail || !hasUnknown || assessment.reasons.length === 0))
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "assessment result must match route, reasons, and check precedence",
+        path: ["result"],
+      });
+    }
+  });
+
 const DeploymentProbeSchema = z.strictObject({
   method: z.string().min(1),
   resultHash: NonZeroHash32Schema,
@@ -571,6 +721,8 @@ export const jsonSchemas = {
   checkV1: z.toJSONSchema(CheckV1Schema),
   mandateSnapshotV1: z.toJSONSchema(MandateSnapshotV1Schema),
   receiptAuditV1: z.toJSONSchema(ReceiptAuditV1Schema),
+  routeAssessmentRequestV1: z.toJSONSchema(RouteAssessmentRequestV1Schema),
+  routeAssessmentV1: z.toJSONSchema(RouteAssessmentV1Schema),
   simulationRequestV1: z.toJSONSchema(SimulationRequestV1Schema),
   executionV1: z.toJSONSchema(ExecutionV1Schema),
   canonicalReceiptEvidenceV1: z.toJSONSchema(CanonicalReceiptEvidenceV1Schema),
@@ -595,6 +747,10 @@ export type SimulationBindingV1 = z.infer<typeof SimulationBindingV1Schema>;
 export type CheckV1 = z.infer<typeof CheckV1Schema>;
 export type MandateSnapshotV1 = z.infer<typeof MandateSnapshotV1Schema>;
 export type ReceiptAuditV1 = z.infer<typeof ReceiptAuditV1Schema>;
+export type OneInchRouteEvidenceV1 = z.infer<typeof OneInchRouteEvidenceV1Schema>;
+export type RouteAssessmentReason = z.infer<typeof RouteAssessmentReasonSchema>;
+export type RouteAssessmentRequestV1 = z.infer<typeof RouteAssessmentRequestV1Schema>;
+export type RouteAssessmentV1 = z.infer<typeof RouteAssessmentV1Schema>;
 export type SimulationRequestV1 = z.infer<typeof SimulationRequestV1Schema>;
 export type ExecutionV1 = z.infer<typeof ExecutionV1Schema>;
 export type ExecutionEventEvidenceV1 = z.infer<typeof ExecutionEventEvidenceV1Schema>;
