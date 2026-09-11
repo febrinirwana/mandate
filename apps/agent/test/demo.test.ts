@@ -92,6 +92,7 @@ function createService(
       chainId: request.chainId,
       mandateApp: request.mandateApp,
       routeRecipient: request.mandateApp,
+      allowedStrategyHash: demoSnapshot.strategyHash,
       maximumDemoInput: "3000000",
     },
     authority,
@@ -146,6 +147,10 @@ it("derives the bounded execution from fixed policy and the activated dynamic st
 
 it.each([
   ["wrong chain", { request: { chainId: "1", strategyHash: demoSnapshot.strategyHash } }],
+  [
+    "unapproved strategy hash",
+    { request: { chainId: request.chainId, strategyHash: hash("e") } },
+  ],
   [
     "wrong agent",
     { snapshot: { ...demoSnapshot, strategy: { ...demoStrategy, agent: address("9") } } },

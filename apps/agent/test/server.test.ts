@@ -3,7 +3,7 @@ import type { AddressInfo } from "node:net";
 
 import { afterEach, expect, it, vi } from "vitest";
 
-import { createDemoExecutionServer } from "../src/server.js";
+import { createDemoExecutionServer, listenDemoExecutionServer } from "../src/server.js";
 
 const hash = (digit: string) => `0x${digit.repeat(64)}`;
 const request = { chainId: "11155111", strategyHash: hash("1") };
@@ -30,6 +30,16 @@ async function start(options: Parameters<typeof createDemoExecutionServer>[0]) {
   const address = server.address() as AddressInfo;
   return `http://127.0.0.1:${address.port}`;
 }
+
+it("binds the standalone demo server to loopback by default", async () => {
+  const execute = vi.fn();
+  const server = listenDemoExecutionServer({ demoEnabled: true, service: { execute } }, 0);
+  servers.push(server);
+  await once(server, "listening");
+
+  const address = server.address() as AddressInfo;
+  expect(address.address).toBe("127.0.0.1");
+});
 
 it("accepts only the strict demo request and returns the canonical service result", async () => {
   const execute = vi.fn().mockResolvedValue({ status: "REJECTED", reason: "MANDATE_REVOKED" });

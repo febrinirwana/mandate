@@ -102,6 +102,7 @@ it("requires explicit demo mode and parses only the fixed server-side profile ru
     mandateApp: policy.mandateApp,
     deploymentBlock: 11668678n,
     routeRecipient: policy.mandateApp,
+    allowedStrategyHash: policy.strategyHash,
   });
   expect(configuration.port).toBe(3002);
   expect(configuration.profile.agent.address).toBe(strategy.agent);

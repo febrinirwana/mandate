@@ -32,6 +32,7 @@ export interface DemoAgentConfiguration {
     mandateApp: `0x${string}`;
     deploymentBlock: bigint;
     routeRecipient: `0x${string}`;
+    allowedStrategyHash: `0x${string}`;
   };
   profile: PolicyProfileV1;
   maximumDemoInput: string;
@@ -155,6 +156,7 @@ export function parseDemoAgentConfiguration(environment: Environment): DemoAgent
       mandateApp,
       deploymentBlock,
       routeRecipient: mandateApp,
+      allowedStrategyHash: parsed(environment, "AGENT_STRATEGY_HASH", Hash32Schema),
     },
     profile,
     maximumDemoInput,

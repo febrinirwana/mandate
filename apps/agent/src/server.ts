@@ -122,9 +122,10 @@ export function createDemoExecutionServer(options: DemoExecutionServerOptions): 
 export function listenDemoExecutionServer(
   options: DemoExecutionServerOptions,
   port = DEFAULT_AGENT_PORT,
+  host = "127.0.0.1",
 ): Server {
   const server = createDemoExecutionServer(options);
-  server.listen(port);
+  server.listen(port, host);
   return server;
 }
 
@@ -164,6 +165,7 @@ async function startStandaloneServer(): Promise<void> {
         chainId: configuration.runtime.chainId.toString(),
         mandateApp: configuration.runtime.mandateApp,
         routeRecipient: configuration.runtime.routeRecipient,
+        allowedStrategyHash: configuration.runtime.allowedStrategyHash,
         maximumDemoInput: configuration.maximumDemoInput,
       },
       authority,
