@@ -5,10 +5,14 @@ import {
   AddressSchema,
   CanonicalReceiptEvidenceV1Schema,
   DecimalStringSchema,
+  DemoExecutionRequestV1Schema,
+  DemoExecutionResultV1Schema,
   DeploymentManifestV1Schema,
   Hash32Schema,
-  ReasonCodeSchema,
   MandateSnapshotV1Schema,
+  parsePolicyProfileJson,
+  PolicyProfileV1Schema,
+  ReasonCodeSchema,
   ReceiptAuditV1Schema,
   RouteAssessmentRequestV1Schema,
   RouteAssessmentV1Schema,
@@ -523,5 +527,99 @@ describe("VenueManifestV1Schema", () => {
 
   it("exports the venue manifest JSON Schema", () => {
     expect(jsonSchemas.venueManifestV1).toMatchObject({ type: "object" });
+  });
+});
+
+const validPolicyProfile = {
+  agent: { name: "agent.mandate-test.eth", address: address("2") },
+  ens: {
+    registry: address("3"),
+    resolver: address("4"),
+    label: "agent",
+    node: hash("5"),
+  },
+  tokenIn: { symbol: "USDC", address: address("6"), decimals: 6 },
+  tokenOut: { symbol: "DAI", address: address("7"), decimals: 18 },
+  route: { target: address("8"), selector: "0x12345678" },
+} as const;
+
+describe("PolicyProfileV1Schema", () => {
+  it("parses a complete policy profile JSON without returning partial policy", () => {
+    expect(parsePolicyProfileJson(JSON.stringify(validPolicyProfile))).toEqual(validPolicyProfile);
+    expect(
+      parsePolicyProfileJson(JSON.stringify({ ...validPolicyProfile, extra: true })),
+    ).toBeUndefined();
+    expect(
+      parsePolicyProfileJson(
+        JSON.stringify({
+          ...validPolicyProfile,
+          route: { ...validPolicyProfile.route, selector: "0x0" },
+        }),
+      ),
+    ).toBeUndefined();
+    expect(PolicyProfileV1Schema.safeParse({ ...validPolicyProfile, extra: true }).success).toBe(
+      false,
+    );
+  });
+});
+
+describe("DemoExecution wire schemas", () => {
+  const confirmed = {
+    status: "CONFIRMED",
+    txHash: hash("1"),
+    execution: {
+      version: 1,
+      chainId: "11155111",
+      txHash: hash("1"),
+      block: { number: "11634851", hash: hash("2") },
+      transactionIndex: "0",
+      strategyHash: hash("3"),
+      caller: address("2"),
+      amountIn: "10",
+      amountOut: "20",
+      usedInputAfter: "10",
+      status: "CONFIRMED",
+    },
+    audit: {
+      version: 1,
+      result: "COMPLIANT",
+      chainId: "11155111",
+      txHash: hash("1"),
+      block: { number: "11634851", hash: hash("2") },
+      strategyHash: hash("3"),
+      checks: [],
+      evidence: [{ provider: "rpc-receipt", responseHash: hash("4") }],
+    },
+  } as const;
+
+  it("admits only chain ID and strategy hash in a demo request", () => {
+    const request = { chainId: "11155111", strategyHash: hash("3") };
+
+    expect(DemoExecutionRequestV1Schema.parse(request)).toEqual(request);
+    for (const field of ["to", "data", "value", "amountIn", "surprise"] as const) {
+      expect(
+        DemoExecutionRequestV1Schema.safeParse({ ...request, [field]: "untrusted" }).success,
+      ).toBe(false);
+    }
+  });
+
+  it("admits all safe terminal result variants and rejects mismatched receipt evidence", () => {
+    expect(DemoExecutionResultV1Schema.parse(confirmed)).toEqual(confirmed);
+    expect(
+      DemoExecutionResultV1Schema.parse({ status: "REJECTED", reason: "MANDATE_REVOKED" }),
+    ).toEqual({
+      status: "REJECTED",
+      reason: "MANDATE_REVOKED",
+    });
+    expect(DemoExecutionResultV1Schema.parse({ status: "UNKNOWN", errorId: hash("5") })).toEqual({
+      status: "UNKNOWN",
+      errorId: hash("5"),
+    });
+    expect(
+      DemoExecutionResultV1Schema.safeParse({
+        ...confirmed,
+        audit: { ...confirmed.audit, strategyHash: hash("9") },
+      }).success,
+    ).toBe(false);
   });
 });

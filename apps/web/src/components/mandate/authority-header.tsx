@@ -15,15 +15,17 @@ function stampFor(status: InspectionStatus): StampKind {
 export function AuthorityHeader({
   snapshot,
   sentence,
+  agentName,
   compact = false,
 }: {
   snapshot?: MandateSnapshotV1;
   sentence?: string;
+  agentName?: string;
   compact?: boolean;
 }) {
   const status = snapshot ? inspectionStatus(snapshot) : "ACTIVE";
   const agent = snapshot?.strategy.agent ?? DEMO.agent.address;
-  const label = snapshot?.strategy.ensLabel ?? DEMO.agent.ens;
+  const label = agentName ?? snapshot?.strategy.ensLabel ?? DEMO.agent.ens;
   const chain = snapshot?.chainId ?? CHAIN.name;
   const block = snapshot?.block.number ?? DEMO.identity.verifiedAtBlock.toString();
   const strategyHash = snapshot?.strategyHash ?? DEMO.strategyHash;

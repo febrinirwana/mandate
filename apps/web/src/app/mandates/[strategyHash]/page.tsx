@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Footer } from "@/components/landing/footer";
 import { Nav } from "@/components/landing/nav";
 import { MandateInspector } from "@/components/mandate/inspector";
+import { loadBazanticProof } from "@/lib/bazantic-proof.server";
 import { runtimeConfig } from "@/lib/runtime.server";
 
 export const metadata: Metadata = {
@@ -12,10 +13,27 @@ export const metadata: Metadata = {
 
 export default async function MandatePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ strategyHash: string }>;
+  searchParams: Promise<{
+    tx?: string | string[];
+    activationTx?: string | string[];
+    justIssued?: string | string[];
+  }>;
 }) {
-  const { strategyHash } = await params;
+  const [{ strategyHash }, query] = await Promise.all([params, searchParams]);
+  const rawTx = query.tx;
+  const initialTxHash =
+    typeof rawTx === "string" && /^0x[0-9a-fA-F]{64}$/.test(rawTx)
+      ? (rawTx.toLowerCase() as `0x${string}`)
+      : undefined;
+  const rawActivationTx = query.activationTx;
+  const activationTx =
+    typeof rawActivationTx === "string" && /^0x[0-9a-fA-F]{64}$/.test(rawActivationTx)
+      ? (rawActivationTx.toLowerCase() as `0x${string}`)
+      : undefined;
+  const justIssued = query.justIssued === "1";
   return (
     <>
       <a
@@ -26,7 +44,14 @@ export default async function MandatePage({
       </a>
       <Nav />
       <main id="main">
-        <MandateInspector hash={strategyHash} runtime={runtimeConfig()} />
+        <MandateInspector
+          hash={strategyHash}
+          runtime={runtimeConfig()}
+          initialTxHash={initialTxHash}
+          justIssued={justIssued}
+          activationTx={activationTx}
+          bazanticProof={loadBazanticProof()}
+        />
       </main>
       <Footer />
     </>

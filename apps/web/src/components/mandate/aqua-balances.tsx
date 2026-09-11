@@ -1,22 +1,55 @@
-import type { MandateSnapshotV1 } from "@mandate/domain";
+import type { MandateSnapshotV1, PolicyProfileV1 } from "@mandate/domain";
 
 import { CopyValue } from "@/components/ui/copy-value";
 import { Stamp } from "@/components/ui/kit";
+import { formatTokenAmount } from "@/lib/token-display";
 
-export function AquaBalances({ snapshot }: { snapshot: MandateSnapshotV1 }) {
+export function AquaBalances({
+  snapshot,
+  profile,
+}: {
+  snapshot: MandateSnapshotV1;
+  profile?: PolicyProfileV1;
+}) {
+  const amount = (value: string, token: "in" | "out") =>
+    profile
+      ? formatTokenAmount(value, token === "in" ? profile.tokenIn : profile.tokenOut)
+      : `${value} base units`;
   const physical = [
-    { label: "tokenIn in treasury wallet", value: snapshot.physical.makerTokenIn },
-    { label: "tokenOut in treasury wallet", value: snapshot.physical.makerTokenOut },
-    { label: "tokenIn at agent", value: snapshot.physical.agentTokenIn },
-    { label: "tokenOut at agent", value: snapshot.physical.agentTokenOut },
     {
-      label: "token balances at Mandate app",
-      value: `${snapshot.physical.appTokenIn} / ${snapshot.physical.appTokenOut}`,
+      label: `${profile?.tokenIn.symbol ?? "tokenIn"} in treasury wallet`,
+      value: amount(snapshot.physical.makerTokenIn, "in"),
+    },
+    {
+      label: `${profile?.tokenOut.symbol ?? "tokenOut"} in treasury wallet`,
+      value: amount(snapshot.physical.makerTokenOut, "out"),
+    },
+    {
+      label: `${profile?.tokenIn.symbol ?? "tokenIn"} at agent`,
+      value: amount(snapshot.physical.agentTokenIn, "in"),
+    },
+    {
+      label: `${profile?.tokenOut.symbol ?? "tokenOut"} at agent`,
+      value: amount(snapshot.physical.agentTokenOut, "out"),
+    },
+    {
+      label: `${profile?.tokenIn.symbol ?? "tokenIn"} at Mandate app`,
+      value: amount(snapshot.physical.appTokenIn, "in"),
+    },
+    {
+      label: `${profile?.tokenOut.symbol ?? "tokenOut"} at Mandate app`,
+      value: amount(snapshot.physical.appTokenOut, "out"),
     },
   ];
   const virtual = [
-    { label: "tokenIn strategy allocation", value: snapshot.aqua.inputBalance },
-    { label: "tokenOut strategy allocation", value: snapshot.aqua.outputBalance },
+    {
+      label: `${profile?.tokenIn.symbol ?? "tokenIn"} strategy allocation`,
+      value: amount(snapshot.aqua.inputBalance, "in"),
+    },
+    {
+      label: `${profile?.tokenOut.symbol ?? "tokenOut"} strategy allocation`,
+      value: amount(snapshot.aqua.outputBalance, "out"),
+    },
   ];
 
   return (

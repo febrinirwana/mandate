@@ -1,9 +1,12 @@
 import {
   AddressSchema,
   Hash32Schema,
+  parsePolicyProfileJson,
   PositiveUint256StringSchema,
+  type PolicyProfileV1,
   SelectorSchema,
 } from "@mandate/domain";
+import { parseUnits } from "viem";
 
 import type { AgentPolicy } from "./policy.js";
 
@@ -16,6 +19,23 @@ export interface AgentConfiguration {
   policy: AgentPolicy;
   custodyMode: "automated" | "manual";
   keystore?: {
+    path: string;
+    password: string;
+  };
+}
+
+export interface DemoAgentConfiguration {
+  port: number;
+  runtime: {
+    chainId: number;
+    rpcUrl: string;
+    mandateApp: `0x${string}`;
+    deploymentBlock: bigint;
+    routeRecipient: `0x${string}`;
+  };
+  profile: PolicyProfileV1;
+  maximumDemoInput: string;
+  keystore: {
     path: string;
     password: string;
   };
@@ -92,5 +112,55 @@ export function parseAgentConfiguration(environment: Environment): AgentConfigur
           },
         }
       : {}),
+  };
+}
+
+export function parseDemoAgentConfiguration(environment: Environment): DemoAgentConfiguration {
+  if (environment["MANDATE_DEMO_AGENT_ENABLED"] !== "true") {
+    throw new Error("MANDATE_DEMO_AGENT_ENABLED must be true");
+  }
+  const chainId = Number(environment["MANDATE_CHAIN_ID"] ?? "11155111");
+  if (!Number.isSafeInteger(chainId) || chainId < 1) {
+    throw new Error("MANDATE_CHAIN_ID is invalid");
+  }
+  const port = Number(environment["AGENT_PORT"] ?? "3002");
+  if (!Number.isSafeInteger(port) || port < 1 || port > 65_535) {
+    throw new Error("AGENT_PORT is invalid");
+  }
+  const profile = parsePolicyProfileJson(required(environment, "MANDATE_POLICY_PROFILE"));
+  if (!profile) throw new Error("MANDATE_POLICY_PROFILE is invalid");
+  const rpcUrl = required(environment, "SEPOLIA_RPC_URL");
+  if (!URL.canParse(rpcUrl)) throw new Error("SEPOLIA_RPC_URL is invalid");
+  const deploymentBlock = BigInt(
+    parsed(environment, "SEPOLIA_MANDATE_DEPLOYMENT_BLOCK", PositiveUint256StringSchema),
+  );
+
+  const mandateApp = parsed(environment, "SEPOLIA_MANDATE_APP", AddressSchema);
+  let maximumDemoInput: string;
+  try {
+    maximumDemoInput = parseUnits(
+      required(environment, "MANDATE_SEPOLIA_FAUCET_AMOUNT"),
+      profile.tokenIn.decimals,
+    ).toString();
+  } catch {
+    throw new Error("MANDATE_SEPOLIA_FAUCET_AMOUNT is invalid");
+  }
+  if (maximumDemoInput === "0") throw new Error("MANDATE_SEPOLIA_FAUCET_AMOUNT is invalid");
+
+  return {
+    port,
+    runtime: {
+      chainId,
+      rpcUrl,
+      mandateApp,
+      deploymentBlock,
+      routeRecipient: mandateApp,
+    },
+    profile,
+    maximumDemoInput,
+    keystore: {
+      path: required(environment, "AGENT_KEYSTORE_PATH"),
+      password: required(environment, "AGENT_KEYSTORE_PASSWORD"),
+    },
   };
 }

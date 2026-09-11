@@ -7,6 +7,13 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 const nextConfig = {
   reactStrictMode: true,
   outputFileTracingRoot: repoRoot,
+  webpack(config) {
+    config.resolve.extensionAlias = {
+      ...config.resolve.extensionAlias,
+      ".js": [".ts", ".tsx", ".js"],
+    };
+    return config;
+  },
   turbopack: {
     root: repoRoot,
   },

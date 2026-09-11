@@ -31,12 +31,14 @@ function fundingMessage(state: WalletState): string | undefined {
 export function DemoFaucet({
   profile,
   amount,
+  required,
   maker,
   client,
   onBalance,
 }: {
   profile: PolicyProfileV1;
   amount: string;
+  required: string;
   maker: `0x${string}`;
   client: SmartWalletClient | undefined;
   onBalance: (balance: bigint | undefined) => void;
@@ -115,16 +117,24 @@ export function DemoFaucet({
             used.
           </p>
         </div>
-        <div className="text-right">
-          <p className="ledger-label text-ink-3">Available</p>
-          <p className="mono-data mt-1" aria-live="polite">
-            {loading
-              ? "Reading Sepolia…"
-              : formattedBalance === undefined
-                ? "Unavailable"
-                : `${formattedBalance} ${profile.tokenIn.symbol}`}
-          </p>
-        </div>
+        <dl className="grid gap-3 text-right sm:grid-cols-2">
+          <div>
+            <dt className="ledger-label text-ink-3">Available</dt>
+            <dd className="mono-data mt-1" aria-live="polite">
+              {loading
+                ? "Reading Sepolia…"
+                : formattedBalance === undefined
+                  ? "Unavailable"
+                  : `${formattedBalance} ${profile.tokenIn.symbol}`}
+            </dd>
+          </div>
+          <div>
+            <dt className="ledger-label text-ink-3">Required cap</dt>
+            <dd className="mono-data mt-1">
+              {required} {profile.tokenIn.symbol}
+            </dd>
+          </div>
+        </dl>
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-accent/15 pt-4">
@@ -137,7 +147,7 @@ export function DemoFaucet({
           ) : (
             <Droplets size={15} aria-hidden="true" />
           )}
-          {submitting ? "Requesting funds…" : `Fund ${amount} ${profile.tokenIn.symbol}`}
+          {submitting ? "Requesting funds…" : `Add ${amount} demo ${profile.tokenIn.symbol}`}
         </Button>
         {funding.kind === "READY" && funding.funded && (
           <span className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-confirmed">

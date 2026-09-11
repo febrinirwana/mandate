@@ -1,6 +1,7 @@
-import type { ExecutionV1, MandateSnapshotV1 } from "@mandate/domain";
+import type { ExecutionV1, MandateSnapshotV1, PolicyProfileV1 } from "@mandate/domain";
 
 import { Stamp } from "@/components/ui/kit";
+import { formatTokenAmount } from "@/lib/token-display";
 
 const STEPS = [
   "Agent call",
@@ -14,9 +15,11 @@ const STEPS = [
 export function FlowTrace({
   snapshot,
   execution,
+  profile,
 }: {
   snapshot: MandateSnapshotV1;
   execution?: ExecutionV1;
+  profile?: PolicyProfileV1;
 }) {
   const confirmed = execution?.status === "CONFIRMED";
   const reorged = execution?.status === "REORGED";
@@ -51,7 +54,13 @@ export function FlowTrace({
       </ol>
       <p className="mono-data mt-4 text-ink-2">
         {confirmed
-          ? `Confirmed execution ${execution.txHash}: ${execution.amountIn} input → ${execution.amountOut} output.`
+          ? `Confirmed execution ${execution.txHash}: ${
+              profile ? formatTokenAmount(execution.amountIn, profile.tokenIn) : execution.amountIn
+            } → ${
+              profile
+                ? formatTokenAmount(execution.amountOut, profile.tokenOut)
+                : execution.amountOut
+            }.`
           : reorged
             ? "REORGED: prior receipt is not canonical. Do not treat it as compliant."
             : blocked
