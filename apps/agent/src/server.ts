@@ -180,7 +180,6 @@ async function startStandaloneServer(): Promise<void> {
         chainId: configuration.runtime.chainId.toString(),
         mandateApp: configuration.runtime.mandateApp,
         routeRecipient: configuration.runtime.routeRecipient,
-        allowedStrategyHash: configuration.runtime.allowedStrategyHash,
         maximumDemoInput: configuration.maximumDemoInput,
       },
       authority,
