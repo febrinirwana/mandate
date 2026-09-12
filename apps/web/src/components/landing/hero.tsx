@@ -6,7 +6,8 @@ import { Landscape } from "@/components/art/landscape";
 import { ButtonLink } from "@/components/ui/kit";
 import { useCountUp } from "@/lib/use-count-up";
 
-const DEMO_HASH = "0x4a91f2c7d6b3e580a9c1d47fb0e2f53618d7c4a9e5b2f08371c6d9a42f8e0b5d";
+const DEMO_URL =
+  "/mandates/0x01163a9088c3c0342fd7d8b07f4720c5d52e1c9626cc114923ae4339414f9fcd?tx=0x0d4174a636098d3b0f717cb2e71d721aa646d6cf43ca61f9ae1460c1df75f164";
 
 const STATS = [
   {
@@ -96,7 +97,7 @@ export function Hero() {
               One named agent. One immutable Aqua strategy. Output returns to the treasury.
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-4">
-              <ButtonLink href={`/mandates/${DEMO_HASH}`} arrow>
+              <ButtonLink href={DEMO_URL} arrow>
                 Inspect the demo mandate
               </ButtonLink>
               <ButtonLink href="#how" variant="carbon">

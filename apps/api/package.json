@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
+    "serve": "tsx src/server.ts",
     "start": "tsx src/server.ts",
     "lint": "eslint src test",
     "test": "vitest run",
@@ -19,11 +20,11 @@
     "@mandate/policy": "workspace:*",
     "hono": "4.13.7",
     "viem": "2.56.3",
+    "tsx": "4.23.13",
     "zod": "4.5.4"
   },
   "devDependencies": {
     "@types/node": "24.13.3",
-    "tsx": "4.23.13",
     "typescript": "5.9.3",
     "vitest": "5.0.0"
   }

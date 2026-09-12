@@ -1,18 +1,26 @@
-import type { ExecutionV1, MandateSnapshotV1, ReceiptAuditV1 } from "@mandate/domain";
+import type {
+  ExecutionV1,
+  MandateSnapshotV1,
+  PolicyProfileV1,
+  ReceiptAuditV1,
+} from "@mandate/domain";
 
 import { CopyValue } from "@/components/ui/copy-value";
 import { Stamp } from "@/components/ui/kit";
+import { formatTokenAmount } from "@/lib/token-display";
 
 export function ReceiptPlate({
   snapshot,
   execution,
   audit,
   transactionState,
+  profile,
 }: {
   snapshot: MandateSnapshotV1;
   execution?: ExecutionV1;
   audit?: ReceiptAuditV1;
   transactionState?: "SUBMITTED" | "REVERTED" | "REORGED";
+  profile?: PolicyProfileV1;
 }) {
   const status = execution?.status ?? transactionState ?? "AWAITING";
   const confirmed = execution?.status === "CONFIRMED" && audit?.result === "COMPLIANT";
@@ -38,25 +46,37 @@ export function ReceiptPlate({
         />
       </div>
       {execution ? (
-        <dl className="mt-4 grid gap-x-10 md:grid-cols-2">
-          <Row label="Transaction">
-            <CopyValue value={execution.txHash} />
+        <dl className="mt-4 grid min-w-0 gap-x-10 md:grid-cols-2">
+          <Row label="Transaction" className="min-w-0 md:col-span-2">
+            <CopyValue value={execution.txHash} className="w-full justify-end" />
           </Row>
           <Row label="Execution state">{execution.status}</Row>
           <Row label="Block">{execution.block.number}</Row>
           <Row label="Caller">
             <CopyValue value={execution.caller} />
           </Row>
-          <Row label="Input">{execution.amountIn} base units</Row>
-          <Row label="Output">{execution.amountOut} base units</Row>
-          <Row label="Used after">{execution.usedInputAfter} base units</Row>
+          <Row label="Input">
+            {profile
+              ? formatTokenAmount(execution.amountIn, profile.tokenIn)
+              : `${execution.amountIn} base units`}
+          </Row>
+          <Row label="Output">
+            {profile
+              ? formatTokenAmount(execution.amountOut, profile.tokenOut)
+              : `${execution.amountOut} base units`}
+          </Row>
+          <Row label="Used after">
+            {profile
+              ? formatTokenAmount(execution.usedInputAfter, profile.tokenIn)
+              : `${execution.usedInputAfter} base units`}
+          </Row>
           <Row label="Audit">{auditLabel}</Row>
         </dl>
       ) : (
         <p className="mono-data mt-4 text-ink-2">
           {status === "SUBMITTED"
-            ? "SUBMITTED: waiting for a canonical receipt. Submitted is not confirmed."
-            : "No canonical MandateExecuted receipt has been loaded for this strategy."}
+            ? "SUBMITTED: Sepolia accepted the transaction. The receipt becomes canonical only when its block hash still matches the chain’s current block at that height."
+            : "No MandateExecuted event exists yet. A receipt comes from the Sepolia transaction emitted after the constrained agent successfully calls MandateAquaApp.execute."}
         </p>
       )}
       <p className="mono-data mt-5 border-t border-rule pt-4 text-ink-3">
@@ -67,11 +87,21 @@ export function ReceiptPlate({
   );
 }
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
+function Row({
+  label,
+  children,
+  className,
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <div className="flex items-baseline justify-between gap-4 border-b border-rule py-2.5">
+    <div
+      className={`flex min-w-0 items-baseline justify-between gap-4 border-b border-rule py-2.5 ${className ?? ""}`}
+    >
       <dt className="ledger-label shrink-0 text-ink-3">{label}</dt>
-      <dd className="mono-data flex items-center text-right text-ink">{children}</dd>
+      <dd className="mono-data flex min-w-0 items-center text-right text-ink">{children}</dd>
     </div>
   );
 }

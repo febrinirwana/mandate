@@ -36,7 +36,7 @@ contracts/src                  MandateAquaApp
 contracts/test                 unit, fuzz, invariant, integration, fork tests
 contracts/script               deterministic deployment/setup scripts
 evals                          fixed prompts and security rubric
-skill/SKILL.md                 public safe agent workflow
+.agents/skills/mandate-constrained-execution/SKILL.md
 docs                           product and technical specifications
 ```
 
@@ -196,7 +196,7 @@ Acceptance: a new viewer can state who may act, what can move, remaining cap, ex
 
 ## Task 10: Add isolated agent runtime and public skill
 
-**Files:** create `apps/agent`, `skill/SKILL.md`, `evals`, and tests.
+**Files:** create `apps/agent`, `.agents/skills/mandate-constrained-execution/SKILL.md`, `evals`, and tests.
 
 - [x] Define signer interface that accepts only validated Mandate execution requests; no generic transaction/sign message method.
 - [x] Load encrypted dedicated keystore in server-only process; assert chain/app/strategy/selector/amount policy before signing.

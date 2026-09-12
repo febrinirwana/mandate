@@ -19,6 +19,25 @@ describe("ConfirmationWorker", () => {
     };
   }
 
+  it("requests only pending executions for its configured chain", async () => {
+    const storage = repository([]);
+    const worker = new ConfirmationWorker({
+      chainId: "11155111",
+      chain: {
+        getBlockHash: vi.fn(),
+        getBlockNumber: vi.fn(),
+        readCanonicalEvidence: vi.fn(),
+      },
+      repository: storage,
+      confirmationDepth: 2,
+      batchSize: 10,
+    });
+
+    await worker.runOnce();
+
+    expect(storage.listPendingConfirmations).toHaveBeenCalledWith("11155111", 10);
+  });
+
   it("defers evidence until configured confirmation depth is reached", async () => {
     const execution = pending();
     const storage = repository([execution]);
@@ -28,6 +47,7 @@ describe("ConfirmationWorker", () => {
       readCanonicalEvidence: vi.fn(),
     };
     const worker = new ConfirmationWorker({
+      chainId: "31337",
       chain,
       repository: storage,
       confirmationDepth: 2,
@@ -54,6 +74,7 @@ describe("ConfirmationWorker", () => {
       readCanonicalEvidence: vi.fn().mockResolvedValue(evidence),
     };
     const worker = new ConfirmationWorker({
+      chainId: "31337",
       chain,
       repository: storage,
       confirmationDepth: 2,
@@ -79,6 +100,7 @@ describe("ConfirmationWorker", () => {
       readCanonicalEvidence: vi.fn(),
     };
     const worker = new ConfirmationWorker({
+      chainId: "31337",
       chain,
       repository: storage,
       confirmationDepth: 2,
@@ -108,6 +130,7 @@ describe("ConfirmationWorker", () => {
       readCanonicalEvidence: vi.fn(),
     };
     const worker = new ConfirmationWorker({
+      chainId: "31337",
       chain,
       repository: storage,
       confirmationDepth: 2,
@@ -135,6 +158,7 @@ describe("ConfirmationWorker", () => {
         .mockRejectedValue(new ChainReadError("NOT_FOUND", "receipt not found")),
     };
     const worker = new ConfirmationWorker({
+      chainId: "31337",
       chain,
       repository: storage,
       confirmationDepth: 2,
@@ -165,6 +189,7 @@ describe("ConfirmationWorker", () => {
       readCanonicalEvidence: vi.fn(),
     };
     const worker = new ConfirmationWorker({
+      chainId: "31337",
       chain,
       repository: storage,
       confirmationDepth: 2,

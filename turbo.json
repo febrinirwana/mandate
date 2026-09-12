@@ -1,5 +1,16 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": [
+    "MANDATE_AGENT_AUTH_TOKEN",
+    "MANDATE_AGENT_ORIGIN",
+    "MANDATE_API_ORIGIN",
+    "MANDATE_CHAIN_ID",
+    "MANDATE_POLICY_PROFILE",
+    "MANDATE_SEPOLIA_FAUCET_AMOUNT",
+    "NEXT_PUBLIC_PRIVY_APP_ID",
+    "SEPOLIA_MANDATE_APP",
+    "SEPOLIA_RPC_URL"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

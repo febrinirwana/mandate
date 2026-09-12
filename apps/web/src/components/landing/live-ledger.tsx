@@ -4,7 +4,8 @@ import { Certificate } from "@/components/art/certificate";
 import { Reveal } from "@/components/ui/reveal";
 import { Stamp } from "@/components/ui/kit";
 
-const DEMO_HASH = "0x4a91f2c7d6b3e580a9c1d47fb0e2f53618d7c4a9e5b2f08371c6d9a42f8e0b5d";
+const DEMO_URL =
+  "/mandates/0x01163a9088c3c0342fd7d8b07f4720c5d52e1c9626cc114923ae4339414f9fcd?tx=0x0d4174a636098d3b0f717cb2e71d721aa646d6cf43ca61f9ae1460c1df75f164";
 
 export function LiveLedger() {
   return (
@@ -20,7 +21,7 @@ export function LiveLedger() {
               authority, cap, expiry, settlement, and stop state.
             </p>
             <a
-              href={`/mandates/${DEMO_HASH}`}
+              href={DEMO_URL}
               className="link-quiet mt-7 inline-flex items-center gap-1.5 text-[0.9375rem] font-medium text-ink"
             >
               Open labeled sample inspection

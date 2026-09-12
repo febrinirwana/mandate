@@ -6,20 +6,21 @@ Task 11 publishes a mainnet **route-policy assurance** flow. It does not claim t
 
 ## Attribution and public identifiers
 
-Recorded from the authenticated Bazantic dashboard on 10 September 2026:
+Recorded from the authenticated Bazantic dashboard on 10–11 September 2026:
 
-| Field                     | Value                                              |
-| ------------------------- | -------------------------------------------------- |
-| Bazantic account username | `Febri`                                            |
-| Recipe name               | `Mandate 1inch Route Assurance`                    |
-| Recipe handle             | `mandate-1inch-route-assurance`                    |
-| Recipe ID                 | `05132729-6750-4183-b8fa-4f70b5061b21`             |
-| Published at              | `2026-09-10T07:28:18.758Z`                         |
-| 1inch gateway ID          | `gkrbmuh3urcytk6aumsvf2kyxm`                       |
-| Mandate gateway ID        | `soinswyiozdb7caskqudzeojgq`                       |
-| 1inch MCP                 | `https://mandate-oneinch-route.bazgateway.com/mcp` |
-| Mandate MCP               | `https://mandate-inspector.bazgateway.com/mcp`     |
-| Recipe model              | `anthropic/claude-haiku-4.5`                       |
+| Field                            | Value                                                   |
+| -------------------------------- | ------------------------------------------------------- |
+| Bazantic account username        | `Febri`                                                 |
+| Recipe name                      | `Mandate 1inch Route Assurance`                         |
+| Recipe handle                    | `mandate-1inch-route-assurance`                         |
+| Recipe ID                        | `05132729-6750-4183-b8fa-4f70b5061b21`                  |
+| Published at                     | `2026-09-10T07:28:18.758Z`                              |
+| 1inch gateway ID                 | `gkrbmuh3urcytk6aumsvf2kyxm`                            |
+| Current Mandate gateway ID       | `oj7vvrmizvfhfpbo737wqdphcq`                            |
+| Historical paid-proof gateway ID | `soinswyiozdb7caskqudzeojgq`                            |
+| 1inch MCP                        | `https://mandate-oneinch-route.bazgateway.com/mcp`      |
+| Current Mandate MCP              | `https://oj7vvrmizvfhfpbo737wqdphcq.bazgateway.com/mcp` |
+| Recipe model                     | `anthropic/claude-haiku-4.5`                            |
 
 The Recipe binds exactly two tools, in order:
 
@@ -28,9 +29,11 @@ The Recipe binds exactly two tools, in order:
 
 `docs/evidence/bazantic-recipe-published.jpg` shows the published, read-only Recipe definition without the dashboard sidebar. `docs/evidence/bazantic-recipe-bindings.jpg` shows both exact gateway/tool bindings and Bazantic's notice that the dashboard Test path performs no payment. Neither capture contains a credential, balance, email, or wallet key.
 
+On 11 September 2026 the deleted Mandate gateway binding was replaced with `oj7vvrmizvfhfpbo737wqdphcq`. On 12 September the gateway Base URL was rebound from the temporary tunnel to `https://mandate-api.43-129-38-115.nip.io` with its public `/openapi.json`. The Recipe dashboard test then returned `Complete`: the 1inch route call and Mandate `assessOneInchRoute` both completed, while the Mandate MCP URL remained unchanged. The paid proof below remains an immutable historical record of the previous gateway and its canonical Base settlements.
+
 ## Public backend proof
 
-The Task 11 API was exposed through the temporary deployment origin `https://unrevised-jubilance-plated.ngrok-free.dev`; Bazantic's stable public surface is the custom gateway hostname above. Public OpenAPI retrieval returned HTTP 200 and exposed `assessOneInchRoute`.
+The Task 11 API originally used the temporary deployment origin `https://unrevised-jubilance-plated.ngrok-free.dev`. The current release uses `https://mandate-api.43-129-38-115.nip.io`; public OpenAPI retrieval returns HTTP 200 and exposes `assessOneInchRoute`. Bazantic's stable machine-facing surface remains the custom gateway hostname above.
 
 At `2026-09-10T06:23:41.823Z`, the public assessor returned the following consumer-visible outcomes from schema-valid requests with a fresh execution window:
 

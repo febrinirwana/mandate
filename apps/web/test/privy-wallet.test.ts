@@ -56,7 +56,7 @@ describe("Privy smart wallet adapter", () => {
     await expect(submitSmartWalletCalls(client, calls)).resolves.toEqual({ kind: "REJECTED" });
   });
 
-  it("batches exact approvals, Aqua ship, and Mandate activation", () => {
+  it("limits the Aqua allowance to the mandate's immutable total cap", () => {
     const aqua = address("a");
     const mandateApp = address("b");
     const batch = buildAuthorityCalls(aqua, mandateApp, strategy);
@@ -75,7 +75,10 @@ describe("Privy smart wallet adapter", () => {
       abi: parseAbi(["function approve(address spender,uint256 amount) returns (bool)"]),
       data: batch[1].data!,
     }).args;
-    expect([String(inputApproval?.[0]).toLowerCase(), inputApproval?.[1]]).toEqual([aqua, 1000n]);
+    expect([String(inputApproval?.[0]).toLowerCase(), inputApproval?.[1]]).toEqual([
+      aqua,
+      BigInt(strategy.maxInputTotal),
+    ]);
     expect([String(outputApproval?.[0]).toLowerCase(), outputApproval?.[1]]).toEqual([aqua, 0n]);
   });
 

@@ -1,0 +1,97 @@
+name: mandate
+
+x-service: &service
+  image: mandate-release:${MANDATE_IMAGE_TAG:?set MANDATE_IMAGE_TAG}
+  init: true
+  restart: unless-stopped
+  read_only: true
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+  logging:
+    driver: json-file
+    options:
+      max-size: 10m
+      max-file: "3"
+
+services:
+  api:
+    <<: *service
+    command: ["pnpm", "--filter", "@mandate/api", "start"]
+    env_file:
+      - .env.api
+    environment:
+      NODE_OPTIONS: --max-old-space-size=192
+    expose:
+      - "3001"
+    networks:
+      - edge
+      - private
+    tmpfs:
+      - /tmp:uid=1000,gid=1000,mode=1777
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3001/openapi.json').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 15s
+
+  agent:
+    <<: *service
+    command: ["pnpm", "--filter", "@mandate/agent", "serve"]
+    env_file:
+      - .env.agent
+    environment:
+      AGENT_HOST: 0.0.0.0
+      AGENT_KEYSTORE_PATH: /run/secrets/agent.keystore
+      NODE_OPTIONS: --max-old-space-size=256
+    expose:
+      - "3002"
+    networks:
+      - edge
+      - private
+    volumes:
+      - ./agent.keystore:/run/secrets/agent.keystore:ro
+    tmpfs:
+      - /tmp:uid=1000,gid=1000,mode=1777
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3002/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 4
+      start_period: 20s
+
+  worker:
+    <<: *service
+    command: ["pnpm", "--filter", "@mandate/worker", "start"]
+    env_file:
+      - .env.worker
+    environment:
+      NODE_OPTIONS: --max-old-space-size=192
+    networks:
+      - private
+    tmpfs:
+      - /tmp:uid=1000,gid=1000,mode=1777
+    depends_on:
+      api:
+        condition: service_healthy
+
+networks:
+  edge:
+    external: true
+    name: ${MANDATE_EDGE_NETWORK:-vps_annona}
+  private:
+    driver: bridge

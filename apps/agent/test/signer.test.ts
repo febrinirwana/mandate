@@ -7,7 +7,12 @@ import { keccak256, toHex, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { afterEach, expect, it, vi } from "vitest";
 
-import { AgentRejection, createDedicatedKeystoreSigner, prepareExecution } from "../src/index.js";
+import {
+  AgentRejection,
+  createDedicatedKeystoreSigner,
+  createDedicatedKeystoreSignerFactory,
+  prepareExecution,
+} from "../src/index.js";
 import { createPolicyBoundSignerForTransport } from "../src/signer.js";
 import { authority, now, policy, request, simulation, strategy } from "./fixtures.js";
 
@@ -15,7 +20,7 @@ const directories: string[] = [];
 const fixturePassphrase = "test-only-password";
 const privateKey: Hex = `0x${"11".repeat(32)}`;
 
-async function fixtureKeystore(): Promise<string> {
+async function fixtureKeystore(includeAddress = true): Promise<string> {
   const directory = await mkdtemp(join(tmpdir(), "mandate-agent-"));
   directories.push(directory);
   const salt = Buffer.from("22".repeat(32), "hex");
@@ -39,7 +44,7 @@ async function fixtureKeystore(): Promise<string> {
     JSON.stringify({
       version: 3,
       id: randomUUID(),
-      address: account.address.slice(2).toLowerCase(),
+      ...(includeAddress ? { address: account.address.slice(2).toLowerCase() } : {}),
       crypto: {
         cipher: "aes-128-ctr",
         cipherparams: { iv: iv.toString("hex") },
@@ -83,6 +88,56 @@ it("loads an encrypted dedicated keystore without exposing account material", as
   expect("signMessage" in signer).toBe(false);
   expect("signTransaction" in signer).toBe(false);
   expect("signTypedData" in signer).toBe(false);
+});
+
+it("loads a valid V3 keystore without optional address metadata", async () => {
+  const path = await fixtureKeystore(false);
+  const account = privateKeyToAccount(privateKey);
+
+  const signer = await createDedicatedKeystoreSigner(
+    {
+      keystorePath: path,
+      keystorePassword: fixturePassphrase,
+      expectedSigner: account.address.toLowerCase() as `0x${string}`,
+      chainId: 31337,
+      rpcUrl: "http://127.0.0.1:1",
+    },
+    {
+      policy: {
+        ...policy,
+        chainId: "31337",
+        signer: account.address.toLowerCase() as `0x${string}`,
+      },
+      authority: authority(),
+    },
+  );
+
+  expect(Object.keys(signer)).toEqual(["submit"]);
+});
+
+it("loads a dedicated account once and binds each submitted strategy policy separately", async () => {
+  const path = await fixtureKeystore();
+  const account = privateKeyToAccount(privateKey);
+  const factory = await createDedicatedKeystoreSignerFactory({
+    keystorePath: path,
+    keystorePassword: fixturePassphrase,
+    expectedSigner: account.address.toLowerCase() as `0x${string}`,
+    chainId: 31337,
+    rpcUrl: "http://127.0.0.1:1",
+  });
+
+  const signer = factory.create({
+    policy: {
+      ...policy,
+      chainId: "31337",
+      signer: account.address.toLowerCase() as `0x${string}`,
+      strategyHash: `0x${"f".repeat(64)}`,
+    },
+    authority: authority(),
+  });
+
+  expect(Object.keys(signer)).toEqual(["submit"]);
+  expect("account" in signer).toBe(false);
 });
 
 it("rejects a keystore whose decrypted signer is not configured", async () => {

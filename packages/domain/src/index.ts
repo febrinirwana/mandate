@@ -92,6 +92,41 @@ export const StrategyV1Schema = z
     }
   });
 
+export const PolicyProfileV1Schema = z.strictObject({
+  agent: z.strictObject({
+    name: z.string().trim().min(1),
+    address: NonZeroAddressSchema,
+  }),
+  ens: z.strictObject({
+    registry: NonZeroAddressSchema,
+    resolver: NonZeroAddressSchema,
+    label: z.string().regex(ENS_LABEL),
+    node: NonZeroHash32Schema,
+  }),
+  tokenIn: z.strictObject({
+    symbol: z.string().trim().min(1),
+    address: NonZeroAddressSchema,
+    decimals: z.int().min(0).max(255),
+  }),
+  tokenOut: z.strictObject({
+    symbol: z.string().trim().min(1),
+    address: NonZeroAddressSchema,
+    decimals: z.int().min(0).max(255),
+  }),
+  route: z.strictObject({
+    target: NonZeroAddressSchema,
+    selector: NonZeroSelectorSchema,
+  }),
+});
+
+export function parsePolicyProfileJson(value: string | undefined): PolicyProfileV1 | undefined {
+  try {
+    return PolicyProfileV1Schema.safeParse(value ? JSON.parse(value) : undefined).data;
+  } catch {
+    return undefined;
+  }
+}
+
 const reasonCodes = [
   "INVALID_STRATEGY",
   "ALREADY_ACTIVATED",
@@ -133,6 +168,11 @@ const reasonCodes = [
 ] as const;
 
 export const ReasonCodeSchema = z.enum(reasonCodes);
+
+export const DemoExecutionRequestV1Schema = z.strictObject({
+  chainId: ChainIdSchema,
+  strategyHash: NonZeroHash32Schema,
+});
 
 export const SimulationBindingV1Schema = z.strictObject({
   chainId: ChainIdSchema,
@@ -469,6 +509,37 @@ export const ExecutionV1Schema = z.strictObject({
   status: z.enum(["CONFIRMED", "REVERTED", "REORGED"]),
 });
 
+const DemoExecutionConfirmedV1Schema = z
+  .strictObject({
+    status: z.literal("CONFIRMED"),
+    txHash: NonZeroHash32Schema,
+    execution: ExecutionV1Schema,
+    audit: ReceiptAuditV1Schema,
+  })
+  .superRefine((result, context) => {
+    const { execution, audit } = result;
+    if (
+      execution.status !== "CONFIRMED" ||
+      result.txHash !== execution.txHash ||
+      result.txHash !== audit.txHash ||
+      execution.chainId !== audit.chainId ||
+      execution.strategyHash !== audit.strategyHash ||
+      execution.block.number !== audit.block.number ||
+      execution.block.hash !== audit.block.hash
+    ) {
+      context.addIssue({
+        code: "custom",
+        message: "confirmed demo execution must contain one canonical receipt and audit",
+      });
+    }
+  });
+
+export const DemoExecutionResultV1Schema = z.union([
+  DemoExecutionConfirmedV1Schema,
+  z.strictObject({ status: z.literal("REJECTED"), reason: ReasonCodeSchema }),
+  z.strictObject({ status: z.literal("UNKNOWN"), errorId: NonZeroHash32Schema }),
+]);
+
 const RawHexDataSchema = z.string().regex(/^0x(?:[0-9a-f]{2})*$/) as z.ZodType<`0x${string}`>;
 
 export const ExecutionEventEvidenceV1Schema = z
@@ -717,6 +788,9 @@ export const VenueManifestV1Schema = z
 
 export const jsonSchemas = {
   strategyV1: z.toJSONSchema(StrategyV1Schema),
+  policyProfileV1: z.toJSONSchema(PolicyProfileV1Schema),
+  demoExecutionRequestV1: z.toJSONSchema(DemoExecutionRequestV1Schema),
+  demoExecutionResultV1: z.toJSONSchema(DemoExecutionResultV1Schema),
   simulationBindingV1: z.toJSONSchema(SimulationBindingV1Schema),
   checkV1: z.toJSONSchema(CheckV1Schema),
   mandateSnapshotV1: z.toJSONSchema(MandateSnapshotV1Schema),
@@ -741,6 +815,9 @@ export type Uint64String = z.infer<typeof Uint64StringSchema>;
 export type HexBytes = z.infer<typeof HexBytesSchema>;
 export type BlockRef = z.infer<typeof BlockRefSchema>;
 export type StrategyV1 = z.infer<typeof StrategyV1Schema>;
+export type PolicyProfileV1 = z.infer<typeof PolicyProfileV1Schema>;
+export type DemoExecutionRequestV1 = z.infer<typeof DemoExecutionRequestV1Schema>;
+export type DemoExecutionResultV1 = z.infer<typeof DemoExecutionResultV1Schema>;
 export type ReasonCode = z.infer<typeof ReasonCodeSchema>;
 export type SignedUint256String = z.infer<typeof SignedUint256StringSchema>;
 export type SimulationBindingV1 = z.infer<typeof SimulationBindingV1Schema>;

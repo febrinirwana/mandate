@@ -1,30 +1,45 @@
-import type { MandateSnapshotV1 } from "@mandate/domain";
+import type { MandateSnapshotV1, PolicyProfileV1 } from "@mandate/domain";
 
 import { Stamp } from "@/components/ui/kit";
 import { inspectionStatus, remainingInput } from "@/lib/mandate";
+import { formatRate, formatTokenAmount } from "@/lib/token-display";
 
 type Row = { constraint: string; approved: string; effective: string; detail: string };
 
-export function ConstraintLedger({ snapshot }: { snapshot: MandateSnapshotV1 }) {
+export function ConstraintLedger({
+  snapshot,
+  profile,
+}: {
+  snapshot: MandateSnapshotV1;
+  profile?: PolicyProfileV1;
+}) {
   const status = inspectionStatus(snapshot);
+  const input = (value: string) =>
+    profile ? formatTokenAmount(value, profile.tokenIn) : `${value} base units`;
   const rows: Row[] = [
     {
       constraint: "Per execution",
-      approved: `${snapshot.strategy.maxInputPerCall} base units`,
+      approved: input(snapshot.strategy.maxInputPerCall),
       effective: status === "ACTIVE" ? "enforced onchain" : "not executable",
       detail: "maxInputPerCall",
     },
     {
       constraint: "Total budget",
-      approved: `${snapshot.strategy.maxInputTotal} base units`,
-      effective: `${remainingInput(snapshot)} base units remaining`,
-      detail: `${snapshot.state.usedInput} usedInput at block ${snapshot.block.number}`,
+      approved: input(snapshot.strategy.maxInputTotal),
+      effective: `${input(remainingInput(snapshot))} remaining`,
+      detail: `${input(snapshot.state.usedInput)} used at block ${snapshot.block.number}`,
     },
     {
       constraint: "Minimum output",
-      approved: `ceil(input × ${snapshot.strategy.minRateNumerator} ÷ ${snapshot.strategy.minRateDenominator})`,
-      effective: "contract checks actual balance delta",
-      detail: "base-unit rate floor",
+      approved: profile
+        ? formatRate(
+            snapshot.strategy.minRateNumerator,
+            snapshot.strategy.minRateDenominator,
+            profile,
+          )
+        : `ceil(input × ${snapshot.strategy.minRateNumerator} ÷ ${snapshot.strategy.minRateDenominator})`,
+      effective: "contract checks the actual token balance delta",
+      detail: "Exact raw numerator and denominator remain visible",
     },
     {
       constraint: "Route",

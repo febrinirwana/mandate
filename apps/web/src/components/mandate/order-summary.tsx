@@ -1,10 +1,17 @@
-import type { MandateSnapshotV1 } from "@mandate/domain";
+import type { MandateSnapshotV1, PolicyProfileV1 } from "@mandate/domain";
 
 import { CopyValue } from "@/components/ui/copy-value";
 import { Stamp } from "@/components/ui/kit";
 import { inspectionStatus, remainingInput } from "@/lib/mandate";
+import { formatTokenAmount } from "@/lib/token-display";
 
-export function OrderSummary({ snapshot }: { snapshot: MandateSnapshotV1 }) {
+export function OrderSummary({
+  snapshot,
+  profile,
+}: {
+  snapshot: MandateSnapshotV1;
+  profile?: PolicyProfileV1;
+}) {
   const remaining = remainingInput(snapshot);
   const status = inspectionStatus(snapshot);
   const total = BigInt(snapshot.strategy.maxInputTotal);
@@ -34,7 +41,9 @@ export function OrderSummary({ snapshot }: { snapshot: MandateSnapshotV1 }) {
         <div className="border-b border-rule py-4">
           <div className="flex items-baseline justify-between gap-4">
             <dt className="ledger-label text-ink-3">Remaining cap</dt>
-            <dd className="mono-data text-right font-medium">{remaining} base units</dd>
+            <dd className="mono-data text-right font-medium">
+              {profile ? formatTokenAmount(remaining, profile.tokenIn) : `${remaining} base units`}
+            </dd>
           </div>
           <div
             className="mt-2.5 h-[6px] w-full bg-recess"

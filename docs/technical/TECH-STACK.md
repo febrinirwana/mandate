@@ -42,9 +42,8 @@ mandate/
 │  ├─ script/Deploy.s.sol
 │  └─ test/                   # unit, invariant, integration, fork tests
 ├─ evals/                     # fixed agent prompts and security rubric
-├─ skill/SKILL.md             # public agent operating contract
 ├─ docs/
-└─ .agents/skills/            # project execution skills
+└─ .agents/skills/            # project execution skills, including mandate-constrained-execution
 ```
 
 No generic `utils` package. Each invariant belongs to the domain that owns it.

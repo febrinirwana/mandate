@@ -6,7 +6,7 @@ const COLS: { title: string; links: { label: string; href: string; external?: bo
     links: [
       {
         label: "Inspect demo mandate",
-        href: "/mandates/0x4a91f2c7d6b3e580a9c1d47fb0e2f53618d7c4a9e5b2f08371c6d9a42f8e0b5d",
+        href: "/mandates/0x01163a9088c3c0342fd7d8b07f4720c5d52e1c9626cc114923ae4339414f9fcd?tx=0x0d4174a636098d3b0f717cb2e71d721aa646d6cf43ca61f9ae1460c1df75f164",
       },
       { label: "How a mandate works", href: "/#how" },
       { label: "Invariants", href: "/#invariants" },
@@ -25,11 +25,11 @@ const COLS: { title: string; links: { label: string; href: string; external?: bo
     links: [
       {
         label: "Strategy fields",
-        href: "/mandates/0x4a91f2c7d6b3e580a9c1d47fb0e2f53618d7c4a9e5b2f08371c6d9a42f8e0b5d#fields",
+        href: "/mandates/0x01163a9088c3c0342fd7d8b07f4720c5d52e1c9626cc114923ae4339414f9fcd?tx=0x0d4174a636098d3b0f717cb2e71d721aa646d6cf43ca61f9ae1460c1df75f164#fields",
       },
       {
         label: "Receipt plate",
-        href: "/mandates/0x4a91f2c7d6b3e580a9c1d47fb0e2f53618d7c4a9e5b2f08371c6d9a42f8e0b5d#receipt",
+        href: "/mandates/0x01163a9088c3c0342fd7d8b07f4720c5d52e1c9626cc114923ae4339414f9fcd?tx=0x0d4174a636098d3b0f717cb2e71d721aa646d6cf43ca61f9ae1460c1df75f164#receipt",
       },
     ],
   },

@@ -176,7 +176,7 @@ suite("canonical evidence PostgreSQL integration", () => {
 
     await repository.trackObservedExecution(input.execution);
     await repository.trackObservedExecution(input.execution);
-    const pending = (await repository.listPendingConfirmations(10)).find(
+    const pending = (await repository.listPendingConfirmations(chainId, 10)).find(
       (candidate) => candidate.chainId === chainId && candidate.txHash === input.execution.txHash,
     );
     expect(pending).toEqual({
@@ -203,7 +203,9 @@ suite("canonical evidence PostgreSQL integration", () => {
         ),
       );
     expect(rows).toEqual([{ status: "CONFIRMED", confirmationCount: 4 }]);
-    await expect(repository.listPendingConfirmations(10)).resolves.not.toContainEqual(pending);
+    await expect(repository.listPendingConfirmations(chainId, 10)).resolves.not.toContainEqual(
+      pending,
+    );
   });
 
   it("replays the same receipt without duplicate evidence rows", async () => {

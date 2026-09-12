@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 
-import { parseAgentConfiguration } from "../src/config.js";
-import { policy } from "./fixtures.js";
+import { parseAgentConfiguration, parseDemoAgentConfiguration } from "../src/config.js";
+import { policy, strategy } from "./fixtures.js";
 
 const base = {
   AGENT_KEYSTORE_PATH: "C:/ignored/agent.keystore",
@@ -18,6 +18,19 @@ const base = {
   AGENT_MAX_INPUT_PER_CALL: policy.maxInputPerCall,
   AGENT_MAX_INPUT_TOTAL: policy.maxInputTotal,
 };
+
+const demoProfile = JSON.stringify({
+  agent: { name: "agent.mandate-test.eth", address: strategy.agent },
+  ens: {
+    registry: strategy.ensRegistry,
+    resolver: strategy.ensResolver,
+    label: strategy.ensLabel,
+    node: strategy.ensNode,
+  },
+  tokenIn: { symbol: "USDC", address: strategy.tokenIn, decimals: 6 },
+  tokenOut: { symbol: "DAI", address: strategy.tokenOut, decimals: 18 },
+  route: { target: strategy.swapTarget, selector: strategy.swapSelector },
+});
 
 it("parses the isolated Sepolia signer policy", () => {
   const configuration = parseAgentConfiguration(base);
@@ -71,4 +84,52 @@ it("reports only missing variable names and never secret values", () => {
     expect(String(error)).not.toContain("secret-selector-value");
     expect(String(error)).not.toContain(base.AGENT_KEYSTORE_PASSWORD);
   }
+});
+
+it("requires explicit demo mode and parses only the fixed server-side profile runtime", () => {
+  const configuration = parseDemoAgentConfiguration({
+    ...base,
+    MANDATE_DEMO_AGENT_ENABLED: "true",
+    MANDATE_POLICY_PROFILE: demoProfile,
+    MANDATE_SEPOLIA_FAUCET_AMOUNT: "100",
+    SEPOLIA_VENUE_INPUT_RECIPIENT: `0x${"9".repeat(40)}`,
+    SEPOLIA_MANDATE_DEPLOYMENT_BLOCK: "11668678",
+  });
+
+  expect(configuration.runtime).toEqual({
+    chainId: 11155111,
+    rpcUrl: base.SEPOLIA_RPC_URL,
+    mandateApp: policy.mandateApp,
+    deploymentBlock: 11668678n,
+    routeRecipient: policy.mandateApp,
+    allowedStrategyHash: policy.strategyHash,
+  });
+  expect(configuration.port).toBe(3002);
+  expect(configuration.host).toBe("127.0.0.1");
+  const networkConfiguration = parseDemoAgentConfiguration({
+    ...base,
+    MANDATE_DEMO_AGENT_ENABLED: "true",
+    MANDATE_POLICY_PROFILE: demoProfile,
+    MANDATE_SEPOLIA_FAUCET_AMOUNT: "100",
+    SEPOLIA_MANDATE_DEPLOYMENT_BLOCK: "11668678",
+    AGENT_HOST: "0.0.0.0",
+    AGENT_AUTH_TOKEN: "test-network-auth-token",
+  });
+  expect(networkConfiguration.host).toBe("0.0.0.0");
+  expect(networkConfiguration.authToken).toBe("test-network-auth-token");
+  expect(() =>
+    parseDemoAgentConfiguration({
+      ...base,
+      MANDATE_DEMO_AGENT_ENABLED: "true",
+      MANDATE_POLICY_PROFILE: demoProfile,
+      MANDATE_SEPOLIA_FAUCET_AMOUNT: "100",
+      SEPOLIA_MANDATE_DEPLOYMENT_BLOCK: "11668678",
+      AGENT_HOST: "0.0.0.0",
+    }),
+  ).toThrow("AGENT_AUTH_TOKEN is not configured");
+  expect(configuration.profile.agent.address).toBe(strategy.agent);
+  expect(configuration.maximumDemoInput).toBe("100000000");
+  expect(() =>
+    parseDemoAgentConfiguration({ ...base, MANDATE_POLICY_PROFILE: demoProfile }),
+  ).toThrow("MANDATE_DEMO_AGENT_ENABLED must be true");
 });

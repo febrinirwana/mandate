@@ -1,8 +1,9 @@
-import { decodeFunctionData, encodeErrorResult, toFunctionSelector } from "viem";
-import { describe, expect, it } from "vitest";
+import { decodeFunctionData, encodeErrorResult, toFunctionSelector, type PublicClient } from "viem";
+import { describe, expect, it, vi } from "vitest";
 import { mandateAquaAppAbi } from "@mandate/contracts/mandate-aqua-app";
 
 import {
+  MandateChainService,
   StaleSimulationError,
   decodeStrategyBytes,
   assertSimulationRequestMatches,
@@ -52,6 +53,57 @@ describe("buildExecutionCall", () => {
     expect(built.calldataHash).toMatch(/^0x[0-9a-f]{64}$/);
     expect(built.strategyHash).toMatch(/^0x[0-9a-f]{64}$/);
     expect(decodeStrategyBytes(built.strategyBytes)).toEqual(request.strategy);
+  });
+});
+
+describe("MandateChainService", () => {
+  it("loads an activation across the configured deployment range in one filtered query", async () => {
+    const strategyBytes = buildExecutionCall(request).strategyBytes;
+    const getLogs = vi.fn().mockResolvedValue([{ args: { strategy: strategyBytes } }]);
+    const readContract = vi
+      .fn()
+      .mockImplementation(({ functionName }: { functionName: string }) => {
+        switch (functionName) {
+          case "mandates":
+            return [request.strategy.maker, 0n, true, false];
+          case "getState":
+            return { status: 2, expiry: 3_000n, latestOwner: request.strategy.agent, tokenId: 1n };
+          case "getResolver":
+            return request.strategy.ensResolver;
+          case "ownerOf":
+          case "addr":
+            return request.strategy.agent;
+          case "AQUA":
+            return address("b");
+          case "safeBalances":
+            return [500n, 0n];
+          case "balanceOf":
+            return 0n;
+          default:
+            throw new Error(`unexpected read ${functionName}`);
+        }
+      });
+    const client = {
+      getBlockNumber: vi.fn().mockResolvedValue(2_000n),
+      getLogs,
+      getBlock: vi.fn().mockResolvedValue({ number: 2_000n, hash: hash("b"), timestamp: 1_500n }),
+      readContract,
+    } as unknown as PublicClient;
+    const service = new MandateChainService([
+      { chainId: request.chainId, client, mandateApp: request.mandateApp, deploymentBlock: 1_000n },
+    ]);
+
+    const snapshot = await service.readMandate({
+      chainId: request.chainId,
+      strategyHash: buildExecutionCall(request).strategyHash,
+    });
+
+    expect(snapshot.strategy).toEqual(request.strategy);
+    expect(snapshot.result).toBe("PASS");
+    expect(getLogs).toHaveBeenCalledOnce();
+    expect(getLogs).toHaveBeenCalledWith(
+      expect.objectContaining({ fromBlock: 1_000n, toBlock: 2_000n }),
+    );
   });
 });
 

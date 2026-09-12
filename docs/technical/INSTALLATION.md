@@ -1,11 +1,11 @@
 # Mandate Installation and Bootstrap Contract
 
-This repository currently contains the build-ready specification and project-scoped skills. Application and contract scaffolding begins during ETHOnline so event-created work is auditable.
+This repository contains the runnable Mandate protocol demo, web application, API, confirmation worker, and dedicated constrained-agent service.
 
 ## 1. Required tools
 
 - Git
-- Node.js active LTS, minimum 22
+- Node.js `>=24.15.0 <25` (matching the root `engines` contract)
 - Corepack and project-pinned pnpm
 - Foundry: `forge`, `cast`, `anvil`
 - Docker Desktop/Engine for local PostgreSQL
@@ -54,12 +54,18 @@ SEPOLIA_VENUE_INPUT_RECIPIENT=0xee637a2cf3aa61a29339532941b80b41ffea88c7
 ONEINCH_API_KEY=...
 BAZANTIC_API_KEY=...
 API_PORT=3001
+MANDATE_AGENT_ORIGIN=http://127.0.0.1:3002
+MANDATE_AGENT_AUTH_TOKEN=...
+MANDATE_DEMO_AGENT_ENABLED=true
+AGENT_PORT=3002
+AGENT_HOST=127.0.0.1
+AGENT_AUTH_TOKEN=...
 WORKER_CONFIRMATION_DEPTH=4
 WORKER_BATCH_SIZE=25
 WORKER_POLL_INTERVAL_MS=15000
 ```
 
-For the Next.js authority composer, create the ignored `apps/web/.env.local` with `MANDATE_CHAIN_ID=11155111`, the same `SEPOLIA_MANDATE_APP`, `MANDATE_API_ORIGIN`, `NEXT_PUBLIC_PRIVY_APP_ID`, and `MANDATE_SEPOLIA_FAUCET_AMOUNT=100`. Copy the checked-in `MANDATE_POLICY_PROFILE` from `.env.example`; it is a single-line JSON object generated from block-stamped reads of the agent identity, token metadata, and fixed route. These values are public, but the composer still fails closed when the profile is absent, malformed, or inconsistent with live chain state.
+For the Next.js authority composer, create the ignored `apps/web/.env.local` with `MANDATE_CHAIN_ID=11155111`, the same `SEPOLIA_MANDATE_APP`, `MANDATE_API_ORIGIN`, `MANDATE_AGENT_ORIGIN=http://127.0.0.1:3002`, `NEXT_PUBLIC_PRIVY_APP_ID`, and `MANDATE_SEPOLIA_FAUCET_AMOUNT=100`. Copy the checked-in `MANDATE_POLICY_PROFILE` from `.env.example`; it is a single-line JSON object generated from block-stamped reads of the agent identity, token metadata, and fixed route. Local loopback operation does not require an agent token. A network deployment must set one identical high-entropy value as `AGENT_AUTH_TOKEN` on the agent and `MANDATE_AGENT_AUTH_TOKEN` in the Vercel server environment. That credential is server-only and must never use the `NEXT_PUBLIC_` prefix. Public values still fail closed when the profile is absent, malformed, or inconsistent with live chain state.
 
 ### Sepolia smart-wallet gas sponsorship
 
@@ -155,6 +161,7 @@ Operational constraints:
 - fund with enough native token for bounded demo gas only;
 - transfer no USDC/WETH or other treasury asset to agent;
 - expose no generic signing or arbitrary transaction endpoint;
+- keep `AGENT_HOST=127.0.0.1` unless a private container network is required; any `0.0.0.0` bind fails startup without `AGENT_AUTH_TOKEN`;
 - require expected chain ID, Mandate address, strategy hash, selector, and amount caps in signer configuration;
 - rotate/revoke immediately if logs or environment handling are uncertain.
 
@@ -167,17 +174,20 @@ docker compose up -d --wait postgres
 pnpm --filter @mandate/db db:migrate
 ```
 
-From the repository root, run the web app, API, and receipt-confirmation worker in one terminal:
+From the repository root, start the complete judge demo, including web, API, receipt worker, and the dedicated constrained-agent HTTP service, in one terminal:
 
 ```bash
-pnpm --parallel --filter @mandate/web --filter @mandate/api --filter @mandate/worker run dev
+pnpm dev
 ```
 
 - Web: [http://localhost:3100](http://localhost:3100). Port 3100 is explicitly pinned in `apps/web/package.json`.
 - API: [http://localhost:3001/openapi.json](http://localhost:3001/openapi.json), configurable through `API_PORT`.
+- Agent: [http://localhost:3002/health](http://localhost:3002/health), configurable through `AGENT_PORT`. It loads the encrypted dedicated-agent keystore and accepts only `{ chainId, strategyHash }` demo requests.
 - Worker: no HTTP port. It polls pending observed executions and commits evidence only after canonical-chain confirmation.
 
-The web surface uses same-origin typed API routes for mandate inspection, simulation, execution lookup, and receipt audit. It never treats unavailable or stale chain data as a green state.
+Use `pnpm --filter @mandate/agent start -- path/to/intent.json` only for the separate one-shot/manual-intent workflow. It is not the HTTP service used by the inspector’s **Run bounded demo execution** action.
+
+The web surface uses same-origin typed API routes for mandate inspection, execution lookup, receipt audit, and the narrow agent proxy. Browser code never receives the agent signer, route calldata, or server credentials, and unavailable or stale chain data never becomes a green state.
 
 ## 10. Bazantic setup
 
@@ -192,6 +202,13 @@ The web surface uses same-origin typed API routes for mandate inspection, simula
 ## 11. Project skills
 
 Project-scoped skills live in `.agents/skills`. Provenance: [SOURCES](../../.agents/skills/SOURCES.md). Relevant roles:
+
+- `mandate-constrained-execution` — installable safety contract for Codex and Claude Code:
+
+  ```bash
+  npx skills add febrinirwana/mandate --skill mandate-constrained-execution --agent codex --copy -y
+  npx skills add febrinirwana/mandate --skill mandate-constrained-execution --agent claude-code --copy -y
+  ```
 
 - `mandate-contract-engineer`
 - `mandate-security-auditor`

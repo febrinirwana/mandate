@@ -11,6 +11,8 @@
     "eval": "tsx ../../evals/agent-runtime.ts",
     "lint": "eslint src test scripts",
     "smoke:local": "tsx scripts/smoke-local.ts",
+    "dev": "tsx watch src/server.ts",
+    "serve": "tsx src/server.ts",
     "start": "tsx src/process.ts",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json"
@@ -20,11 +22,11 @@
     "@mandate/contracts": "workspace:*",
     "@mandate/domain": "workspace:*",
     "viem": "2.56.3",
+    "tsx": "4.23.13",
     "zod": "4.5.4"
   },
   "devDependencies": {
     "@types/node": "24.13.3",
-    "tsx": "4.23.13",
     "typescript": "5.9.3",
     "vitest": "5.0.0"
   }

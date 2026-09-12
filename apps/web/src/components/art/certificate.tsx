@@ -18,11 +18,11 @@ import { useRef, type PointerEvent } from "react";
  */
 
 const FIELDS = [
-  { label: "Agent", value: "vitalik.mandate.eth" },
-  { label: "Venue", value: "1INCH AQUA · ROUTER V6" },
-  { label: "Cap", value: "50,000 USDC / EXEC · 250,000 TOTAL" },
-  { label: "Rate floor", value: "0.00355 WETH PER USDC" },
-  { label: "Window", value: "UNTIL 04 OCT 2026 · 00:00 UTC" },
+  { label: "Agent", value: "agent.mandate-test.eth" },
+  { label: "Venue", value: "AQUA · FIXED SEPOLIA VENUE" },
+  { label: "Cap", value: "1 USDC / EXEC · 1 TOTAL" },
+  { label: "Rate floor", value: "1 DAI PER USDC" },
+  { label: "Window", value: "24 HOURS FROM ACTIVATION" },
 ] as const;
 
 /** Crisp 14-scallop notarial rosette with an 8-point star. */
@@ -194,9 +194,7 @@ export function Certificate({ className }: { className?: string }) {
                 transition={{ duration: 1.15, ease: [0.25, 1, 0.5, 1], delay: 0.55 }}
               />
             </svg>
-            <div className="ledger-label mt-1 text-ink-3">
-              Owner signature · vitalik.mandate.eth
-            </div>
+            <div className="ledger-label mt-1 text-ink-3">Owner smart-account signature</div>
           </div>
           <motion.div
             initial={reduced ? false : { scale: 0, rotate: -18, opacity: 0 }}

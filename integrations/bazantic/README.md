@@ -7,10 +7,12 @@ This directory contains the public, credential-free definition for the published
 | Component                  | Public identifier               | Public endpoint                                           |
 | -------------------------- | ------------------------------- | --------------------------------------------------------- |
 | 1inch Classic Swap gateway | `gkrbmuh3urcytk6aumsvf2kyxm`    | `https://mandate-oneinch-route.bazgateway.com/mcp`        |
-| Mandate Inspector gateway  | `soinswyiozdb7caskqudzeojgq`    | `https://mandate-inspector.bazgateway.com/mcp`            |
+| Mandate Inspector gateway  | `oj7vvrmizvfhfpbo737wqdphcq`    | `https://oj7vvrmizvfhfpbo737wqdphcq.bazgateway.com/mcp`   |
 | Recipe                     | `mandate-1inch-route-assurance` | Bazantic Recipe ID `05132729-6750-4183-b8fa-4f70b5061b21` |
 
 The Recipe binds `getClassicSwapRoute` first and `assessOneInchRoute` second. The 1inch response is passed unmodified to Mandate. Only Mandate's deterministic `PASS`, `FAIL`, or `UNKNOWN` response is returned; the model may not infer or upgrade a result.
+
+The Recipe was rebound on 11 September 2026 after its previous Mandate gateway was deleted. A live dashboard test through the replacement binding returned `PASS` with all eight deterministic checks passing.
 
 ## Files
 
