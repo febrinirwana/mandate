@@ -24,7 +24,6 @@ export interface DemoExecutionRuntime {
   chainId: string;
   mandateApp: Address;
   routeRecipient: Address;
-  allowedStrategyHash: `0x${string}`;
   maximumDemoInput: string;
 }
 
@@ -61,6 +60,9 @@ export function createDemoExecutionService(dependencies: DemoExecutionDependenci
   const profile = PolicyProfileV1Schema.parse(dependencies.profile);
   const maximumDemoInput = BigInt(dependencies.runtime.maximumDemoInput);
   if (maximumDemoInput <= 0n) throw new Error("maximumDemoInput must be positive");
+  const decimalOffset = profile.tokenOut.decimals - profile.tokenIn.decimals;
+  const minimumRateNumerator = decimalOffset >= 0 ? 10n ** BigInt(decimalOffset) : 1n;
+  const minimumRateDenominator = decimalOffset < 0 ? 10n ** BigInt(-decimalOffset) : 1n;
   const now = dependencies.now ?? (() => new Date());
   const automatedExecution = dependencies.runAutomatedExecution;
 
@@ -71,9 +73,6 @@ export function createDemoExecutionService(dependencies: DemoExecutionDependenci
       const request = parsed.data;
       if (request.chainId !== dependencies.runtime.chainId) {
         return { status: "REJECTED", reason: "TARGET_MISMATCH" };
-      }
-      if (request.strategyHash !== dependencies.runtime.allowedStrategyHash) {
-        return { status: "REJECTED", reason: "STRATEGY_HASH_MISMATCH" };
       }
 
       let stage: "READ_AUTHORITY" | "SIMULATE" | "EXECUTE" = "READ_AUTHORITY";
@@ -103,6 +102,12 @@ export function createDemoExecutionService(dependencies: DemoExecutionDependenci
           throw new AgentRejection("SELECTOR_MISMATCH");
         if (BigInt(strategy.maxInputTotal) > maximumDemoInput) {
           throw new AgentRejection("TOTAL_CAP_EXCEEDED");
+        }
+        if (
+          BigInt(strategy.minRateNumerator) * minimumRateDenominator <
+          minimumRateNumerator * BigInt(strategy.minRateDenominator)
+        ) {
+          throw new AgentRejection("RATE_FLOOR_UNSATISFIED");
         }
 
         const timestamp = BigInt(Math.floor(now().getTime() / 1_000));

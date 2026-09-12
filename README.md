@@ -204,9 +204,11 @@ Tests cover wrong callers, activation and revoke state, cap and rate boundaries,
 The repository publishes a reusable safety contract for coding agents:
 
 ```bash
-npx skills add febrinirwana/mandate --skill mandate-constrained-execution --agent codex --copy -y
-npx skills add febrinirwana/mandate --skill mandate-constrained-execution --agent claude-code --copy -y
+npx skills add https://raw.githubusercontent.com/febrinirwana/mandate/main/.agents/skills/mandate-constrained-execution/SKILL.md --agent codex --copy -y
+npx skills add https://raw.githubusercontent.com/febrinirwana/mandate/main/.agents/skills/mandate-constrained-execution/SKILL.md --agent claude-code --copy -y
 ```
+
+The direct `SKILL.md` URL downloads only the 9 KB skill instead of cloning the full repository.
 
 The skill requires typed intent, current authority inspection, exact simulation binding, fail-closed decisions, canonical receipt evidence, and strict secret handling. It does not grant access to the dedicated signer or any project credential.
 
@@ -220,7 +222,7 @@ The skill requires typed intent, current authority inspection, exact simulation 
 - **Ethereum mainnet fork:** pinned replay of a captured live 1inch route.
 - **Base:** canonical x402 payment settlement evidence for the Bazantic ingredient replay.
 
-The browser never receives the database URL, RPC URL, agent bearer token, keystore, or signer material. The agent service has no generic transaction endpoint and rejects every strategy hash except its configured release strategy.
+The browser never receives the database URL, RPC URL, agent bearer token, keystore, or signer material. The agent service has no generic transaction endpoint. It accepts any active onchain strategy hash only after independently enforcing the fixed chain, app, signer, ENS identity, token pair, route, one-to-one rate floor, and demo spend ceiling.
 
 ## Evidence and limitations
 

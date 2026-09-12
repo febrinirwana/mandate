@@ -24,8 +24,8 @@ const profile = {
 
 const demoStrategy = {
   ...strategy,
-  minRateNumerator: "3",
-  minRateDenominator: "2",
+  minRateNumerator: "1500000000000",
+  minRateDenominator: "1",
   maxInputPerCall: "800000",
   maxInputTotal: "3000000",
 } as const;
@@ -49,7 +49,7 @@ function confirmedResult(
     strategyHash: currentSnapshot.strategyHash,
     caller: currentSnapshot.strategy.agent,
     amountIn: "500001",
-    amountOut: "750002",
+    amountOut: "750001500000000000",
     usedInputAfter: "2900001",
     status: "CONFIRMED" as const,
   };
@@ -92,7 +92,6 @@ function createService(
       chainId: request.chainId,
       mandateApp: request.mandateApp,
       routeRecipient: request.mandateApp,
-      allowedStrategyHash: demoSnapshot.strategyHash,
       maximumDemoInput: "3000000",
     },
     authority,
@@ -123,11 +122,11 @@ it("derives the bounded execution from fixed policy and the activated dynamic st
     chainId: request.chainId,
     strategy: demoStrategy,
     amountIn: "500001",
-    agentMinOut: "750002",
+    agentMinOut: "750001500000000000",
   });
   const route = decodeFunctionData({ abi: venueAbi, data: intent.routeData });
   expect(route.args[0]).toBe(500001n);
-  expect(route.args[1]).toBe(750002n);
+  expect(route.args[1]).toBe(750001500000000000n);
   expect(route.args[2].toLowerCase()).toBe(request.mandateApp);
   expect(BigInt(intent.executionDeadline)).toBeGreaterThan(BigInt(now.getTime() / 1_000));
   expect(BigInt(intent.executionDeadline)).toBeLessThan(BigInt(demoStrategy.validUntil));
@@ -143,6 +142,59 @@ it("derives the bounded execution from fixed policy and the activated dynamic st
     routeRecipient: request.mandateApp,
     maxInputTotal: "3000000",
   });
+});
+
+it("accepts multiple policy-conforming authorities without signer reconfiguration", async () => {
+  const secondMaker = address("8");
+  const secondSnapshot: MandateSnapshotV1 = {
+    ...demoSnapshot,
+    strategyHash: hash("e"),
+    strategy: {
+      ...demoStrategy,
+      maker: secondMaker,
+      salt: hash("e"),
+    },
+    state: { ...demoSnapshot.state, maker: secondMaker },
+  };
+  const snapshots: Record<string, MandateSnapshotV1> = {
+    [demoSnapshot.strategyHash]: demoSnapshot,
+    [secondSnapshot.strategyHash]: secondSnapshot,
+  };
+  const runAutomatedExecution = vi
+    .fn<DemoAutomatedExecution>()
+    .mockImplementation(async (intent) =>
+      confirmedResult(intent.strategy.maker === secondMaker ? secondSnapshot : demoSnapshot),
+    );
+  const authority = {
+    readMandate: vi.fn(
+      async ({ strategyHash }: { strategyHash: `0x${string}` }) =>
+        snapshots[strategyHash] ?? demoSnapshot,
+    ),
+    simulate: vi.fn(),
+    getBlockHash: vi.fn(),
+    readExecution: vi.fn(),
+    auditReceipt: vi.fn(),
+  };
+  const service = createDemoExecutionService({
+    profile,
+    runtime: {
+      chainId: request.chainId,
+      mandateApp: request.mandateApp,
+      routeRecipient: request.mandateApp,
+      maximumDemoInput: "3000000",
+    },
+    authority,
+    runAutomatedExecution,
+    now: () => now,
+  });
+
+  await expect(
+    service.execute({ chainId: request.chainId, strategyHash: demoSnapshot.strategyHash }),
+  ).resolves.toMatchObject({ status: "CONFIRMED" });
+  await expect(
+    service.execute({ chainId: request.chainId, strategyHash: secondSnapshot.strategyHash }),
+  ).resolves.toMatchObject({ status: "CONFIRMED" });
+  expect(runAutomatedExecution).toHaveBeenCalledTimes(2);
 });
 
 it.each([
@@ -171,6 +223,15 @@ it.each([
   [
     "strategy cap above the configured demo maximum",
     { snapshot: { ...demoSnapshot, strategy: { ...demoStrategy, maxInputTotal: "3000001" } } },
+  ],
+  [
+    "rate below the one-to-one demo floor",
+    {
+      snapshot: {
+        ...demoSnapshot,
+        strategy: { ...demoStrategy, minRateNumerator: "999999999999" },
+      },
+    },
   ],
   [
     "untrusted transaction field",

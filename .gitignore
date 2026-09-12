@@ -20,7 +20,7 @@ graphify-out/
 .DS_Store
 Thumbs.db
 
-reference/.turbo/
+reference/
 .vercel
 
 docs/DEMO-SCRIPT.md 
