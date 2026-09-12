@@ -8,7 +8,7 @@
 **/coverage
 **/.turbo
 artifacts
-contracts
+/contracts
 coverage
 deploy
 docs
