@@ -13,7 +13,13 @@ const hash = (digit: string): `0x${string}` => `0x${digit.repeat(64)}`;
 const snapshot = {
   strategyHash: hash("1"),
   aqua: { address: address("2") },
-  strategy: { maker: address("3"), tokenIn: address("4"), tokenOut: address("5") },
+  state: { usedInput: "250" },
+  strategy: {
+    maker: address("3"),
+    tokenIn: address("4"),
+    tokenOut: address("5"),
+    maxInputTotal: "1000",
+  },
 };
 const mandateApp = address("6");
 
@@ -26,7 +32,7 @@ describe("smart-account owner controls", () => {
     expect(canManageAuthority(undefined, snapshot.strategy.maker)).toBe(false);
   });
 
-  it("builds exact approval, revoke, and Aqua dock calldata from the immutable snapshot", () => {
+  it("builds a remaining-cap approval plus exact revoke and Aqua dock calldata", () => {
     const approval = buildOwnerControlCalls(snapshot, mandateApp, "RESTORE_APPROVAL");
     expect(approval).toHaveLength(1);
     expect(approval[0].to).toBe(snapshot.strategy.tokenIn);
@@ -35,7 +41,7 @@ describe("smart-account owner controls", () => {
       data: approval[0].data!,
     });
     expect(approvalData.functionName).toBe("approve");
-    expect(approvalData.args).toEqual([snapshot.aqua.address, (1n << 256n) - 1n]);
+    expect(approvalData.args).toEqual([snapshot.aqua.address, 750n]);
 
     const revoke = buildOwnerControlCalls(snapshot, mandateApp, "REVOKE");
     expect(revoke).toHaveLength(1);

@@ -2,7 +2,7 @@
 
 import { usePrivy } from "@privy-io/react-auth";
 import { useSmartWallets } from "@privy-io/react-auth/smart-wallets";
-import { encodeFunctionData, maxUint256, parseAbi } from "viem";
+import { encodeFunctionData, parseAbi } from "viem";
 import { useState } from "react";
 
 import { MandateProviders } from "@/components/providers";
@@ -17,7 +17,13 @@ const revokeAbi = parseAbi(["function revoke(bytes32 hash)"]);
 type OwnerControlSnapshot = {
   strategyHash: `0x${string}`;
   aqua: { address: `0x${string}` };
-  strategy: { maker: `0x${string}`; tokenIn: `0x${string}`; tokenOut: `0x${string}` };
+  strategy: {
+    maker: `0x${string}`;
+    tokenIn: `0x${string}`;
+    tokenOut: `0x${string}`;
+    maxInputTotal: string;
+  };
+  state: { usedInput: string };
 };
 type OwnerControlAction = "RESTORE_APPROVAL" | "REVOKE" | "DOCK";
 type OwnerSmartWalletClient = SmartWalletClient & { account: { address: `0x${string}` } };
@@ -36,13 +42,14 @@ export function buildOwnerControlCalls(
   action: OwnerControlAction,
 ): SmartWalletCall[] {
   if (action === "RESTORE_APPROVAL") {
+    const remaining = BigInt(snapshot.strategy.maxInputTotal) - BigInt(snapshot.state.usedInput);
     return [
       {
         to: snapshot.strategy.tokenIn,
         data: encodeFunctionData({
           abi: parseAbi(["function approve(address spender,uint256 amount) returns (bool)"]),
           functionName: "approve",
-          args: [snapshot.aqua.address, maxUint256],
+          args: [snapshot.aqua.address, remaining > 0n ? remaining : 0n],
         }),
       },
     ];

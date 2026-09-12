@@ -512,22 +512,16 @@ export class MandateChainService {
     try {
       const latest = await runtime.client.getBlockNumber();
       const first = runtime.deploymentBlock ?? (latest > 9n ? latest - 9n : 0n);
-      let toBlock = latest;
-      while (toBlock >= first) {
-        const fromBlock = toBlock - first > 9n ? toBlock - 9n : first;
-        const logs = await runtime.client.getLogs({
-          address: runtime.mandateApp,
-          event: activatedEvent,
-          args: { strategyHash },
-          fromBlock,
-          toBlock,
-        });
-        const activation = logs.at(-1);
-        if (activation?.args.strategy) {
-          return decodeStrategyBytes(activation.args.strategy);
-        }
-        if (fromBlock === first) break;
-        toBlock = fromBlock - 1n;
+      const logs = await runtime.client.getLogs({
+        address: runtime.mandateApp,
+        event: activatedEvent,
+        args: { strategyHash },
+        fromBlock: first,
+        toBlock: latest,
+      });
+      const activation = logs.at(-1);
+      if (activation?.args.strategy) {
+        return decodeStrategyBytes(activation.args.strategy);
       }
       throw new ChainReadError("NOT_FOUND", "mandate not found");
     } catch (error) {

@@ -43,6 +43,7 @@ const chain = new MandateChainService([
 const database = createDatabase();
 const repository = createCanonicalEvidenceRepository(database.db);
 const worker = new ConfirmationWorker({
+  chainId: sepolia.id.toString(),
   chain,
   repository,
   confirmationDepth: configuration.confirmationDepth,

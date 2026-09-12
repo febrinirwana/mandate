@@ -3,7 +3,7 @@ import type { AddressInfo } from "node:net";
 
 import { afterEach, expect, it, vi } from "vitest";
 
-import { createDemoExecutionServer } from "../src/server.js";
+import { createDemoExecutionServer, listenDemoExecutionServer } from "../src/server.js";
 
 const hash = (digit: string) => `0x${digit.repeat(64)}`;
 const request = { chainId: "11155111", strategyHash: hash("1") };
@@ -30,6 +30,16 @@ async function start(options: Parameters<typeof createDemoExecutionServer>[0]) {
   const address = server.address() as AddressInfo;
   return `http://127.0.0.1:${address.port}`;
 }
+
+it("binds the standalone demo server to loopback by default", async () => {
+  const execute = vi.fn();
+  const server = listenDemoExecutionServer({ demoEnabled: true, service: { execute } }, 0);
+  servers.push(server);
+  await once(server, "listening");
+
+  const address = server.address() as AddressInfo;
+  expect(address.address).toBe("127.0.0.1");
+});
 
 it("accepts only the strict demo request and returns the canonical service result", async () => {
   const execute = vi.fn().mockResolvedValue({ status: "REJECTED", reason: "MANDATE_REVOKED" });
@@ -82,6 +92,40 @@ it("reports disabled demo mode as an unavailable safe state without calling the 
   expect(response.status).toBe(503);
   await expect(response.json()).resolves.toMatchObject({ status: "UNKNOWN" });
   expect(execute).not.toHaveBeenCalled();
+});
+
+it("requires the configured server credential before executing a public demo request", async () => {
+  const execute = vi.fn().mockResolvedValue({ status: "REJECTED", reason: "MANDATE_REVOKED" });
+  const origin = await start({
+    authToken: "server-only-agent-token",
+    demoEnabled: true,
+    service: { execute },
+  });
+
+  for (const authorization of [undefined, "Bearer wrong-token"]) {
+    const response = await fetch(`${origin}/v1/demo-executions`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        ...(authorization ? { authorization } : {}),
+      },
+      body: JSON.stringify(request),
+    });
+    expect(response.status).toBe(401);
+  }
+
+  expect(execute).not.toHaveBeenCalled();
+
+  const response = await fetch(`${origin}/v1/demo-executions`, {
+    method: "POST",
+    headers: {
+      authorization: "Bearer server-only-agent-token",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(request),
+  });
+  expect(response.status).toBe(200);
+  expect(execute).toHaveBeenCalledExactlyOnceWith(request);
 });
 
 it("does not expose configured secrets in unexpected error responses or logs", async () => {

@@ -40,6 +40,7 @@ const confirmed = {
 afterEach(() => {
   vi.unstubAllGlobals();
   delete process.env.MANDATE_AGENT_ORIGIN;
+  delete process.env.MANDATE_AGENT_AUTH_TOKEN;
 });
 
 describe("automated agent run", () => {
@@ -62,14 +63,14 @@ describe("automated agent run", () => {
 
   it("forwards only the strict browser request to the fixed agent origin", async () => {
     process.env.MANDATE_AGENT_ORIGIN = "http://agent.internal:3002";
+    process.env.MANDATE_AGENT_AUTH_TOKEN = "server-only-agent-token";
     const upstream = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
       const url = input instanceof Request ? input.url : input instanceof URL ? input.href : input;
       expect(url).toBe("http://agent.internal:3002/v1/demo-executions");
       expect(init?.method).toBe("POST");
       expect(await new Response(init?.body).json()).toEqual({ chainId, strategyHash });
       const headers = new Headers(init?.headers);
-      expect(headers.get("content-type")).toBe("application/json");
-      expect(headers.get("authorization")).toBeNull();
+      expect(headers.get("authorization")).toBe("Bearer server-only-agent-token");
       expect(headers.get("cookie")).toBeNull();
       return new Response(JSON.stringify(confirmed));
     });

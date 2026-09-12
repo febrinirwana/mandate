@@ -26,12 +26,15 @@ export interface AgentConfiguration {
 
 export interface DemoAgentConfiguration {
   port: number;
+  host: "127.0.0.1" | "0.0.0.0";
+  authToken?: string;
   runtime: {
     chainId: number;
     rpcUrl: string;
     mandateApp: `0x${string}`;
     deploymentBlock: bigint;
     routeRecipient: `0x${string}`;
+    allowedStrategyHash: `0x${string}`;
   };
   profile: PolicyProfileV1;
   maximumDemoInput: string;
@@ -127,6 +130,14 @@ export function parseDemoAgentConfiguration(environment: Environment): DemoAgent
   if (!Number.isSafeInteger(port) || port < 1 || port > 65_535) {
     throw new Error("AGENT_PORT is invalid");
   }
+  const host = environment["AGENT_HOST"] ?? "127.0.0.1";
+  if (host !== "127.0.0.1" && host !== "0.0.0.0") {
+    throw new Error("AGENT_HOST is invalid");
+  }
+  const authToken =
+    host === "0.0.0.0"
+      ? required(environment, "AGENT_AUTH_TOKEN")
+      : environment["AGENT_AUTH_TOKEN"];
   const profile = parsePolicyProfileJson(required(environment, "MANDATE_POLICY_PROFILE"));
   if (!profile) throw new Error("MANDATE_POLICY_PROFILE is invalid");
   const rpcUrl = required(environment, "SEPOLIA_RPC_URL");
@@ -149,12 +160,15 @@ export function parseDemoAgentConfiguration(environment: Environment): DemoAgent
 
   return {
     port,
+    host,
+    ...(authToken ? { authToken } : {}),
     runtime: {
       chainId,
       rpcUrl,
       mandateApp,
       deploymentBlock,
       routeRecipient: mandateApp,
+      allowedStrategyHash: parsed(environment, "AGENT_STRATEGY_HASH", Hash32Schema),
     },
     profile,
     maximumDemoInput,

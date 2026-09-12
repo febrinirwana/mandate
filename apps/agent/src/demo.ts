@@ -24,6 +24,7 @@ export interface DemoExecutionRuntime {
   chainId: string;
   mandateApp: Address;
   routeRecipient: Address;
+  allowedStrategyHash: `0x${string}`;
   maximumDemoInput: string;
 }
 
@@ -70,6 +71,9 @@ export function createDemoExecutionService(dependencies: DemoExecutionDependenci
       const request = parsed.data;
       if (request.chainId !== dependencies.runtime.chainId) {
         return { status: "REJECTED", reason: "TARGET_MISMATCH" };
+      }
+      if (request.strategyHash !== dependencies.runtime.allowedStrategyHash) {
+        return { status: "REJECTED", reason: "STRATEGY_HASH_MISMATCH" };
       }
 
       let stage: "READ_AUTHORITY" | "SIMULATE" | "EXECUTE" = "READ_AUTHORITY";

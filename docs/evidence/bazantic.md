@@ -29,11 +29,11 @@ The Recipe binds exactly two tools, in order:
 
 `docs/evidence/bazantic-recipe-published.jpg` shows the published, read-only Recipe definition without the dashboard sidebar. `docs/evidence/bazantic-recipe-bindings.jpg` shows both exact gateway/tool bindings and Bazantic's notice that the dashboard Test path performs no payment. Neither capture contains a credential, balance, email, or wallet key.
 
-On 11 September 2026 the deleted Mandate gateway binding was replaced with `oj7vvrmizvfhfpbo737wqdphcq`. The Recipe was republished and its dashboard test returned `PASS`; both gateway calls returned HTTP 200 and all eight deterministic Mandate checks passed. The paid proof below remains an immutable historical record of the previous gateway and its canonical Base settlements.
+On 11 September 2026 the deleted Mandate gateway binding was replaced with `oj7vvrmizvfhfpbo737wqdphcq`. On 12 September the gateway Base URL was rebound from the temporary tunnel to `https://mandate-api.43-129-38-115.nip.io` with its public `/openapi.json`. The Recipe dashboard test then returned `Complete`: the 1inch route call and Mandate `assessOneInchRoute` both completed, while the Mandate MCP URL remained unchanged. The paid proof below remains an immutable historical record of the previous gateway and its canonical Base settlements.
 
 ## Public backend proof
 
-The Task 11 API was exposed through the temporary deployment origin `https://unrevised-jubilance-plated.ngrok-free.dev`; Bazantic's stable public surface is the custom gateway hostname above. Public OpenAPI retrieval returned HTTP 200 and exposed `assessOneInchRoute`.
+The Task 11 API originally used the temporary deployment origin `https://unrevised-jubilance-plated.ngrok-free.dev`. The current release uses `https://mandate-api.43-129-38-115.nip.io`; public OpenAPI retrieval returns HTTP 200 and exposes `assessOneInchRoute`. Bazantic's stable machine-facing surface remains the custom gateway hostname above.
 
 At `2026-09-10T06:23:41.823Z`, the public assessor returned the following consumer-visible outcomes from schema-valid requests with a fresh execution window:
 
