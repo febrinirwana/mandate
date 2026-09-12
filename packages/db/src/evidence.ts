@@ -67,7 +67,7 @@ export function assertPersistableEvidence(value: unknown): CanonicalReceiptEvide
 
 export interface CanonicalEvidenceRepository {
   trackObservedExecution(input: ExecutionV1): Promise<void>;
-  listPendingConfirmations(limit: number): Promise<readonly PendingExecution[]>;
+  listPendingConfirmations(chainId: string, limit: number): Promise<readonly PendingExecution[]>;
   updateConfirmations(input: PendingExecution, confirmations: number): Promise<void>;
   persistCanonicalEvidence(input: CanonicalReceiptEvidenceV1): Promise<void>;
   invalidateReorgedEvidence(input: ReorgInvalidationInput): Promise<void>;
@@ -114,7 +114,10 @@ export function createCanonicalEvidenceRepository(
         })
         .onConflictDoNothing();
     },
-    async listPendingConfirmations(limit) {
+    async listPendingConfirmations(chainId, limit) {
+      if (!/^[1-9][0-9]*$/.test(chainId)) {
+        throw new Error("chainId must be a positive integer string");
+      }
       if (!Number.isInteger(limit) || limit < 1) {
         throw new Error("limit must be a positive integer");
       }
@@ -126,7 +129,7 @@ export function createCanonicalEvidenceRepository(
           blockHash: executions.blockHash,
         })
         .from(executions)
-        .where(eq(executions.status, "SUBMITTED"))
+        .where(and(eq(executions.chainId, chainId), eq(executions.status, "SUBMITTED")))
         .orderBy(asc(executions.createdAt))
         .limit(limit) as Promise<PendingExecution[]>;
     },

@@ -9,6 +9,7 @@ import type {
 type Hash = `0x${string}`;
 
 export interface ConfirmationWorkerDependencies {
+  chainId: string;
   chain: {
     getBlockHash(chainId: string, blockNumber: bigint): Promise<Hash | null>;
     getBlockNumber(chainId: string): Promise<bigint>;
@@ -58,11 +59,15 @@ export class ConfirmationWorker {
     if (!Number.isInteger(dependencies.batchSize) || dependencies.batchSize < 1) {
       throw new Error("batchSize must be a positive integer");
     }
+    if (!/^[1-9][0-9]*$/.test(dependencies.chainId)) {
+      throw new Error("chainId must be a positive integer string");
+    }
   }
 
   async runOnce(): Promise<WorkerRunResult> {
     const result: WorkerRunResult = { deferred: 0, errors: 0, persisted: 0, reorged: 0 };
     const pending = await this.dependencies.repository.listPendingConfirmations(
+      this.dependencies.chainId,
       this.dependencies.batchSize,
     );
 
