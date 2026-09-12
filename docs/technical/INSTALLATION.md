@@ -206,9 +206,11 @@ Project-scoped skills live in `.agents/skills`. Provenance: [SOURCES](../../.age
 - `mandate-constrained-execution` — installable safety contract for Codex and Claude Code:
 
   ```bash
-  npx skills add febrinirwana/mandate --skill mandate-constrained-execution --agent codex --copy -y
-  npx skills add febrinirwana/mandate --skill mandate-constrained-execution --agent claude-code --copy -y
+  npx skills add https://raw.githubusercontent.com/febrinirwana/mandate/main/.agents/skills/mandate-constrained-execution/SKILL.md --agent codex --copy -y
+  npx skills add https://raw.githubusercontent.com/febrinirwana/mandate/main/.agents/skills/mandate-constrained-execution/SKILL.md --agent claude-code --copy -y
   ```
+
+  The direct file URL avoids cloning the full repository.
 
 - `mandate-contract-engineer`
 - `mandate-security-auditor`
