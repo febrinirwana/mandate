@@ -1,9 +1,4 @@
-import {
-  decodeFunctionData,
-  encodeErrorResult,
-  toFunctionSelector,
-  type PublicClient,
-} from "viem";
+import { decodeFunctionData, encodeErrorResult, toFunctionSelector, type PublicClient } from "viem";
 import { describe, expect, it, vi } from "vitest";
 import { mandateAquaAppAbi } from "@mandate/contracts/mandate-aqua-app";
 
@@ -65,33 +60,33 @@ describe("MandateChainService", () => {
   it("loads an activation across the configured deployment range in one filtered query", async () => {
     const strategyBytes = buildExecutionCall(request).strategyBytes;
     const getLogs = vi.fn().mockResolvedValue([{ args: { strategy: strategyBytes } }]);
-    const readContract = vi.fn().mockImplementation(({ functionName }: { functionName: string }) => {
-      switch (functionName) {
-        case "mandates":
-          return [request.strategy.maker, 0n, true, false];
-        case "getState":
-          return { status: 2, expiry: 3_000n, latestOwner: request.strategy.agent, tokenId: 1n };
-        case "getResolver":
-          return request.strategy.ensResolver;
-        case "ownerOf":
-        case "addr":
-          return request.strategy.agent;
-        case "AQUA":
-          return address("b");
-        case "safeBalances":
-          return [500n, 0n];
-        case "balanceOf":
-          return 0n;
-        default:
-          throw new Error(`unexpected read ${functionName}`);
-      }
-    });
+    const readContract = vi
+      .fn()
+      .mockImplementation(({ functionName }: { functionName: string }) => {
+        switch (functionName) {
+          case "mandates":
+            return [request.strategy.maker, 0n, true, false];
+          case "getState":
+            return { status: 2, expiry: 3_000n, latestOwner: request.strategy.agent, tokenId: 1n };
+          case "getResolver":
+            return request.strategy.ensResolver;
+          case "ownerOf":
+          case "addr":
+            return request.strategy.agent;
+          case "AQUA":
+            return address("b");
+          case "safeBalances":
+            return [500n, 0n];
+          case "balanceOf":
+            return 0n;
+          default:
+            throw new Error(`unexpected read ${functionName}`);
+        }
+      });
     const client = {
       getBlockNumber: vi.fn().mockResolvedValue(2_000n),
       getLogs,
-      getBlock: vi
-        .fn()
-        .mockResolvedValue({ number: 2_000n, hash: hash("b"), timestamp: 1_500n }),
+      getBlock: vi.fn().mockResolvedValue({ number: 2_000n, hash: hash("b"), timestamp: 1_500n }),
       readContract,
     } as unknown as PublicClient;
     const service = new MandateChainService([
